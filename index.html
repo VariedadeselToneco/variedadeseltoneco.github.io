@@ -6,10 +6,6 @@
   <title>Variedades el Toñeco - Catálogo Digital</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans pb-24">
 
@@ -27,32 +23,34 @@
       </button>
     </div>
 
-    <!-- BUSCADOR -->
+    <!-- BUSCADOR GLOBAL -->
     <div class="max-w-md mx-auto px-4 pb-3">
       <div class="relative">
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
-        <input type="text" id="search-input" oninput="renderProducts()" placeholder="Buscar producto..." class="w-full bg-slate-900/90 text-slate-100 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-amber-400">
+        <input type="text" id="search-input" oninput="handleSearch()" placeholder="Buscar en todo el catálogo..." class="w-full bg-slate-900/90 text-slate-100 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-amber-400">
       </div>
     </div>
-
-    <!-- FILTRO DE CATEGORÍAS EN CARRUSEL -->
-    <div class="flex overflow-x-auto gap-2 px-4 pb-3 no-scrollbar max-w-md mx-auto" id="categories-list"></div>
   </header>
 
-  <!-- BANNER PROMOCIONAL CREATIVO DE CATEGORÍA -->
-  <section class="max-w-md mx-auto px-4 pt-4">
-    <div id="category-banner" class="relative rounded-2xl overflow-hidden shadow-lg border border-slate-700 h-28 flex items-end p-4 bg-cover bg-center transition-all duration-300">
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent"></div>
-      <div class="relative z-10">
-        <span id="banner-tag" class="text-[10px] uppercase tracking-widest text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">Categoría</span>
-        <h2 id="banner-title" class="text-xl font-black text-white">Todos los Productos</h2>
-      </div>
-    </div>
-  </section>
-
-  <!-- LISTA DE PRODUCTOS -->
   <main class="max-w-md mx-auto p-4">
-    <div id="products-container" class="grid grid-cols-1 gap-2.5"></div>
+    
+    <!-- BARRA DE NAVEGACIÓN Y TÍTULO DE SECCIÓN -->
+    <div id="navigation-header" class="mb-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <button id="back-btn" onclick="showCategoriesView()" class="hidden bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
+          <i class="fa-solid fa-arrow-left"></i> Categorías
+        </button>
+        <h2 id="section-title" class="text-lg font-black text-white">Categorías</h2>
+      </div>
+      <span id="product-count-badge" class="text-xs font-bold bg-amber-400/10 text-amber-400 px-2.5 py-1 rounded-lg border border-amber-400/20 hidden"></span>
+    </div>
+
+    <!-- VISTA 1: GRILLA DE CATEGORÍAS PRINCIPAL -->
+    <div id="categories-grid" class="grid grid-cols-2 gap-3"></div>
+
+    <!-- VISTA 2: LISTA DESPLEGABLE / PRODUCTOS -->
+    <div id="products-container" class="hidden space-y-2.5"></div>
+
   </main>
 
   <!-- MODAL DEL CARRITO DE COMPRAS -->
@@ -93,14 +91,13 @@
 
   <script>
     const categoriesData = {
-      'Todos': { icon: 'fa-border-all', img: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=600&q=80' },
-      'VÍVERES': { icon: 'fa-wheat-awn', img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80' },
-      'GOLOSINAS': { icon: 'fa-cookie-bite', img: 'https://images.unsplash.com/photo-1582058091505-f87aede55a10?auto=format&fit=crop&w=600&q=80' },
-      'BEBIDAS': { icon: 'fa-bottle-water', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80' },
-      'HIGIENE PERSONAL': { icon: 'fa-pump-soap', img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80' },
-      'CHARCUTERÍA': { icon: 'fa-cheese', img: 'https://images.unsplash.com/photo-1626957341926-98752fc2ba90?auto=format&fit=crop&w=600&q=80' },
-      'COMIDA PARA ANIMALES': { icon: 'fa-dog', img: 'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=600&q=80' },
-      'HOGAR Y LIMPIEZA': { icon: 'fa-broom', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80' }
+      'VÍVERES': { icon: 'fa-wheat-awn', color: 'from-amber-600 to-amber-800', img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80' },
+      'GOLOSINAS': { icon: 'fa-cookie-bite', color: 'from-pink-600 to-rose-800', img: 'https://images.unsplash.com/photo-1582058091505-f87aede55a10?auto=format&fit=crop&w=400&q=80' },
+      'BEBIDAS': { icon: 'fa-bottle-water', color: 'from-blue-600 to-cyan-800', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80' },
+      'HIGIENE PERSONAL': { icon: 'fa-pump-soap', color: 'from-purple-600 to-indigo-800', img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=400&q=80' },
+      'CHARCUTERÍA': { icon: 'fa-cheese', color: 'from-red-600 to-orange-800', img: 'https://images.unsplash.com/photo-1626957341926-98752fc2ba90?auto=format&fit=crop&w=400&q=80' },
+      'COMIDA PARA ANIMALES': { icon: 'fa-dog', color: 'from-emerald-600 to-teal-800', img: 'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=400&q=80' },
+      'HOGAR Y LIMPIEZA': { icon: 'fa-broom', color: 'from-sky-600 to-blue-800', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80' }
     };
 
     const rawProducts = [
@@ -201,53 +198,92 @@
       { id: 95, cat: "CHARCUTERÍA", name: "TOCINETA Kg", price: 13.62 }
     ];
 
-    let currentCategory = 'Todos';
+    let currentCategory = null;
     let cart = {};
 
     function init() {
-      renderCategories();
-      renderProducts();
+      renderCategoriesGrid();
     }
 
-    function renderCategories() {
-      const container = document.getElementById('categories-list');
+    function renderCategoriesGrid() {
+      const container = document.getElementById('categories-grid');
+      
       container.innerHTML = Object.keys(categoriesData).map(cat => {
-        const active = currentCategory === cat;
+        const info = categoriesData[cat];
+        const count = rawProducts.filter(p => p.cat === cat).length;
+        
         return `
-          <button onclick="selectCategory('${cat}')" class="px-3.5 py-2 text-xs font-bold rounded-xl whitespace-nowrap transition duration-200 flex items-center gap-1.5 ${active ? 'bg-amber-400 text-slate-950 shadow-md scale-105' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
-            <i class="fa-solid ${categoriesData[cat].icon}"></i> ${cat}
-          </button>
+          <div onclick="selectCategory('${cat}')" class="relative rounded-2xl overflow-hidden shadow-lg border border-slate-700/80 h-36 flex flex-col justify-end p-3 cursor-pointer group hover:border-amber-400 transition duration-300">
+            <img src="${info.img}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500 opacity-60">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+            
+            <div class="relative z-10">
+              <div class="w-8 h-8 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-sm mb-1 shadow-md">
+                <i class="fa-solid ${info.icon}"></i>
+              </div>
+              <h3 class="font-extrabold text-white text-sm leading-tight">${cat}</h3>
+              <p class="text-[11px] text-slate-300 font-medium">${count} productos</p>
+            </div>
+          </div>
         `;
       }).join('');
     }
 
     function selectCategory(cat) {
       currentCategory = cat;
-      renderCategories();
+      document.getElementById('categories-grid').classList.add('hidden');
+      document.getElementById('products-container').classList.remove('hidden');
+      document.getElementById('back-btn').classList.remove('hidden');
       
-      const banner = document.getElementById('category-banner');
-      const title = document.getElementById('banner-title');
-      const tag = document.getElementById('banner-tag');
-      
-      banner.style.backgroundImage = `url('${categoriesData[cat].img}')`;
-      title.innerText = cat === 'Todos' ? 'Todos los Productos' : cat;
-      tag.innerText = cat === 'Todos' ? 'Catálogo General' : 'Categoría';
+      const badge = document.getElementById('product-count-badge');
+      badge.classList.remove('hidden');
 
+      document.getElementById('section-title').innerText = cat;
+      
       renderProducts();
     }
 
-    function renderProducts() {
-      const searchQuery = document.getElementById('search-input').value.toLowerCase();
+    function showCategoriesView() {
+      currentCategory = null;
+      document.getElementById('search-input').value = '';
+      document.getElementById('categories-grid').classList.remove('hidden');
+      document.getElementById('products-container').classList.add('hidden');
+      document.getElementById('back-btn').classList.add('hidden');
+      document.getElementById('product-count-badge').classList.add('hidden');
+      document.getElementById('section-title').innerText = 'Categorías';
+    }
+
+    function handleSearch() {
+      const query = document.getElementById('search-input').value.toLowerCase().trim();
+      
+      if (query !== '') {
+        document.getElementById('categories-grid').classList.add('hidden');
+        document.getElementById('products-container').classList.remove('hidden');
+        document.getElementById('back-btn').classList.remove('hidden');
+        document.getElementById('section-title').innerText = 'Resultados de Búsqueda';
+        renderProducts(query);
+      } else {
+        if (currentCategory) {
+          selectCategory(currentCategory);
+        } else {
+          showCategoriesView();
+        }
+      }
+    }
+
+    function renderProducts(searchQuery = '') {
       const container = document.getElementById('products-container');
       
       const filtered = rawProducts.filter(p => {
-        const matchesCategory = currentCategory === 'Todos' || p.cat === currentCategory;
-        const matchesSearch = p.name.toLowerCase().includes(searchQuery);
-        return matchesCategory && matchesSearch;
+        const matchesCat = currentCategory ? p.cat === currentCategory : true;
+        const matchesSearch = searchQuery ? p.name.toLowerCase().includes(searchQuery) : true;
+        return matchesCat && matchesSearch;
       });
 
+      document.getElementById('product-count-badge').innerText = `${filtered.length} ítems`;
+
       if (filtered.length === 0) {
-        container.innerHTML = `<p class="text-center text-slate-400 py-12 text-sm font-medium">No encontramos productos en esta búsqueda.</p>`;
+        container.innerHTML = `<p class="text-center text-slate-400 py-12 text-sm font-medium">No hay productos disponibles.</p>`;
         return;
       }
 
@@ -275,7 +311,8 @@
       cart[id] = (cart[id] || 0) + change;
       if (cart[id] <= 0) delete cart[id];
       updateCartUI();
-      renderProducts();
+      const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+      renderProducts(searchQuery);
     }
 
     function updateCartUI() {
