@@ -6,406 +6,379 @@
   <title>Variedades el Toñeco - Catálogo Digital</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @media print {
+      body * { visibility: hidden; }
+      #seccionFactura, #seccionFactura * { visibility: visible; }
+      #seccionFactura { position: absolute; left: 0; top: 0; width: 100%; color: black; background: white; }
+      .no-print { display: none !important; }
+    }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans pb-32">
+<body class="bg-slate-900 text-slate-100 font-sans pb-24">
 
-  <!-- ENCABEZADO Y DATOS DE LA EMPRESA -->
-  <header class="bg-slate-800/95 backdrop-blur border-b border-slate-700 sticky top-0 z-30 shadow-xl">
-    <div class="max-w-md mx-auto p-4 flex justify-between items-center">
-      <div>
-        <h1 class="text-xl font-extrabold text-amber-400 tracking-wide">Variedades el Toñeco</h1>
-        <p class="text-xs text-slate-300 font-medium"><i class="fa-solid fa-id-card text-amber-400 mr-1"></i> RIF: J-507753565</p>
-        <p class="text-xs text-slate-300 font-medium"><i class="fa-solid fa-location-dot text-red-400 mr-1"></i> Carrera 8 entre 11 y 12</p>
-      </div>
-      <button onclick="toggleCart()" class="relative bg-amber-500 hover:bg-amber-400 text-slate-950 p-3 rounded-2xl font-bold shadow-lg transition duration-200">
-        <i class="fa-solid fa-cart-shopping text-lg"></i>
-        <span id="cart-count" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-800 font-black">0</span>
-      </button>
-    </div>
-
-    <!-- BUSCADOR GLOBAL -->
-    <div class="max-w-md mx-auto px-4 pb-3">
-      <div class="relative">
-        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
-        <input type="text" id="search-input" oninput="handleSearch()" placeholder="Buscar en todo el catálogo..." class="w-full bg-slate-900/90 text-slate-100 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-amber-400">
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-md mx-auto p-4">
-    
-    <!-- BARRA DE NAVEGACIÓN Y TÍTULO DE SECCIÓN -->
-    <div id="navigation-header" class="mb-4 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <button id="back-btn" onclick="showCategoriesView()" class="hidden bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
-          <i class="fa-solid fa-arrow-left"></i> Categorías
-        </button>
-        <h2 id="section-title" class="text-lg font-black text-white">Categorías</h2>
-      </div>
-      <span id="product-count-badge" class="text-xs font-bold bg-amber-400/10 text-amber-400 px-2.5 py-1 rounded-lg border border-amber-400/20 hidden"></span>
-    </div>
-
-    <!-- VISTA 1: GRILLA DE CATEGORÍAS PRINCIPAL -->
-    <div id="categories-grid" class="grid grid-cols-2 gap-3"></div>
-
-    <!-- VISTA 2: LISTA DESPLEGABLE / PRODUCTOS -->
-    <div id="products-container" class="hidden space-y-2.5"></div>
-
-  </main>
-
-  <!-- BARRA FLOTANTE DE TOTAL ACUMULADO (SIEMPRE VISIBLE ABAJO) -->
-  <div id="floating-total-bar" class="fixed bottom-0 left-0 right-0 z-40 bg-slate-800/95 backdrop-blur border-t border-slate-700 shadow-2xl p-3 transition-transform duration-300 translate-y-full">
-    <div class="max-w-md mx-auto flex items-center justify-between gap-3">
-      <div>
-        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Acumulado</p>
-        <div class="flex items-baseline gap-1.5">
-          <span id="floating-total-amount" class="text-2xl font-black text-emerald-400">$0.00</span>
-          <span id="floating-items-count" class="text-xs font-bold text-slate-300">(0 ítems)</span>
+  <!-- VISTA PRINCIPAL DEL CATÁLOGO -->
+  <div id="vistaCatalogo">
+    <!-- ENCABEZADO -->
+    <header class="bg-slate-800/95 backdrop-blur border-b border-slate-700 sticky top-0 z-40">
+      <div class="max-w-md mx-auto p-4 flex justify-between items-center">
+        <div>
+          <h1 class="text-xl font-extrabold text-amber-400">Variedades el Toñeco</h1>
+          <p class="text-xs text-slate-300">Carrera 8 entre 11 y 12, Duaca</p>
+          <p class="text-xs text-slate-300">RIF: J-507753565 | Tlf: 0416-1721923</p>
+        </div>
+        <div class="relative">
+          <button onclick="toggleCarrito()" class="bg-amber-500 text-slate-950 p-3 rounded-full font-bold relative shadow-lg">
+            <i class="fa-solid font-bold fa-cart-shopping text-lg"></i>
+            <span id="cantCarrito" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full font-bold hidden">0</span>
+          </button>
         </div>
       </div>
-      <button onclick="toggleCart()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl shadow-md text-sm flex items-center gap-2 transition">
-        <i class="fa-solid fa-basket-shopping"></i> Ver Pedido
-      </button>
+    </header>
+
+    <!-- LISTA DE PRODUCTOS -->
+    <main class="max-w-md mx-auto p-4 space-y-4" id="listaProductos">
+      <!-- Los productos se cargan dinámicamente -->
+    </main>
+  </div>
+
+  <!-- MODAL DEL CARRITO / FORMULARIO -->
+  <div id="modalCarrito" class="fixed inset-0 bg-black/80 z-50 hidden flex flex-col justify-end">
+    <div class="bg-slate-800 rounded-t-2xl max-w-md w-full mx-auto max-h-[90vh] flex flex-col overflow-hidden">
+      <!-- Encabezado Modal -->
+      <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800">
+        <h2 class="text-lg font-bold text-amber-400"><i class="fa-solid fa-basket-shopping mr-2"></i>Tu Pedido</h2>
+        <button onclick="toggleCarrito()" class="text-slate-400 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Contenido Scrollable -->
+      <div class="p-4 overflow-y-auto space-y-4 text-sm">
+        <!-- Ítems del Carrito -->
+        <div id="itemsCarrito" class="space-y-2 border-b border-slate-700 pb-3"></div>
+
+        <!-- Total -->
+        <div class="flex justify-between items-center font-bold text-lg text-amber-400 py-1">
+          <span>Total a Pagar:</span>
+          <span id="totalMonto">$0.00</span>
+        </div>
+
+        <!-- FORMULARIO DE DATOS -->
+        <form id="formPedido" class="space-y-3 pt-2">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Nombre y Apellido *</label>
+            <input type="text" id="clienteNombre" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs focus:border-amber-400 outline-none" placeholder="Ej: Juan Pérez">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">¿Desde dónde nos escribe? (Sector/Zona) *</label>
+            <input type="text" id="clienteUbicacion" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs focus:border-amber-400 outline-none" placeholder="Ej: Centro de Duaca, San José, etc.">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Modalidad de Pago *</label>
+            <select id="metodoPago" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs focus:border-amber-400 outline-none">
+              <option value="Pago Móvil">Pago Móvil</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Efectivo / Divisas">Efectivo / Divisas</option>
+              <option value="Punto de Venta">Punto de Venta</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Tipo de Entrega *</label>
+            <select id="tipoEntrega" onchange="toggleDeliveryCampos()" required class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs focus:border-amber-400 outline-none">
+              <option value="Retiro en Tienda">Retiro en Tienda</option>
+              <option value="Delivery">Quiero Delivery</option>
+            </select>
+          </div>
+
+          <!-- Campos Dinámicos de Delivery -->
+          <div id="camposDelivery" class="space-y-3 bg-slate-900/50 p-3 rounded border border-slate-700 hidden">
+            <p class="text-xs font-bold text-amber-400 mb-1"><i class="fa-solid fa-truck-ramblin mr-1"></i> Datos de Envío</p>
+            <div>
+              <label class="block text-xs text-slate-300">Dirección exacta *</label>
+              <input type="text" id="devDireccion" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs outline-none" placeholder="Calle, casa/local, apto">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-300">Punto de referencia *</label>
+              <input type="text" id="devReferencia" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs outline-none" placeholder="Frente a la plaza, cerca del abasto...">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs text-slate-300">Nombre de quien recibe *</label>
+                <input type="text" id="devNombreRecibe" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs outline-none" placeholder="Nombre completo">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-300">Teléfono de quien recibe *</label>
+                <input type="tel" id="devTelRecibe" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-xs outline-none" placeholder="04XX-XXXXXXX">
+              </div>
+            </div>
+          </div>
+
+          <button type="button" onclick="enviarPedidoWhatsApp()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 mt-4 text-sm shadow-lg">
+            <i class="fa-brands fa-whatsapp text-lg"></i> Enviar Pedido por WhatsApp
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- MODAL DEL CARRITO DE COMPRAS -->
-  <div id="cart-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-end flex-col">
-    <div class="bg-slate-800 rounded-t-3xl p-5 max-w-md w-full mx-auto max-h-[85vh] flex flex-col shadow-2xl border-t border-slate-700">
-      <div class="flex justify-between items-center pb-3 border-b border-slate-700">
-        <h2 class="text-lg font-bold text-amber-400 flex items-center gap-2"><i class="fa-solid fa-basket-shopping"></i> Tu Pedido</h2>
-        <button onclick="toggleCart()" class="text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
+  <!-- VISTA DE FACTURA DIGITAL / IMPRESIÓN -->
+  <div id="seccionFactura" class="hidden min-h-screen bg-white text-slate-900 p-6 max-w-xl mx-auto">
+    <div class="border-2 border-slate-900 p-6 rounded-lg space-y-4">
+      <div class="text-center border-b-2 border-slate-900 pb-4">
+        <h1 class="text-2xl font-black uppercase tracking-wide">Variedades el Toñeco</h1>
+        <p class="text-xs">Carrera 8 entre 11 y 12, Duaca, Lara State</p>
+        <p class="text-xs">RIF: J-507753565 | Tlf: 0416-1721923</p>
+        <p class="text-sm font-bold mt-2 bg-slate-200 py-1 rounded">FACTURA / COMPROBANTE DIGITAL</p>
       </div>
 
-      <!-- Ítems agregados -->
-      <div id="cart-items" class="overflow-y-auto my-3 flex-1 divide-y divide-slate-700/50 pr-1"></div>
-
-      <!-- Total y Checkout -->
-      <div class="border-t border-slate-700 pt-3 space-y-3">
-        <div class="flex justify-between items-center text-lg font-bold">
-          <span>Total General:</span>
-          <span id="cart-total" class="text-emerald-400 text-xl font-black">$0.00</span>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Método de Pago:</label>
-          <select id="payment-method" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-400 font-medium">
-            <option value="Pago Móvil">Pago Móvil</option>
-            <option value="Transferencia BNC / Banesco">Transferencia (BNC / Banesco)</option>
-            <option value="Zelle">Zelle</option>
-            <option value="Banco Chileno (Penta / Estado)">Banco Chileno</option>
-            <option value="Efectivo / Divisas">Efectivo / Divisas</option>
-          </select>
-        </div>
-
-        <button onclick="sendOrder()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-base transition duration-200">
-          <i class="fa-brands fa-whatsapp text-2xl"></i> Enviar Pedido por WhatsApp
-        </button>
+      <div class="grid grid-cols-2 text-xs gap-2 border-b pb-3">
+        <div><strong>Cliente:</strong> <span id="facCliente"></span></div>
+        <div><strong>Fecha:</strong> <span id="facFecha"></span></div>
+        <div><strong>Sector/Ubicación:</strong> <span id="facUbicacion"></span></div>
+        <div><strong>Método de Pago:</strong> <span id="facPago"></span></div>
+        <div><strong>Entrega:</strong> <span id="facEntrega"></span></div>
       </div>
+
+      <div id="facDetalleDelivery" class="hidden text-xs bg-slate-100 p-2 rounded border border-slate-300">
+        <p class="font-bold border-b border-slate-300 pb-1 mb-1">Detalles para Delivery:</p>
+        <p><strong>Dirección:</strong> <span id="facDevDireccion"></span></p>
+        <p><strong>Referencia:</strong> <span id="facDevRef"></span></p>
+        <p><strong>Recibe:</strong> <span id="facDevNombre"></span> (<span id="facDevTel"></span>)</p>
+      </div>
+
+      <table class="w-full text-xs text-left border-collapse my-2">
+        <thead>
+          <tr class="border-b-2 border-slate-800">
+            <th class="py-1">Cant.</th>
+            <th class="py-1">Producto</th>
+            <th class="py-1 text-right">Precio</th>
+            <th class="py-1 text-right">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody id="facTablaItems"></tbody>
+      </table>
+
+      <div class="text-right font-black text-base border-t-2 border-slate-900 pt-2">
+        TOTAL: <span id="facTotal"></span>
+      </div>
+
+      <div class="text-center text-[10px] text-slate-500 pt-4 border-t">
+        ¡Gracias por su compra en Variedades el Toñeco!
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-center gap-4 no-print">
+      <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold"><i class="fa-solid fa-print mr-1"></i> Imprimir / Guardar PDF</button>
+      <button onclick="volverAlCatalogo()" class="bg-slate-700 text-white px-4 py-2 rounded text-sm font-bold">Volver al Catálogo</button>
     </div>
   </div>
 
   <script>
-    const categoriesData = {
-      'VÍVERES': { icon: 'fa-wheat-awn', color: 'from-amber-600 to-amber-800', img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80' },
-      'GOLOSINAS': { icon: 'fa-cookie-bite', color: 'from-pink-600 to-rose-800', img: 'https://images.unsplash.com/photo-1582058091505-f87aede55a10?auto=format&fit=crop&w=400&q=80' },
-      'BEBIDAS': { icon: 'fa-bottle-water', color: 'from-blue-600 to-cyan-800', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=80' },
-      'HIGIENE PERSONAL': { icon: 'fa-pump-soap', color: 'from-purple-600 to-indigo-800', img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=400&q=80' },
-      'CHARCUTERÍA': { icon: 'fa-cheese', color: 'from-red-600 to-orange-800', img: 'https://images.unsplash.com/photo-1626957341926-98752fc2ba90?auto=format&fit=crop&w=400&q=80' },
-      'COMIDA PARA ANIMALES': { icon: 'fa-dog', color: 'from-emerald-600 to-teal-800', img: 'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=400&q=80' },
-      'HOGAR Y LIMPIEZA': { icon: 'fa-broom', color: 'from-sky-600 to-blue-800', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=400&q=80' }
-    };
-
-    const rawProducts = [
-      { id: 1, cat: "VÍVERES", name: "ABCITOS CEREAL 240GRS.", price: 2.97 },
-      { id: 2, cat: "VÍVERES", name: "ACEITE AGROIL 800ML", price: 2.39 },
-      { id: 3, cat: "VÍVERES", name: "ACEITE OLIVA 500ml", price: 5.27 },
-      { id: 4, cat: "VÍVERES", name: "ACEITE VATEL 800ml SOJA", price: 2.65 },
-      { id: 5, cat: "HIGIENE PERSONAL", name: "ACETAMINOFEN 650m", price: 0.07 },
-      { id: 6, cat: "HIGIENE PERSONAL", name: "AFEITADORA LUMI COMPACT", price: 1.49 },
-      { id: 7, cat: "BEBIDAS", name: "AGUA 600ml NEVADA", price: 0.82 },
-      { id: 8, cat: "VÍVERES", name: "AGUACATE Kg", price: 0.90 },
-      { id: 9, cat: "BEBIDAS", name: "AGUA GASIFICADA LITRO Y MEDIO", price: 1.66 },
-      { id: 10, cat: "BEBIDAS", name: "AGUA LITRO Y MEDIO", price: 1.64 },
-      { id: 11, cat: "BEBIDAS", name: "AGUA NEVADA 355ml", price: 0.70 },
-      { id: 12, cat: "VÍVERES", name: "AHUYAMA", price: 0.92 },
-      { id: 13, cat: "VÍVERES", name: "AJI DULCE", price: 0.61 },
-      { id: 14, cat: "VÍVERES", name: "AJO", price: 12.01 },
-      { id: 15, cat: "HIGIENE PERSONAL", name: "ALCOHOL", price: 1.39 },
-      { id: 16, cat: "COMIDA PARA ANIMALES", name: "ALIMENTO Kg", price: 0.59 },
-      { id: 17, cat: "COMIDA PARA ANIMALES", name: "ALIMENTO PONEDORA", price: 0.89 },
-      { id: 18, cat: "HIGIENE PERSONAL", name: "AMBIENTADOR ALIVE", price: 2.16 },
-      { id: 19, cat: "VÍVERES", name: "ANIS DULCE", price: 0.17 },
-      { id: 20, cat: "VÍVERES", name: "ARROZ DON JULIAN 900g", price: 0.71 },
-      { id: 21, cat: "VÍVERES", name: "ARROZ GRAN MARQUES 850g", price: 0.74 },
-      { id: 22, cat: "VÍVERES", name: "ARROZ MARY TRADICIONAL", price: 0.82 },
-      { id: 23, cat: "VÍVERES", name: "ATUN ALDIVIA 160g", price: 1.26 },
-      { id: 24, cat: "VÍVERES", name: "ATUN DESMENUZADO LAILA 160", price: 1.09 },
-      { id: 25, cat: "VÍVERES", name: "AVENA GRANEL", price: 0.89 },
-      { id: 26, cat: "HOGAR Y LIMPIEZA", name: "AXION LAVAPLATOS Pq", price: 1.09 },
-      { id: 27, cat: "VÍVERES", name: "AZUCAR LA PASTORA", price: 1.22 },
-      { id: 28, cat: "VÍVERES", name: "AZUCAR MILAGROSA", price: 1.13 },
-      { id: 29, cat: "GOLOSINAS", name: "BIANCHI VARIADO BARRA", price: 0.37 },
-      { id: 30, cat: "VÍVERES", name: "BICARBONATO", price: 7.06 },
-      { id: 31, cat: "BEBIDAS", name: "BIG COLA - FIRTS 2lts", price: 1.07 },
-      { id: 32, cat: "BEBIDAS", name: "BOKA SOBRE", price: 0.26 },
-      { id: 33, cat: "HOGAR Y LIMPIEZA", name: "BOLSA DE BASURA 40k", price: 0.12 },
-      { id: 34, cat: "GOLOSINAS", name: "BROWNIE TIGO", price: 2.66 },
-      { id: 35, cat: "VÍVERES", name: "CACAO 100g", price: 2.50 },
-      { id: 36, cat: "VÍVERES", name: "CAFE AMANECER 100GR", price: 1.29 },
-      { id: 37, cat: "VÍVERES", name: "CAFE AMANECER 200gr", price: 2.54 },
-      { id: 38, cat: "VÍVERES", name: "CAFE ARAUCA 100gr", price: 1.19 },
-      { id: 39, cat: "VÍVERES", name: "CAFE AURORA 100g", price: 1.26 },
-      { id: 40, cat: "VÍVERES", name: "CAFE AURORA 200gr", price: 2.43 },
-      { id: 41, cat: "VÍVERES", name: "CARAOTAS AMANECER 400gr", price: 1.15 },
-      { id: 42, cat: "VÍVERES", name: "CARNE DE HAMBURGUESA", price: 1.31 },
-      { id: 43, cat: "VÍVERES", name: "CEBOLLA KILO", price: 1.49 },
-      { id: 44, cat: "HIGIENE PERSONAL", name: "CEPILLO COLGATE PREMIER", price: 1.65 },
-      { id: 45, cat: "HIGIENE PERSONAL", name: "CHAMPU PANTENE SOBRE", price: 0.28 },
-      { id: 46, cat: "GOLOSINAS", name: "CHEESE TRIS 150gr", price: 1.88 },
-      { id: 47, cat: "GOLOSINAS", name: "CHEESE TRIS 50gr", price: 0.94 },
-      { id: 48, cat: "GOLOSINAS", name: "CHEETOS BOLIQUESO 28gr", price: 2.61 },
-      { id: 49, cat: "GOLOSINAS", name: "CHOCOLATE C/LECHE 30gr SAVOY", price: 1.55 },
-      { id: 50, cat: "GOLOSINAS", name: "CHOCOLATE GALAK 30gr", price: 1.55 },
-      { id: 51, cat: "CHARCUTERÍA", name: "CHORIZO", price: 8.08 },
-      { id: 52, cat: "BEBIDAS", name: "COCACOLA BOMBITA", price: 0.77 },
-      { id: 53, cat: "BEBIDAS", name: "COCACOLA DE 2lts", price: 1.71 },
-      { id: 54, cat: "GOLOSINAS", name: "COCOSETTE 50gr", price: 1.03 },
-      { id: 55, cat: "HIGIENE PERSONAL", name: "COLGATE 90G", price: 1.47 },
-      { id: 56, cat: "HIGIENE PERSONAL", name: "COLGATE TRIPLE ACCION 60ml", price: 1.71 },
-      { id: 57, cat: "HOGAR Y LIMPIEZA", name: "DETERGENTE ALIVE 1Kg", price: 2.48 },
-      { id: 58, cat: "HOGAR Y LIMPIEZA", name: "DETERGENTE LAS LLAVES 400gr", price: 1.43 },
-      { id: 59, cat: "CHARCUTERÍA", name: "DIABLITO 50G LATA", price: 2.11 },
-      { id: 60, cat: "GOLOSINAS", name: "DORITOS 150gr", price: 2.95 },
-      { id: 61, cat: "GOLOSINAS", name: "DORITOS 45g MEGA QUESO", price: 1.06 },
-      { id: 62, cat: "COMIDA PARA ANIMALES", name: "GATARINA 1Kg", price: 4.69 },
-      { id: 63, cat: "BEBIDAS", name: "GATORADE", price: 1.96 },
-      { id: 64, cat: "GOLOSINAS", name: "HALLS", price: 0.67 },
-      { id: 65, cat: "VÍVERES", name: "HARINA ANIMAL", price: 15.05 },
-      { id: 66, cat: "VÍVERES", name: "HARINA BELEN", price: 0.75 },
-      { id: 67, cat: "VÍVERES", name: "HARINA DEL CAMPO", price: 0.94 },
-      { id: 68, cat: "VÍVERES", name: "HARINA DOÑA EMILIA", price: 0.79 },
-      { id: 69, cat: "VÍVERES", name: "HARINA KALY", price: 0.73 },
-      { id: 70, cat: "VÍVERES", name: "HUEVOS TIPO A", price: 2.88 },
-      { id: 71, cat: "HIGIENE PERSONAL", name: "JABON PALMOLIVE 120gr", price: 1.42 },
-      { id: 72, cat: "HIGIENE PERSONAL", name: "JABON PROTEX 75gr", price: 1.29 },
-      { id: 73, cat: "CHARCUTERÍA", name: "JAMON AREPERO", price: 6.75 },
-      { id: 74, cat: "CHARCUTERÍA", name: "JAMON DRAGO", price: 8.00 },
-      { id: 75, cat: "BEBIDAS", name: "JUCOSA LITRO", price: 1.74 },
-      { id: 76, cat: "VÍVERES", name: "LECHE DOBON 400gr", price: 4.19 },
-      { id: 77, cat: "BEBIDAS", name: "MALTA 207ml", price: 0.59 },
-      { id: 78, cat: "VÍVERES", name: "MARGARINA MAVESA 500gr", price: 2.96 },
-      { id: 79, cat: "VÍVERES", name: "MAYONESA MAVESA 445gr", price: 4.33 },
-      { id: 80, cat: "CHARCUTERÍA", name: "MORTADELA CARACAS 1K", price: 3.62 },
-      { id: 81, cat: "CHARCUTERÍA", name: "MORTADELA CARACAS 500g", price: 2.08 },
-      { id: 82, cat: "GOLOSINAS", name: "NUCITA TUBO 35g", price: 1.20 },
-      { id: 83, cat: "GOLOSINAS", name: "OREO", price: 0.59 },
-      { id: 84, cat: "VÍVERES", name: "PAN BLANCO", price: 1.69 },
-      { id: 85, cat: "HOGAR Y LIMPIEZA", name: "PAPEL ROSAL VERDE 215H X4", price: 0.80 },
-      { id: 86, cat: "VÍVERES", name: "PASTA SINDONI LARGA 1KG", price: 1.49 },
-      { id: 87, cat: "BEBIDAS", name: "PEPSI 1,5LT", price: 1.46 },
-      { id: 88, cat: "CHARCUTERÍA", name: "QUESO", price: 7.65 },
-      { id: 89, cat: "CHARCUTERÍA", name: "QUESO DE AÑO", price: 1.04 },
-      { id: 90, cat: "VÍVERES", name: "SALSA HEINZ 57 DE 378g", price: 2.75 },
-      { id: 91, cat: "GOLOSINAS", name: "SAMBA FRESA", price: 1.09 },
-      { id: 92, cat: "VÍVERES", name: "SARDINA EN LATA", price: 0.54 },
-      { id: 93, cat: "HIGIENE PERSONAL", name: "SHAMPO HS 180CC", price: 7.68 },
-      { id: 94, cat: "CHARCUTERÍA", name: "SUERO CRIOLLO", price: 1.57 },
-      { id: 95, cat: "CHARCUTERÍA", name: "TOCINETA Kg", price: 13.62 }
+    // PRODUCTOS DE EJEMPLO
+    const productos = [
+      { id: 1, nombre: "Harina PAN 1kg", precio: 1.10, icono: "fa-wheat-awn" },
+      { id: 2, nombre: "Arroz Primor 1kg", precio: 1.25, icono: "fa-bowl-rice" },
+      { id: 3, nombre: "Azúcar Montalbán 1kg", precio: 1.15, icono: "fa-cube" },
+      { id: 4, nombre: "Aceite Vegetal 1L", precio: 2.50, icono: "fa-bottle-droplet" },
+      { id: 5, nombre: "Café Fama de América 250g", precio: 2.80, icono: "fa-mug-hot" }
     ];
 
-    let currentCategory = null;
-    let cart = {};
+    let carrito = {};
 
-    function init() {
-      renderCategoriesGrid();
-    }
-
-    function renderCategoriesGrid() {
-      const container = document.getElementById('categories-grid');
-      
-      container.innerHTML = Object.keys(categoriesData).map(cat => {
-        const info = categoriesData[cat];
-        const count = rawProducts.filter(p => p.cat === cat).length;
-        
-        return `
-          <div onclick="selectCategory('${cat}')" class="relative rounded-2xl overflow-hidden shadow-lg border border-slate-700/80 h-36 flex flex-col justify-end p-3 cursor-pointer group hover:border-amber-400 transition duration-300">
-            <img src="${info.img}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500 opacity-60">
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-            
-            <div class="relative z-10">
-              <div class="w-8 h-8 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-sm mb-1 shadow-md">
-                <i class="fa-solid ${info.icon}"></i>
-              </div>
-              <h3 class="font-extrabold text-white text-sm leading-tight">${cat}</h3>
-              <p class="text-[11px] text-slate-300 font-medium">${count} productos</p>
+    function renderProductos() {
+      const contenedor = document.getElementById('listaProductos');
+      contenedor.innerHTML = productos.map(p => `
+        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex justify-between items-center shadow">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center text-amber-400">
+              <i class="fa-solid ${p.icono} text-lg"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-white text-sm">${p.nombre}</h3>
+              <p class="text-amber-400 font-extrabold text-sm">$${p.precio.toFixed(2)}</p>
             </div>
           </div>
+          <div class="flex items-center gap-2">
+            <button onclick="cambiarCantidad(${p.id}, -1)" class="w-8 h-8 bg-slate-700 text-white rounded-lg font-bold hover:bg-slate-600">-</button>
+            <span id="cant-${p.id}" class="text-sm font-bold min-w-[20px] text-center">0</span>
+            <button onclick="cambiarCantidad(${p.id}, 1)" class="w-8 h-8 bg-amber-500 text-slate-950 rounded-lg font-bold hover:bg-amber-400">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function cambiarCantidad(id, delta) {
+      carrito[id] = (carrito[id] || 0) + delta;
+      if (carrito[id] <= 0) delete carrito[id];
+      actualizarCarritoUI();
+    }
+
+    function actualizarCarritoUI() {
+      const totalCant = Object.values(carrito).reduce((a, b) => a + b, 0);
+      const badge = document.getElementById('cantCarrito');
+      badge.innerText = totalCant;
+      badge.classList.toggle('hidden', totalCant === 0);
+
+      productos.forEach(p => {
+        const el = document.getElementById(`cant-${p.id}`);
+        if (el) el.innerText = carrito[p.id] || 0;
+      });
+
+      // Actualizar ítems modal
+      const itemsContainer = document.getElementById('itemsCarrito');
+      let total = 0;
+      let html = '';
+
+      for (let id in carrito) {
+        const prod = productos.find(p => p.id == id);
+        const subtotal = prod.precio * carrito[id];
+        total += subtotal;
+        html += `
+          <div class="flex justify-between items-center py-1">
+            <span>${prod.nombre} (x${carrito[id]})</span>
+            <span class="font-bold">$${subtotal.toFixed(2)}</span>
+          </div>
         `;
-      }).join('');
+      }
+
+      itemsContainer.innerHTML = html || '<p class="text-slate-400 text-center py-2">Tu carrito está vacío</p>';
+      document.getElementById('totalMonto').innerText = `$${total.toFixed(2)}`;
     }
 
-    function selectCategory(cat) {
-      currentCategory = cat;
-      document.getElementById('categories-grid').classList.add('hidden');
-      document.getElementById('products-container').classList.remove('hidden');
-      document.getElementById('back-btn').classList.remove('hidden');
-      
-      const badge = document.getElementById('product-count-badge');
-      badge.classList.remove('hidden');
-
-      document.getElementById('section-title').innerText = cat;
-      
-      renderProducts();
+    function toggleCarrito() {
+      document.getElementById('modalCarrito').classList.toggle('hidden');
     }
 
-    function showCategoriesView() {
-      currentCategory = null;
-      document.getElementById('search-input').value = '';
-      document.getElementById('categories-grid').classList.remove('hidden');
-      document.getElementById('products-container').classList.add('hidden');
-      document.getElementById('back-btn').classList.add('hidden');
-      document.getElementById('product-count-badge').classList.add('hidden');
-      document.getElementById('section-title').innerText = 'Categorías';
+    function toggleDeliveryCampos() {
+      const tipo = document.getElementById('tipoEntrega').value;
+      const camposDev = document.getElementById('camposDelivery');
+      camposDev.classList.toggle('hidden', tipo !== 'Delivery');
     }
 
-    function handleSearch() {
-      const query = document.getElementById('search-input').value.toLowerCase().trim();
-      
-      if (query !== '') {
-        document.getElementById('categories-grid').classList.add('hidden');
-        document.getElementById('products-container').classList.remove('hidden');
-        document.getElementById('back-btn').classList.remove('hidden');
-        document.getElementById('section-title').innerText = 'Resultados de Búsqueda';
-        renderProducts(query);
-      } else {
-        if (currentCategory) {
-          selectCategory(currentCategory);
-        } else {
-          showCategoriesView();
+    function enviarPedidoWhatsApp() {
+      const nombre = document.getElementById('clienteNombre').value.trim();
+      const ubicacion = document.getElementById('clienteUbicacion').value.trim();
+      const pago = document.getElementById('metodoPago').value;
+      const entrega = document.getElementById('tipoEntrega').value;
+
+      if (!nombre || !ubicacion) {
+        alert("Por favor completa tu Nombre y Ubicación.");
+        return;
+      }
+
+      if (Object.keys(carrito).length === 0) {
+        alert("El carrito está vacío.");
+        return;
+      }
+
+      let devDir = "", devRef = "", devNom = "", devTel = "";
+      if (entrega === 'Delivery') {
+        devDir = document.getElementById('devDireccion').value.trim();
+        devRef = document.getElementById('devReferencia').value.trim();
+        devNom = document.getElementById('devNombreRecibe').value.trim();
+        devTel = document.getElementById('devTelRecibe').value.trim();
+
+        if (!devDir || !devRef || !devNom || !devTel) {
+          alert("Por favor completa todos los campos del Delivery.");
+          return;
+        }
+      }
+
+      // Generar Token codificado para la Factura Automática
+      const datosFactura = {
+        n: nombre, u: ubicacion, p: pago, e: entrega,
+        dd: devDir, dr: devRef, dn: devNom, dt: devTel,
+        items: carrito, f: new Date().toLocaleDateString('es-VE')
+      };
+      const tokenFactura = btoa(encodeURIComponent(JSON.stringify(datosFactura)));
+      const urlFactura = `${window.location.origin}${window.location.pathname}?factura=${tokenFactura}`;
+
+      // Construcción del Mensaje
+      let msj = `🛒 *NUEVO PEDIDO - VARIEDADES EL TOÑECO*\n\n`;
+      msj += `👤 *Cliente:* ${nombre}\n`;
+      msj += `📍 *Ubicación:* ${ubicacion}\n`;
+      msj += `💳 *Pago:* ${pago}\n`;
+      msj += `🚚 *Entrega:* ${entrega}\n\n`;
+
+      if (entrega === 'Delivery') {
+        msj += `🏠 *DIRECCIÓN DE DELIVERY:*\n`;
+        msj += `• Dirección: ${devDir}\n`;
+        msj += `• Referencia: ${devRef}\n`;
+        msj += `• Recibe: ${devNom} (${devTel})\n\n`;
+      }
+
+      msj += `📦 *PRODUCTOS:*\n`;
+      let total = 0;
+      for (let id in carrito) {
+        const p = productos.find(x => x.id == id);
+        const sub = p.precio * carrito[id];
+        total += sub;
+        msj += `• ${p.nombre} x${carrito[id]} = $${sub.toFixed(2)}\n`;
+      }
+
+      msj += `\n💰 *TOTAL A PAGAR: $${total.toFixed(2)}*\n\n`;
+      msj += `📄 *OPCIÓN SOLO PARA EL COMERCIO (Facturar):*\n${urlFactura}`;
+
+      const tlfNegocio = "584161721923";
+      window.open(`https://wa.me/${tlfNegocio}?text=${encodeURIComponent(msj)}`, '_blank');
+    }
+
+    // CARGAR FACTURA SI VIENE UN ENLACE
+    function chequearFacturaURL() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('factura');
+      if (token) {
+        try {
+          const data = JSON.parse(decodeURIComponent(atob(token)));
+          document.getElementById('vistaCatalogo').classList.add('hidden');
+          document.getElementById('seccionFactura').classList.remove('hidden');
+
+          document.getElementById('facCliente').innerText = data.n;
+          document.getElementById('facFecha').innerText = data.f;
+          document.getElementById('facUbicacion').innerText = data.u;
+          document.getElementById('facPago').innerText = data.p;
+          document.getElementById('facEntrega').innerText = data.e;
+
+          if (data.e === 'Delivery') {
+            document.getElementById('facDetalleDelivery').classList.remove('hidden');
+            document.getElementById('facDevDireccion').innerText = data.dd;
+            document.getElementById('facDevRef').innerText = data.dr;
+            document.getElementById('facDevNombre').innerText = data.dn;
+            document.getElementById('facDevTel').innerText = data.dt;
+          }
+
+          let html = '';
+          let total = 0;
+          for (let id in data.items) {
+            const prod = productos.find(p => p.id == id) || { nombre: `Producto #${id}`, precio: 0 };
+            const cant = data.items[id];
+            const sub = prod.precio * cant;
+            total += sub;
+            html += `
+              <tr class="border-b">
+                <td class="py-1">${cant}</td>
+                <td class="py-1">${prod.nombre}</td>
+                <td class="py-1 text-right">$${prod.precio.toFixed(2)}</td>
+                <td class="py-1 text-right">$${sub.toFixed(2)}</td>
+              </tr>
+            `;
+          }
+          document.getElementById('facTablaItems').innerHTML = html;
+          document.getElementById('facTotal').innerText = `$${total.toFixed(2)}`;
+        } catch (e) {
+          alert("Enlace de factura no válido.");
         }
       }
     }
 
-    function renderProducts(searchQuery = '') {
-      const container = document.getElementById('products-container');
-      
-      const filtered = rawProducts.filter(p => {
-        const matchesCat = currentCategory ? p.cat === currentCategory : true;
-        const matchesSearch = searchQuery ? p.name.toLowerCase().includes(searchQuery) : true;
-        return matchesCat && matchesSearch;
-      });
-
-      document.getElementById('product-count-badge').innerText = `${filtered.length} ítems`;
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<p class="text-center text-slate-400 py-12 text-sm font-medium">No hay productos disponibles.</p>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map(p => {
-        const qty = cart[p.id] || 0;
-        return `
-          <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/60 flex justify-between items-center shadow-sm hover:border-slate-600 transition">
-            <div class="pr-2">
-              <h3 class="font-bold text-slate-100 text-sm leading-tight">${p.name}</h3>
-              <p class="text-xs text-amber-400 font-extrabold mt-0.5">$${p.price.toFixed(2)}</p>
-            </div>
-            <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-xl p-1 shrink-0">
-              ${qty > 0 ? `
-                <button onclick="updateQty(${p.id}, -1)" class="w-7 h-7 bg-slate-800 text-amber-400 rounded-lg font-black hover:bg-slate-700 transition flex items-center justify-center">-</button>
-                <span class="text-xs font-black px-1.5 text-white">${qty}</span>
-              ` : ''}
-              <button onclick="updateQty(${p.id}, 1)" class="w-7 h-7 bg-amber-500 text-slate-950 rounded-lg font-black hover:bg-amber-400 transition flex items-center justify-center">+</button>
-            </div>
-          </div>
-        `;
-      }).join('');
+    function volverAlCatalogo() {
+      window.location.href = window.location.pathname;
     }
 
-    function updateQty(id, change) {
-      cart[id] = (cart[id] || 0) + change;
-      if (cart[id] <= 0) delete cart[id];
-      updateCartUI();
-      const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
-      renderProducts(searchQuery);
-    }
-
-    function updateCartUI() {
-      const totalCount = Object.values(cart).reduce((sum, q) => sum + q, 0);
-      document.getElementById('cart-count').innerText = totalCount;
-
-      let totalAmount = 0;
-      const itemsContainer = document.getElementById('cart-items');
-
-      if (totalCount === 0) {
-        itemsContainer.innerHTML = `<p class="text-center text-slate-400 py-8 text-sm font-medium">Tu carrito está vacío.</p>`;
-      } else {
-        itemsContainer.innerHTML = Object.keys(cart).map(id => {
-          const product = rawProducts.find(p => p.id == id);
-          const qty = cart[id];
-          const subtotal = product.price * qty;
-          totalAmount += subtotal;
-          return `
-            <div class="py-3 flex justify-between items-center text-sm">
-              <div>
-                <p class="font-bold text-slate-200 leading-snug">${product.name}</p>
-                <p class="text-xs text-slate-400">${qty} x $${product.price.toFixed(2)}</p>
-              </div>
-              <span class="font-black text-amber-400 text-base">$${subtotal.toFixed(2)}</span>
-            </div>
-          `;
-        }).join('');
-      }
-
-      // Actualización de montos
-      const formattedTotal = `$${totalAmount.toFixed(2)}`;
-      document.getElementById('cart-total').innerText = formattedTotal;
-      document.getElementById('floating-total-amount').innerText = formattedTotal;
-      document.getElementById('floating-items-count').innerText = `(${totalCount} ${totalCount === 1 ? 'ítem' : 'ítems'})`;
-
-      // Mostrar u ocultar barra flotante
-      const floatingBar = document.getElementById('floating-total-bar');
-      if (totalCount > 0) {
-        floatingBar.classList.remove('translate-y-full');
-      } else {
-        floatingBar.classList.add('translate-y-full');
-      }
-    }
-
-    function toggleCart() {
-      document.getElementById('cart-modal').classList.toggle('hidden');
-    }
-
-    function sendOrder() {
-      if (Object.keys(cart).length === 0) {
-        alert('Por favor agrega al menos un producto al carrito');
-        return;
-      }
-
-      let text = `🛒 *NUEVO PEDIDO - Variedades el Toñeco*\n\n`;
-      let total = 0;
-
-      Object.keys(cart).forEach(id => {
-        const product = rawProducts.find(p => p.id == id);
-        const qty = cart[id];
-        const subtotal = product.price * qty;
-        total += subtotal;
-        text += `• ${qty}x ${product.name} - $${subtotal.toFixed(2)}\n`;
-      });
-
-      const paymentMethod = document.getElementById('payment-method').value;
-
-      text += `\n💰 *Total A Pagar:* $${total.toFixed(2)}`;
-      text += `\n💳 *Método de Pago:* ${paymentMethod}`;
-      text += `\n\n¡Hola! Quisiera confirmar este pedido.`;
-
-      const phone = '584161721923';
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-      window.open(url, '_blank');
-    }
-
-    init();
+    renderProductos();
+    chequearFacturaURL();
   </script>
 </body>
 </html>
