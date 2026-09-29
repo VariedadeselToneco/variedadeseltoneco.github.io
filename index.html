@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Variedades el Toñeco - Catálogo Digital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans pb-24">
+
+  <!-- ENCABEZADO Y DATOS DE LA EMPRESA -->
+  <header class="bg-slate-800/95 backdrop-blur border-b border-slate-700 sticky top-0 z-30 shadow-xl">
+    <div class="max-w-md mx-auto p-4 flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-extrabold text-amber-400 tracking-wide">Variedades el Toñeco</h1>
+        <p class="text-xs text-slate-300 font-medium"><i class="fa-solid fa-id-card text-amber-400 mr-1"></i> RIF: J-507753565</p>
+        <p class="text-xs text-slate-300 font-medium"><i class="fa-solid fa-location-dot text-red-400 mr-1"></i> Carrera 8 entre 11 y 12</p>
+      </div>
+      <button onclick="toggleCart()" class="relative bg-amber-500 hover:bg-amber-400 text-slate-950 p-3 rounded-2xl font-bold shadow-lg transition duration-200">
+        <i class="fa-solid fa-cart-shopping text-lg"></i>
+        <span id="cart-count" class="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-800 font-black">0</span>
+      </button>
+    </div>
+
+    <!-- BUSCADOR -->
+    <div class="max-w-md mx-auto px-4 pb-3">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
+        <input type="text" id="search-input" oninput="renderProducts()" placeholder="Buscar producto..." class="w-full bg-slate-900/90 text-slate-100 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-amber-400">
+      </div>
+    </div>
+
+    <!-- FILTRO DE CATEGORÍAS EN CARRUSEL -->
+    <div class="flex overflow-x-auto gap-2 px-4 pb-3 no-scrollbar max-w-md mx-auto" id="categories-list"></div>
+  </header>
+
+  <!-- BANNER PROMOCIONAL CREATIVO DE CATEGORÍA -->
+  <section class="max-w-md mx-auto px-4 pt-4">
+    <div id="category-banner" class="relative rounded-2xl overflow-hidden shadow-lg border border-slate-700 h-28 flex items-end p-4 bg-cover bg-center transition-all duration-300">
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent"></div>
+      <div class="relative z-10">
+        <span id="banner-tag" class="text-[10px] uppercase tracking-widest text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">Categoría</span>
+        <h2 id="banner-title" class="text-xl font-black text-white">Todos los Productos</h2>
+      </div>
+    </div>
+  </section>
+
+  <!-- LISTA DE PRODUCTOS -->
+  <main class="max-w-md mx-auto p-4">
+    <div id="products-container" class="grid grid-cols-1 gap-2.5"></div>
+  </main>
+
+  <!-- MODAL DEL CARRITO DE COMPRAS -->
+  <div id="cart-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-end flex-col">
+    <div class="bg-slate-800 rounded-t-3xl p-5 max-w-md w-full mx-auto max-h-[85vh] flex flex-col shadow-2xl border-t border-slate-700">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-700">
+        <h2 class="text-lg font-bold text-amber-400 flex items-center gap-2"><i class="fa-solid fa-basket-shopping"></i> Tu Pedido</h2>
+        <button onclick="toggleCart()" class="text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+
+      <!-- Ítems agregados -->
+      <div id="cart-items" class="overflow-y-auto my-3 flex-1 divide-y divide-slate-700/50 pr-1"></div>
+
+      <!-- Total y Checkout -->
+      <div class="border-t border-slate-700 pt-3 space-y-3">
+        <div class="flex justify-between items-center text-lg font-bold">
+          <span>Total General:</span>
+          <span id="cart-total" class="text-emerald-400 text-xl font-black">$0.00</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Método de Pago:</label>
+          <select id="payment-method" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-400 font-medium">
+            <option value="Pago Móvil">Pago Móvil</option>
+            <option value="Transferencia BNC / Banesco">Transferencia (BNC / Banesco)</option>
+            <option value="Zelle">Zelle</option>
+            <option value="Banco Chileno (Penta / Estado)">Banco Chileno</option>
+            <option value="Efectivo / Divisas">Efectivo / Divisas</option>
+          </select>
+        </div>
+
+        <button onclick="sendOrder()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-base transition duration-200">
+          <i class="fa-brands fa-whatsapp text-2xl"></i> Enviar Pedido por WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const categoriesData = {
+      'Todos': { icon: 'fa-border-all', img: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=600&q=80' },
+      'VÍVERES': { icon: 'fa-wheat-awn', img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80' },
+      'GOLOSINAS': { icon: 'fa-cookie-bite', img: 'https://images.unsplash.com/photo-1582058091505-f87aede55a10?auto=format&fit=crop&w=600&q=80' },
+      'BEBIDAS': { icon: 'fa-bottle-water', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80' },
+      'HIGIENE PERSONAL': { icon: 'fa-pump-soap', img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80' },
+      'CHARCUTERÍA': { icon: 'fa-cheese', img: 'https://images.unsplash.com/photo-1626957341926-98752fc2ba90?auto=format&fit=crop&w=600&q=80' },
+      'COMIDA PARA ANIMALES': { icon: 'fa-dog', img: 'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=600&q=80' },
+      'HOGAR Y LIMPIEZA': { icon: 'fa-broom', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=600&q=80' }
+    };
+
+    const rawProducts = [
+      { id: 1, cat: "VÍVERES", name: "ABCITOS CEREAL 240GRS.", price: 2.97 },
+      { id: 2, cat: "VÍVERES", name: "ACEITE AGROIL 800ML", price: 2.39 },
+      { id: 3, cat: "VÍVERES", name: "ACEITE OLIVA 500ml", price: 5.27 },
+      { id: 4, cat: "VÍVERES", name: "ACEITE VATEL 800ml SOJA", price: 2.65 },
+      { id: 5, cat: "HIGIENE PERSONAL", name: "ACETAMINOFEN 650m", price: 0.07 },
+      { id: 6, cat: "HIGIENE PERSONAL", name: "AFEITADORA LUMI COMPACT", price: 1.49 },
+      { id: 7, cat: "BEBIDAS", name: "AGUA 600ml NEVADA", price: 0.82 },
+      { id: 8, cat: "VÍVERES", name: "AGUACATE Kg", price: 0.90 },
+      { id: 9, cat: "BEBIDAS", name: "AGUA GASIFICADA LITRO Y MEDIO", price: 1.66 },
+      { id: 10, cat: "BEBIDAS", name: "AGUA LITRO Y MEDIO", price: 1.64 },
+      { id: 11, cat: "BEBIDAS", name: "AGUA NEVADA 355ml", price: 0.70 },
+      { id: 12, cat: "VÍVERES", name: "AHUYAMA", price: 0.92 },
+      { id: 13, cat: "VÍVERES", name: "AJI DULCE", price: 0.61 },
+      { id: 14, cat: "VÍVERES", name: "AJO", price: 12.01 },
+      { id: 15, cat: "HIGIENE PERSONAL", name: "ALCOHOL", price: 1.39 },
+      { id: 16, cat: "COMIDA PARA ANIMALES", name: "ALIMENTO Kg", price: 0.59 },
+      { id: 17, cat: "COMIDA PARA ANIMALES", name: "ALIMENTO PONEDORA", price: 0.89 },
+      { id: 18, cat: "HIGIENE PERSONAL", name: "AMBIENTADOR ALIVE", price: 2.16 },
+      { id: 19, cat: "VÍVERES", name: "ANIS DULCE", price: 0.17 },
+      { id: 20, cat: "VÍVERES", name: "ARROZ DON JULIAN 900g", price: 0.71 },
+      { id: 21, cat: "VÍVERES", name: "ARROZ GRAN MARQUES 850g", price: 0.74 },
+      { id: 22, cat: "VÍVERES", name: "ARROZ MARY TRADICIONAL", price: 0.82 },
+      { id: 23, cat: "VÍVERES", name: "ATUN ALDIVIA 160g", price: 1.26 },
+      { id: 24, cat: "VÍVERES", name: "ATUN DESMENUZADO LAILA 160", price: 1.09 },
+      { id: 25, cat: "VÍVERES", name: "AVENA GRANEL", price: 0.89 },
+      { id: 26, cat: "HOGAR Y LIMPIEZA", name: "AXION LAVAPLATOS Pq", price: 1.09 },
+      { id: 27, cat: "VÍVERES", name: "AZUCAR LA PASTORA", price: 1.22 },
+      { id: 28, cat: "VÍVERES", name: "AZUCAR MILAGROSA", price: 1.13 },
+      { id: 29, cat: "GOLOSINAS", name: "BIANCHI VARIADO BARRA", price: 0.37 },
+      { id: 30, cat: "VÍVERES", name: "BICARBONATO", price: 7.06 },
+      { id: 31, cat: "BEBIDAS", name: "BIG COLA - FIRTS 2lts", price: 1.07 },
+      { id: 32, cat: "BEBIDAS", name: "BOKA SOBRE", price: 0.26 },
+      { id: 33, cat: "HOGAR Y LIMPIEZA", name: "BOLSA DE BASURA 40k", price: 0.12 },
+      { id: 34, cat: "GOLOSINAS", name: "BROWNIE TIGO", price: 2.66 },
+      { id: 35, cat: "VÍVERES", name: "CACAO 100g", price: 2.50 },
+      { id: 36, cat: "VÍVERES", name: "CAFE AMANECER 100GR", price: 1.29 },
+      { id: 37, cat: "VÍVERES", name: "CAFE AMANECER 200gr", price: 2.54 },
+      { id: 38, cat: "VÍVERES", name: "CAFE ARAUCA 100gr", price: 1.19 },
+      { id: 39, cat: "VÍVERES", name: "CAFE AURORA 100g", price: 1.26 },
+      { id: 40, cat: "VÍVERES", name: "CAFE AURORA 200gr", price: 2.43 },
+      { id: 41, cat: "VÍVERES", name: "CARAOTAS AMANECER 400gr", price: 1.15 },
+      { id: 42, cat: "VÍVERES", name: "CARNE DE HAMBURGUESA", price: 1.31 },
+      { id: 43, cat: "VÍVERES", name: "CEBOLLA KILO", price: 1.49 },
+      { id: 44, cat: "HIGIENE PERSONAL", name: "CEPILLO COLGATE PREMIER", price: 1.65 },
+      { id: 45, cat: "HIGIENE PERSONAL", name: "CHAMPU PANTENE SOBRE", price: 0.28 },
+      { id: 46, cat: "GOLOSINAS", name: "CHEESE TRIS 150gr", price: 1.88 },
+      { id: 47, cat: "GOLOSINAS", name: "CHEESE TRIS 50gr", price: 0.94 },
+      { id: 48, cat: "GOLOSINAS", name: "CHEETOS BOLIQUESO 28gr", price: 2.61 },
+      { id: 49, cat: "GOLOSINAS", name: "CHOCOLATE C/LECHE 30gr SAVOY", price: 1.55 },
+      { id: 50, cat: "GOLOSINAS", name: "CHOCOLATE GALAK 30gr", price: 1.55 },
+      { id: 51, cat: "CHARCUTERÍA", name: "CHORIZO", price: 8.08 },
+      { id: 52, cat: "BEBIDAS", name: "COCACOLA BOMBITA", price: 0.77 },
+      { id: 53, cat: "BEBIDAS", name: "COCACOLA DE 2lts", price: 1.71 },
+      { id: 54, cat: "GOLOSINAS", name: "COCOSETTE 50gr", price: 1.03 },
+      { id: 55, cat: "HIGIENE PERSONAL", name: "COLGATE 90G", price: 1.47 },
+      { id: 56, cat: "HIGIENE PERSONAL", name: "COLGATE TRIPLE ACCION 60ml", price: 1.71 },
+      { id: 57, cat: "HOGAR Y LIMPIEZA", name: "DETERGENTE ALIVE 1Kg", price: 2.48 },
+      { id: 58, cat: "HOGAR Y LIMPIEZA", name: "DETERGENTE LAS LLAVES 400gr", price: 1.43 },
+      { id: 59, cat: "CHARCUTERÍA", name: "DIABLITO 50G LATA", price: 2.11 },
+      { id: 60, cat: "GOLOSINAS", name: "DORITOS 150gr", price: 2.95 },
+      { id: 61, cat: "GOLOSINAS", name: "DORITOS 45g MEGA QUESO", price: 1.06 },
+      { id: 62, cat: "COMIDA PARA ANIMALES", name: "GATARINA 1Kg", price: 4.69 },
+      { id: 63, cat: "BEBIDAS", name: "GATORADE", price: 1.96 },
+      { id: 64, cat: "GOLOSINAS", name: "HALLS", price: 0.67 },
+      { id: 65, cat: "VÍVERES", name: "HARINA ANIMAL", price: 15.05 },
+      { id: 66, cat: "VÍVERES", name: "HARINA BELEN", price: 0.75 },
+      { id: 67, cat: "VÍVERES", name: "HARINA DEL CAMPO", price: 0.94 },
+      { id: 68, cat: "VÍVERES", name: "HARINA DOÑA EMILIA", price: 0.79 },
+      { id: 69, cat: "VÍVERES", name: "HARINA KALY", price: 0.73 },
+      { id: 70, cat: "VÍVERES", name: "HUEVOS TIPO A", price: 2.88 },
+      { id: 71, cat: "HIGIENE PERSONAL", name: "JABON PALMOLIVE 120gr", price: 1.42 },
+      { id: 72, cat: "HIGIENE PERSONAL", name: "JABON PROTEX 75gr", price: 1.29 },
+      { id: 73, cat: "CHARCUTERÍA", name: "JAMON AREPERO", price: 6.75 },
+      { id: 74, cat: "CHARCUTERÍA", name: "JAMON DRAGO", price: 8.00 },
+      { id: 75, cat: "BEBIDAS", name: "JUCOSA LITRO", price: 1.74 },
+      { id: 76, cat: "VÍVERES", name: "LECHE DOBON 400gr", price: 4.19 },
+      { id: 77, cat: "BEBIDAS", name: "MALTA 207ml", price: 0.59 },
+      { id: 78, cat: "VÍVERES", name: "MARGARINA MAVESA 500gr", price: 2.96 },
+      { id: 79, cat: "VÍVERES", name: "MAYONESA MAVESA 445gr", price: 4.33 },
+      { id: 80, cat: "CHARCUTERÍA", name: "MORTADELA CARACAS 1K", price: 3.62 },
+      { id: 81, cat: "CHARCUTERÍA", name: "MORTADELA CARACAS 500g", price: 2.08 },
+      { id: 82, cat: "GOLOSINAS", name: "NUCITA TUBO 35g", price: 1.20 },
+      { id: 83, cat: "GOLOSINAS", name: "OREO", price: 0.59 },
+      { id: 84, cat: "VÍVERES", name: "PAN BLANCO", price: 1.69 },
+      { id: 85, cat: "HOGAR Y LIMPIEZA", name: "PAPEL ROSAL VERDE 215H X4", price: 0.80 },
+      { id: 86, cat: "VÍVERES", name: "PASTA SINDONI LARGA 1KG", price: 1.49 },
+      { id: 87, cat: "BEBIDAS", name: "PEPSI 1,5LT", price: 1.46 },
+      { id: 88, cat: "CHARCUTERÍA", name: "QUESO", price: 7.65 },
+      { id: 89, cat: "CHARCUTERÍA", name: "QUESO DE AÑO", price: 1.04 },
+      { id: 90, cat: "VÍVERES", name: "SALSA HEINZ 57 DE 378g", price: 2.75 },
+      { id: 91, cat: "GOLOSINAS", name: "SAMBA FRESA", price: 1.09 },
+      { id: 92, cat: "VÍVERES", name: "SARDINA EN LATA", price: 0.54 },
+      { id: 93, cat: "HIGIENE PERSONAL", name: "SHAMPO HS 180CC", price: 7.68 },
+      { id: 94, cat: "CHARCUTERÍA", name: "SUERO CRIOLLO", price: 1.57 },
+      { id: 95, cat: "CHARCUTERÍA", name: "TOCINETA Kg", price: 13.62 }
+    ];
+
+    let currentCategory = 'Todos';
+    let cart = {};
+
+    function init() {
+      renderCategories();
+      renderProducts();
+    }
+
+    function renderCategories() {
+      const container = document.getElementById('categories-list');
+      container.innerHTML = Object.keys(categoriesData).map(cat => {
+        const active = currentCategory === cat;
+        return `
+          <button onclick="selectCategory('${cat}')" class="px-3.5 py-2 text-xs font-bold rounded-xl whitespace-nowrap transition duration-200 flex items-center gap-1.5 ${active ? 'bg-amber-400 text-slate-950 shadow-md scale-105' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+            <i class="fa-solid ${categoriesData[cat].icon}"></i> ${cat}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectCategory(cat) {
+      currentCategory = cat;
+      renderCategories();
+      
+      const banner = document.getElementById('category-banner');
+      const title = document.getElementById('banner-title');
+      const tag = document.getElementById('banner-tag');
+      
+      banner.style.backgroundImage = `url('${categoriesData[cat].img}')`;
+      title.innerText = cat === 'Todos' ? 'Todos los Productos' : cat;
+      tag.innerText = cat === 'Todos' ? 'Catálogo General' : 'Categoría';
+
+      renderProducts();
+    }
+
+    function renderProducts() {
+      const searchQuery = document.getElementById('search-input').value.toLowerCase();
+      const container = document.getElementById('products-container');
+      
+      const filtered = rawProducts.filter(p => {
+        const matchesCategory = currentCategory === 'Todos' || p.cat === currentCategory;
+        const matchesSearch = p.name.toLowerCase().includes(searchQuery);
+        return matchesCategory && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<p class="text-center text-slate-400 py-12 text-sm font-medium">No encontramos productos en esta búsqueda.</p>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(p => {
+        const qty = cart[p.id] || 0;
+        return `
+          <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/60 flex justify-between items-center shadow-sm hover:border-slate-600 transition">
+            <div class="pr-2">
+              <h3 class="font-bold text-slate-100 text-sm leading-tight">${p.name}</h3>
+              <p class="text-xs text-amber-400 font-extrabold mt-0.5">$${p.price.toFixed(2)}</p>
+            </div>
+            <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-xl p-1 shrink-0">
+              ${qty > 0 ? `
+                <button onclick="updateQty(${p.id}, -1)" class="w-7 h-7 bg-slate-800 text-amber-400 rounded-lg font-black hover:bg-slate-700 transition flex items-center justify-center">-</button>
+                <span class="text-xs font-black px-1.5 text-white">${qty}</span>
+              ` : ''}
+              <button onclick="updateQty(${p.id}, 1)" class="w-7 h-7 bg-amber-500 text-slate-950 rounded-lg font-black hover:bg-amber-400 transition flex items-center justify-center">+</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateQty(id, change) {
+      cart[id] = (cart[id] || 0) + change;
+      if (cart[id] <= 0) delete cart[id];
+      updateCartUI();
+      renderProducts();
+    }
+
+    function updateCartUI() {
+      const totalCount = Object.values(cart).reduce((sum, q) => sum + q, 0);
+      document.getElementById('cart-count').innerText = totalCount;
+
+      let totalAmount = 0;
+      const itemsContainer = document.getElementById('cart-items');
+
+      if (totalCount === 0) {
+        itemsContainer.innerHTML = `<p class="text-center text-slate-400 py-8 text-sm font-medium">Tu carrito está vacío.</p>`;
+      } else {
+        itemsContainer.innerHTML = Object.keys(cart).map(id => {
+          const product = rawProducts.find(p => p.id == id);
+          const qty = cart[id];
+          const subtotal = product.price * qty;
+          totalAmount += subtotal;
+          return `
+            <div class="py-3 flex justify-between items-center text-sm">
+              <div>
+                <p class="font-bold text-slate-200 leading-snug">${product.name}</p>
+                <p class="text-xs text-slate-400">${qty} x $${product.price.toFixed(2)}</p>
+              </div>
+              <span class="font-black text-amber-400 text-base">$${subtotal.toFixed(2)}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('cart-total').innerText = `$${totalAmount.toFixed(2)}`;
+    }
+
+    function toggleCart() {
+      document.getElementById('cart-modal').classList.toggle('hidden');
+    }
+
+    function sendOrder() {
+      if (Object.keys(cart).length === 0) {
+        alert('Por favor agrega al menos un producto al carrito');
+        return;
+      }
+
+      let text = `🛒 *NUEVO PEDIDO - Variedades el Toñeco*\n\n`;
+      let total = 0;
+
+      Object.keys(cart).forEach(id => {
+        const product = rawProducts.find(p => p.id == id);
+        const qty = cart[id];
+        const subtotal = product.price * qty;
+        total += subtotal;
+        text += `• ${qty}x ${product.name} - $${subtotal.toFixed(2)}\n`;
+      });
+
+      const paymentMethod = document.getElementById('payment-method').value;
+
+      text += `\n💰 *Total A Pagar:* $${total.toFixed(2)}`;
+      text += `\n💳 *Método de Pago:* ${paymentMethod}`;
+      text += `\n\n¡Hola! Quisiera confirmar este pedido.`;
+
+      const phone = '584161721923';
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    }
+
+    init();
+  </script>
+</body>
+</html>
