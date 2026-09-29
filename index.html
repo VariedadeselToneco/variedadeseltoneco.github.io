@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans pb-24">
+<body class="bg-slate-900 text-slate-100 font-sans pb-32">
 
   <!-- ENCABEZADO Y DATOS DE LA EMPRESA -->
   <header class="bg-slate-800/95 backdrop-blur border-b border-slate-700 sticky top-0 z-30 shadow-xl">
@@ -52,6 +52,22 @@
     <div id="products-container" class="hidden space-y-2.5"></div>
 
   </main>
+
+  <!-- BARRA FLOTANTE DE TOTAL ACUMULADO (SIEMPRE VISIBLE ABAJO) -->
+  <div id="floating-total-bar" class="fixed bottom-0 left-0 right-0 z-40 bg-slate-800/95 backdrop-blur border-t border-slate-700 shadow-2xl p-3 transition-transform duration-300 translate-y-full">
+    <div class="max-w-md mx-auto flex items-center justify-between gap-3">
+      <div>
+        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Acumulado</p>
+        <div class="flex items-baseline gap-1.5">
+          <span id="floating-total-amount" class="text-2xl font-black text-emerald-400">$0.00</span>
+          <span id="floating-items-count" class="text-xs font-bold text-slate-300">(0 ítems)</span>
+        </div>
+      </div>
+      <button onclick="toggleCart()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl shadow-md text-sm flex items-center gap-2 transition">
+        <i class="fa-solid fa-basket-shopping"></i> Ver Pedido
+      </button>
+    </div>
+  </div>
 
   <!-- MODAL DEL CARRITO DE COMPRAS -->
   <div id="cart-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-end flex-col">
@@ -342,7 +358,19 @@
         }).join('');
       }
 
-      document.getElementById('cart-total').innerText = `$${totalAmount.toFixed(2)}`;
+      // Actualización de montos
+      const formattedTotal = `$${totalAmount.toFixed(2)}`;
+      document.getElementById('cart-total').innerText = formattedTotal;
+      document.getElementById('floating-total-amount').innerText = formattedTotal;
+      document.getElementById('floating-items-count').innerText = `(${totalCount} ${totalCount === 1 ? 'ítem' : 'ítems'})`;
+
+      // Mostrar u ocultar barra flotante
+      const floatingBar = document.getElementById('floating-total-bar');
+      if (totalCount > 0) {
+        floatingBar.classList.remove('translate-y-full');
+      } else {
+        floatingBar.classList.add('translate-y-full');
+      }
     }
 
     function toggleCart() {
