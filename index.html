@@ -46,7 +46,7 @@
   </header>
 
   <main class="max-w-md mx-auto p-4 no-print">
-    
+   
     <!-- BARRA DE NAVEGACIÓN Y TÍTULO DE SECCIÓN -->
     <div id="navigation-header" class="mb-4 flex items-center justify-between">
       <div class="flex items-center gap-2">
@@ -212,7 +212,7 @@
   <!-- MODAL MÓDULO ADMINISTRATIVO (INVENTARIO) -->
   <div id="admin-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 no-print">
     <div class="bg-slate-800 rounded-3xl p-5 max-w-lg w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-700 text-slate-100">
-      
+     
       <div class="flex justify-between items-center pb-3 border-b border-slate-700 shrink-0">
         <h2 class="text-lg font-bold text-amber-400 flex items-center gap-2">
           <i class="fa-solid fa-sliders"></i> Panel de Administración
@@ -281,7 +281,7 @@
         <!-- LISTA Y BÚSQUEDA DE PRODUCTOS (EDITAR / ELIMINAR) -->
         <div id="admin-form-list" class="hidden space-y-3">
           <input type="text" id="admin-search" oninput="renderAdminTable()" placeholder="Buscar producto a editar/eliminar..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
-          
+         
           <div class="overflow-x-auto max-h-64 border border-slate-700 rounded-xl">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] sticky top-0">
@@ -570,7 +570,7 @@
       { id: 250, cat: "HIGIENE PERSONAL Y HOGAR", name: "VAPORUB 25G", price: 0.64 },
 
       // BEBIDAS
-      { id: 251, cat: "BEBIDAS", name: "AGUA 600ml NEVADA", price: 0.82, img: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=400&q=80" },
+      { id: 251, cat: "BEBIDAS", name: "AGUA 600ml NEVADA", price: 0.82 },
       { id: 252, cat: "BEBIDAS", name: "AGUA GASIFICADA LITRO Y MEDIO", price: 1.66 },
       { id: 253, cat: "BEBIDAS", name: "AGUA LITRO Y MEDIO", price: 1.64 },
       { id: 254, cat: "BEBIDAS", name: "AGUA NEVADA 355ml", price: 0.70 },
@@ -634,199 +634,326 @@
       { id: 310, cat: "GOLOSINAS Y TOÑECURAS", name: "HALLS", price: 0.67 },
       { id: 311, cat: "GOLOSINAS Y TOÑECURAS", name: "HELADOS", price: 1.18 },
       { id: 312, cat: "GOLOSINAS Y TOÑECURAS", name: "HONYBRANK Y KRAKER", price: 4.06 },
-      { id: 313, cat: "GOLOSINAS Y TOÑECURAS", name: "JET CHOCOLATE 11g", price: 0.43 }
+      { id: 313, cat: "GOLOSINAS Y TOÑECURAS", name: "JET CHOCOLATE 11g", price: 0.43 },
+      { id: 314, cat: "GOLOSINAS Y TOÑECURAS", name: "MARIA PUIG", price: 1.90 },
+      { id: 315, cat: "GOLOSINAS Y TOÑECURAS", name: "MARILU", price: 2.29 },
+      { id: 316, cat: "GOLOSINAS Y TOÑECURAS", name: "MAX COCO", price: 0.47 },
+      { id: 317, cat: "GOLOSINAS Y TOÑECURAS", name: "NUCITA TUBO 35g", price: 1.20 },
+      { id: 318, cat: "GOLOSINAS Y TOÑECURAS", name: "NUTTELINI", price: 0.33 },
+      { id: 319, cat: "GOLOSINAS Y TOÑECURAS", name: "OREO", price: 0.59 },
+      { id: 320, cat: "GOLOSINAS Y TOÑECURAS", name: "PALITOS DE CHOCOLATE 18U", price: 0.60 },
+      { id: 321, cat: "GOLOSINAS Y TOÑECURAS", name: "PEPITA 25gr", price: 0.52 },
+      { id: 322, cat: "GOLOSINAS Y TOÑECURAS", name: "PEPITO 25 GRS.", price: 0.66 },
+      { id: 323, cat: "GOLOSINAS Y TOÑECURAS", name: "PEPITO XXL", price: 2.77 },
+      { id: 324, cat: "GOLOSINAS Y TOÑECURAS", name: "POTATO Pq", price: 1.01 },
+      { id: 325, cat: "GOLOSINAS Y TOÑECURAS", name: "POTATO WILLINGER", price: 1.90 },
+      { id: 326, cat: "GOLOSINAS Y TOÑECURAS", name: "SALTIN 3 TACOS", price: 1.87 },
+      { id: 327, cat: "GOLOSINAS Y TOÑECURAS", name: "SALTITACOS 7 TACOS", price: 2.73 },
+      { id: 328, cat: "GOLOSINAS Y TOÑECURAS", name: "SAMBA FRESA", price: 1.09 },
+      { id: 329, cat: "GOLOSINAS Y TOÑECURAS", name: "TORTA DE PAN", price: 1.04 },
+      { id: 330, cat: "GOLOSINAS Y TOÑECURAS", name: "TOSTON GRANDE", price: 1.28 },
+      { id: 331, cat: "GOLOSINAS Y TOÑECURAS", name: "TOSTON LAJA", price: 0.47 },
+      { id: 332, cat: "GOLOSINAS Y TOÑECURAS", name: "TRONKOLATE", price: 0.79 },
+      { id: 333, cat: "GOLOSINAS Y TOÑECURAS", name: "YUPI", price: 0.48 },
+
+      // SEGMENTO DE CHARCUTERÍA
+      { id: 334, cat: "CHARCUTERÍA", name: "MORTADELA BOLOGNA", price: 4.25 },
+      { id: 335, cat: "CHARCUTERÍA", name: "MORTADELA CARACAS 1K", price: 3.62 },
+      { id: 336, cat: "CHARCUTERÍA", name: "MORTADELA CARACAS 500g", price: 2.08 },
+      { id: 337, cat: "CHARCUTERÍA", name: "MORTADELA DON RAMON 400gr POLLO", price: 1.28 },
+      { id: 338, cat: "CHARCUTERÍA", name: "MORTADELA DON RAMON 900g", price: 2.86 },
+      { id: 339, cat: "CHARCUTERÍA", name: "MORTADELA PUNTA DEL MONTE 500G", price: 2.67 },
+      { id: 340, cat: "CHARCUTERÍA", name: "MORTADELA PUNTA DE MONTE KILO", price: 4.73 },
+      { id: 341, cat: "CHARCUTERÍA", name: "MORTADELA TAPARA DRAGO", price: 10.40 },
+      { id: 342, cat: "CHARCUTERÍA", name: "QUESO", price: 7.65 },
+      { id: 343, cat: "CHARCUTERÍA", name: "QUESO DE AÑO", price: 1.04 },
+      { id: 344, cat: "CHARCUTERÍA", name: "SUERO ANGEL", price: 1.69 },
+      { id: 345, cat: "CHARCUTERÍA", name: "SUERO CRIOLLO", price: 1.57 },
+
+      // COMIDA PARA ANIMALES
+      { id: 346, cat: "COMIDA PARA ANIMALES", name: "ALIMENTO PONEDORA", price: 0.89 },
+      { id: 347, cat: "COMIDA PARA ANIMALES", name: "ALIMENTO RABA", price: 0.59 },
+      { id: 348, cat: "COMIDA PARA ANIMALES", name: "CANRINA 1Kg", price: 2.07 },
+      { id: 349, cat: "COMIDA PARA ANIMALES", name: "ENGORDE ALIMENTO", price: 0.89 },
+      { id: 350, cat: "COMIDA PARA ANIMALES", name: "GATARINA 1Kg", price: 4.69 },
+      { id: 351, cat: "COMIDA PARA ANIMALES", name: "INICIADOR POLLO", price: 0.90 },
+      { id: 352, cat: "COMIDA PARA ANIMALES", name: "KANCHOW 1Kg", price: 2.11 },
+      { id: 353, cat: "COMIDA PARA ANIMALES", name: "SUPER CAN 1Kg", price: 2.15 },
+
+      // VARIEDADES Y FERRETERÍA
+      { id: 354, cat: "VARIEDADES Y FERRETERÍA", name: "APUREÑO", price: 0.47 },
+      { id: 355, cat: "VARIEDADES Y FERRETERÍA", name: "BELMONT CAJA", price: 2.89 },
+      { id: 356, cat: "VARIEDADES Y FERRETERÍA", name: "BOLSA DE BASURA 40k", price: 0.12 },
+      { id: 357, cat: "VARIEDADES Y FERRETERÍA", name: "BOLSAS BASURA", price: 0.35 },
+      { id: 358, cat: "VARIEDADES Y FERRETERÍA", name: "BOLSAS DE 1/2kg", price: 0.82 },
+      { id: 359, cat: "VARIEDADES Y FERRETERÍA", name: "BOLSAS DE 3Kg", price: 1.12 },
+      { id: 360, cat: "VARIEDADES Y FERRETERÍA", name: "BOLSAS PARA TETAS 1/4 KILO", price: 0.37 },
+      { id: 361, cat: "VARIEDADES Y FERRETERÍA", name: "BOMBILLO", price: 0.49 },
+      { id: 362, cat: "VARIEDADES Y FERRETERÍA", name: "BOMBILLO 24", price: 1.51 },
+      { id: 363, cat: "VARIEDADES Y FERRETERÍA", name: "BOMBILLO 40w", price: 2.09 },
+      { id: 364, cat: "VARIEDADES Y FERRETERÍA", name: "BOMBILLO RECARGABLE 40W", price: 5.49 },
+      { id: 365, cat: "VARIEDADES Y FERRETERÍA", name: "BORRA BLANCA X4", price: 1.38 },
+      { id: 366, cat: "VARIEDADES Y FERRETERÍA", name: "BUJIAS", price: 1.71 },
+      { id: 367, cat: "VARIEDADES Y FERRETERÍA", name: "CAJETIN HEXAGONO", price: 0.90 },
+      { id: 368, cat: "VARIEDADES Y FERRETERÍA", name: "CHIMO TAPARO", price: 1.06 },
+      { id: 369, cat: "VARIEDADES Y FERRETERÍA", name: "CHIMO TIGRE", price: 0.51 },
+      { id: 370, cat: "VARIEDADES Y FERRETERÍA", name: "CINTA ADHESIVA CELOTET", price: 1.87 },
+      { id: 371, cat: "VARIEDADES Y FERRETERÍA", name: "COLADOR DE CAFE", price: 0.23 },
+      { id: 372, cat: "VARIEDADES Y FERRETERÍA", name: "COLORES TUBULAR 12 PZAS", price: 2.11 },
+      { id: 373, cat: "VARIEDADES Y FERRETERÍA", name: "CONSUL CAJA", price: 1.51 },
+      { id: 374, cat: "VARIEDADES Y FERRETERÍA", name: "CONSUL PALLMAL CAJA", price: 1.27 },
+      { id: 375, cat: "VARIEDADES Y FERRETERÍA", name: "CURVA 1/2", price: 1.40 },
+      { id: 376, cat: "VARIEDADES Y FERRETERÍA", name: "EXACTO", price: 1.38 },
+      { id: 377, cat: "VARIEDADES Y FERRETERÍA", name: "HILO PABILO", price: 0.37 },
+      { id: 378, cat: "VARIEDADES Y FERRETERÍA", name: "LAPICERO", price: 0.10 },
+      { id: 379, cat: "VARIEDADES Y FERRETERÍA", name: "LAPIZ MONGOL", price: 0.14 },
+      { id: 380, cat: "VARIEDADES Y FERRETERÍA", name: "LIGAS DE BILLETE", price: 0.71 },
+      { id: 381, cat: "VARIEDADES Y FERRETERÍA", name: "LIGAS DE CABELLO", price: 0.36 },
+      { id: 382, cat: "VARIEDADES Y FERRETERÍA", name: "LLANA DENTADA", price: 8.50 },
+      { id: 383, cat: "VARIEDADES Y FERRETERÍA", name: "LLANA LISA", price: 7.51 },
+      { id: 384, cat: "VARIEDADES Y FERRETERÍA", name: "LUCKY STRIKE NOVA", price: 3.38 },
+      { id: 385, cat: "VARIEDADES Y FERRETERÍA", name: "MATA CUCARACHA", price: 0.26 },
+      { id: 386, cat: "VARIEDADES Y FERRETERÍA", name: "MEDIA DE BELMONT", price: 1.47 },
+      { id: 387, cat: "VARIEDADES Y FERRETERÍA", name: "MINI VELON", price: 0.84 },
+      { id: 388, cat: "VARIEDADES Y FERRETERÍA", name: "PALAS", price: 2.41 },
+      { id: 389, cat: "VARIEDADES Y FERRETERÍA", name: "PEGA BLANCA ASTRO", price: 0.22 },
+      { id: 390, cat: "VARIEDADES Y FERRETERÍA", name: "PEGA LOKA", price: 0.46 },
+      { id: 391, cat: "VARIEDADES Y FERRETERÍA", name: "PILAS AA", price: 1.42 },
+      { id: 392, cat: "VARIEDADES Y FERRETERÍA", name: "PILAS AAA", price: 1.18 },
+      { id: 393, cat: "VARIEDADES Y FERRETERÍA", name: "PITILLO", price: 1.67 },
+      { id: 394, cat: "VARIEDADES Y FERRETERÍA", name: "RASTRILLO", price: 2.54 },
+      { id: 395, cat: "VARIEDADES Y FERRETERÍA", name: "RECOLECTOR DE HECES", price: 0.34 },
+      { id: 396, cat: "VARIEDADES Y FERRETERÍA", name: "RECOLECTOR DE ORINA", price: 0.48 },
+      { id: 397, cat: "VARIEDADES Y FERRETERÍA", name: "REPELENTE", price: 0.87 },
+      { id: 398, cat: "VARIEDADES Y FERRETERÍA", name: "RESISTENCIA PARA COCINA ELECTRICA", price: 1.33 },
+      { id: 399, cat: "VARIEDADES Y FERRETERÍA", name: "ROLLO DE PUNTO 80*70", price: 0.80 },
+      { id: 400, cat: "VARIEDADES Y FERRETERÍA", name: "ROLLO PUNTO", price: 0.35 },
+      { id: 401, cat: "VARIEDADES Y FERRETERÍA", name: "SET DE LAPIZ", price: 2.11 },
+      { id: 402, cat: "VARIEDADES Y FERRETERÍA", name: "SOCATE DE GOMA", price: 0.61 },
+      { id: 403, cat: "VARIEDADES Y FERRETERÍA", name: "TAPA VALVULA", price: 2.00 },
+      { id: 404, cat: "VARIEDADES Y FERRETERÍA", name: "TEIPE", price: 1.10 },
+      { id: 405, cat: "VARIEDADES Y FERRETERÍA", name: "TIRRAJE 200mm", price: 2.44 },
+      { id: 406, cat: "VARIEDADES Y FERRETERÍA", name: "VASOS DE CAFE No17", price: 1.04 },
+      { id: 407, cat: "VARIEDADES Y FERRETERÍA", name: "VASOS N\" 157", price: 1.76 },
+      { id: 408, cat: "VARIEDADES Y FERRETERÍA", name: "VASOS PARA REFRESCO", price: 2.03 },
+      { id: 409, cat: "VARIEDADES Y FERRETERÍA", name: "VELAS PEQUEÑA", price: 5.61 },
+      { id: 410, cat: "VARIEDADES Y FERRETERÍA", name: "VICERROY", price: 1.81 },
+      { id: 411, cat: "VARIEDADES Y FERRETERÍA", name: "WIKI WIKI", price: 0.38 },
+      { id: 412, cat: "VARIEDADES Y FERRETERÍA", name: "YESQUERO", price: 0.26 }
     ];
 
-    let products = JSON.parse(localStorage.getItem('products_db')) || initialProducts;
-    let cart = JSON.parse(localStorage.getItem('cart_db')) || [];
+    let rawProducts = [];
     let currentCategory = null;
+    let cart = {};
     let deliveryType = 'pickup';
 
-    function saveProducts() {
-      localStorage.setItem('products_db', JSON.stringify(products));
-    }
-
-    function saveCart() {
-      localStorage.setItem('cart_db', JSON.stringify(cart));
-      updateCartUI();
-    }
-
     function init() {
-      populateCategoryDropdown();
-      showCategoriesView();
-      updateCartUI();
+      // Cargar desde localStorage o inicializar productos base
+      const savedProds = localStorage.getItem('toneco_products');
+      if (savedProds) {
+        rawProducts = JSON.parse(savedProds);
+      } else {
+        rawProducts = [...initialProducts];
+        saveProductsToStorage();
+      }
+
+      populateAdminCategories();
+      renderCategoriesGrid();
     }
 
-    function populateCategoryDropdown() {
-      const select = document.getElementById('prod-cat');
-      select.innerHTML = '';
-      Object.keys(categoriesData).forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        select.appendChild(opt);
-      });
+    function saveProductsToStorage() {
+      localStorage.setItem('toneco_products', JSON.stringify(rawProducts));
+    }
+
+    function renderCategoriesGrid() {
+      const container = document.getElementById('categories-grid');
+     
+      container.innerHTML = Object.keys(categoriesData).map(cat => {
+        const info = categoriesData[cat];
+        const count = rawProducts.filter(p => p.cat === cat).length;
+       
+        return `
+          <div onclick="selectCategory('${cat}')" class="relative rounded-2xl overflow-hidden shadow-lg border border-slate-700/80 h-36 flex flex-col justify-end p-3 cursor-pointer group hover:border-amber-400 transition duration-300">
+            <img src="${info.img}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500 opacity-60">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+           
+            <div class="relative z-10">
+              <div class="w-8 h-8 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-sm mb-1 shadow-md">
+                <i class="fa-solid ${info.icon}"></i>
+              </div>
+              <h3 class="font-extrabold text-white text-sm leading-tight">${cat}</h3>
+              <p class="text-[11px] text-slate-300 font-medium">${count} productos</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectCategory(cat) {
+      currentCategory = cat;
+      document.getElementById('categories-grid').classList.add('hidden');
+      document.getElementById('products-container').classList.remove('hidden');
+      document.getElementById('back-btn').classList.remove('hidden');
+     
+      const badge = document.getElementById('product-count-badge');
+      badge.classList.remove('hidden');
+
+      document.getElementById('section-title').innerText = cat;
+     
+      renderProducts();
     }
 
     function showCategoriesView() {
       currentCategory = null;
-      document.getElementById('section-title').textContent = "Categorías";
+      document.getElementById('search-input').value = '';
+      document.getElementById('categories-grid').classList.remove('hidden');
+      document.getElementById('products-container').classList.add('hidden');
       document.getElementById('back-btn').classList.add('hidden');
       document.getElementById('product-count-badge').classList.add('hidden');
-      document.getElementById('search-input').value = "";
-      
-      const grid = document.getElementById('categories-grid');
-      const container = document.getElementById('products-container');
-      
-      grid.classList.remove('hidden');
-      container.classList.add('hidden');
-      grid.innerHTML = "";
-
-      Object.keys(categoriesData).forEach(cat => {
-        const count = products.filter(p => p.cat === cat).length;
-        const data = categoriesData[cat];
-        
-        const card = document.createElement('div');
-        card.onclick = () => showProductsView(cat);
-        card.className = "bg-slate-800 border border-slate-700/80 rounded-2xl overflow-hidden shadow-lg cursor-pointer hover:border-amber-400 transition transform hover:-translate-y-0.5 flex flex-col justify-between";
-        card.innerHTML = `
-          <div class="h-28 overflow-hidden relative">
-            <img src="${data.img}" alt="${cat}" class="w-full h-full object-cover opacity-80">
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
-            <span class="absolute top-2 right-2 bg-slate-900/80 text-amber-400 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-400/30">
-              ${count} ítems
-            </span>
-          </div>
-          <div class="p-3 flex items-center gap-2">
-            <i class="fa-solid ${data.icon} text-amber-400 text-base"></i>
-            <h3 class="text-xs font-bold text-slate-100 leading-snug">${cat}</h3>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    function showProductsView(categoryName) {
-      currentCategory = categoryName;
-      document.getElementById('section-title').textContent = categoryName;
-      document.getElementById('back-btn').classList.remove('hidden');
-      
-      const filtered = products.filter(p => p.cat === categoryName);
-      const badge = document.getElementById('product-count-badge');
-      badge.textContent = `${filtered.length} productos`;
-      badge.classList.remove('hidden');
-
-      document.getElementById('categories-grid').classList.add('hidden');
-      const container = document.getElementById('products-container');
-      container.classList.remove('hidden');
-      
-      renderProductList(filtered);
-    }
-
-    function renderProductList(list) {
-      const container = document.getElementById('products-container');
-      container.innerHTML = "";
-
-      if (list.length === 0) {
-        container.innerHTML = `<p class="text-center text-slate-400 py-8 text-xs font-medium">No se encontraron productos en esta sección.</p>`;
-        return;
-      }
-
-      list.forEach(prod => {
-        const cartItem = cart.find(c => c.id === prod.id);
-        const qty = cartItem ? cartItem.qty : 0;
-        const imgHtml = prod.img ? `<img src="${prod.img}" alt="${prod.name}" class="w-12 h-12 rounded-lg object-cover border border-slate-700 shrink-0">` : '';
-
-        const item = document.createElement('div');
-        item.className = "bg-slate-800/90 border border-slate-700/70 p-3 rounded-2xl flex items-center justify-between gap-3 shadow-sm";
-        item.innerHTML = `
-          <div class="flex items-center gap-3 min-w-0">
-            ${imgHtml}
-            <div class="min-w-0">
-              <h4 class="text-xs font-bold text-slate-100 truncate">${prod.name}</h4>
-              <p class="text-xs font-extrabold text-emerald-400 mt-0.5">$${prod.price.toFixed(2)}</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            ${qty > 0 ? `
-              <button onclick="updateQty(${prod.id}, -1)" class="w-7 h-7 bg-slate-700 hover:bg-slate-600 text-amber-400 rounded-lg flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-minus"></i></button>
-              <span class="w-6 text-center text-xs font-black text-white">${qty}</span>
-            ` : ''}
-            <button onclick="updateQty(${prod.id}, 1)" class="w-7 h-7 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-plus"></i></button>
-          </div>
-        `;
-        container.appendChild(item);
-      });
+      document.getElementById('section-title').innerText = 'Categorías';
+      renderCategoriesGrid();
     }
 
     function handleSearch() {
-      const term = document.getElementById('search-input').value.trim().toLowerCase();
-      if (!term) {
-        if (currentCategory) showProductsView(currentCategory);
-        else showCategoriesView();
+      const query = document.getElementById('search-input').value.toLowerCase().trim();
+     
+      if (query !== '') {
+        document.getElementById('categories-grid').classList.add('hidden');
+        document.getElementById('products-container').classList.remove('hidden');
+        document.getElementById('back-btn').classList.remove('hidden');
+        document.getElementById('section-title').innerText = 'Resultados de Búsqueda';
+        renderProducts(query);
+      } else {
+        if (currentCategory) {
+          selectCategory(currentCategory);
+        } else {
+          showCategoriesView();
+        }
+      }
+    }
+
+    function renderProducts(searchQuery = '') {
+      const container = document.getElementById('products-container');
+     
+      const filtered = rawProducts.filter(p => {
+        const matchesCat = currentCategory ? p.cat === currentCategory : true;
+        const matchesSearch = searchQuery ? p.name.toLowerCase().includes(searchQuery) : true;
+        return matchesCat && matchesSearch;
+      });
+
+      document.getElementById('product-count-badge').innerText = `${filtered.length} ítems`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 text-slate-400">
+            <i class="fa-solid fa-box-open text-4xl mb-2 text-slate-600"></i>
+            <p class="text-xs">No se encontraron productos.</p>
+          </div>`;
         return;
       }
 
-      document.getElementById('categories-grid').classList.add('hidden');
-      const container = document.getElementById('products-container');
-      container.classList.remove('hidden');
-      document.getElementById('back-btn').classList.remove('hidden');
-      document.getElementById('section-title').textContent = "Resultados de Búsqueda";
-
-      const matches = products.filter(p => p.name.toLowerCase().includes(term) || p.cat.toLowerCase().includes(term));
-      
-      const badge = document.getElementById('product-count-badge');
-      badge.textContent = `${matches.length} encontrados`;
-      badge.classList.remove('hidden');
-
-      renderProductList(matches);
+      container.innerHTML = filtered.map(p => {
+        const qty = cart[p.id] ? cart[p.id].quantity : 0;
+        return `
+          <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-md hover:border-slate-600 transition">
+            <div class="flex-1 min-w-0">
+              <span class="text-[9px] font-bold tracking-wider text-amber-400/90 uppercase block mb-0.5">${p.cat}</span>
+              <h4 class="font-bold text-xs text-slate-100 truncate">${p.name}</h4>
+              <p class="text-sm font-black text-emerald-400 mt-0.5">$${p.price.toFixed(2)}</p>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0 bg-slate-900/80 border border-slate-700 p-1 rounded-xl">
+              <button onclick="updateCartQuantity(${p.id}, -1)" class="w-7 h-7 bg-slate-800 text-slate-200 hover:bg-slate-700 rounded-lg flex items-center justify-center font-bold text-xs transition active:scale-95">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <span class="w-6 text-center font-black text-xs text-amber-400">${qty}</span>
+              <button onclick="updateCartQuantity(${p.id}, 1)" class="w-7 h-7 bg-amber-500 text-slate-950 hover:bg-amber-400 rounded-lg flex items-center justify-center font-bold text-xs transition active:scale-95 shadow-sm">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    function updateQty(productId, change) {
-      const prod = products.find(p => p.id === productId);
-      if (!prod) return;
+    function updateCartQuantity(id, change) {
+      const product = rawProducts.find(p => p.id === id);
+      if (!product) return;
 
-      let cartItem = cart.find(c => c.id === productId);
-      if (cartItem) {
-        cartItem.qty += change;
-        if (cartItem.qty <= 0) {
-          cart = cart.filter(c => c.id !== productId);
+      if (!cart[id]) {
+        if (change > 0) {
+          cart[id] = { product: product, quantity: change };
         }
-      } else if (change > 0) {
-        cart.push({ ...prod, qty: 1 });
+      } else {
+        cart[id].quantity += change;
+        if (cart[id].quantity <= 0) {
+          delete cart[id];
+        }
       }
 
-      saveCart();
-      if (currentCategory) showProductsView(currentCategory);
-      else {
-        const searchTerm = document.getElementById('search-input').value.trim();
-        if (searchTerm) handleSearch();
+      updateCartUI();
+      if (!document.getElementById('products-container').classList.contains('hidden')) {
+        const query = document.getElementById('search-input').value.toLowerCase().trim();
+        renderProducts(query);
       }
     }
 
     function updateCartUI() {
-      const countEl = document.getElementById('cart-count');
-      const totalEl = document.getElementById('cart-total');
-      const floatBar = document.getElementById('floating-total-bar');
-      const floatAmount = document.getElementById('floating-total-amount');
-      const floatItems = document.getElementById('floating-items-count');
-      
-      const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
-      const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+      let totalCount = 0;
+      let totalPrice = 0;
 
-      countEl.textContent = totalItems;
-      totalEl.textContent = `$${totalPrice.toFixed(2)}`;
+      Object.values(cart).forEach(item => {
+        totalCount += item.quantity;
+        totalPrice += item.product.price * item.quantity;
+      });
 
-      floatAmount.textContent = `$${totalPrice.toFixed(2)}`;
-      floatItems.textContent = `(${totalItems} ${totalItems === 1 ? 'ítems' : 'ítems'})`;
+      document.getElementById('cart-count').innerText = totalCount;
+      document.getElementById('floating-total-amount').innerText = `$${totalPrice.toFixed(2)}`;
+      document.getElementById('floating-items-count').innerText = `(${totalCount} ítems)`;
+      document.getElementById('cart-total').innerText = `$${totalPrice.toFixed(2)}`;
 
-      if (totalItems > 0) {
-        floatBar.classList.remove('translate-y-full');
+      const bar = document.getElementById('floating-total-bar');
+      if (totalCount > 0) {
+        bar.classList.remove('translate-y-full');
       } else {
-        floatBar.classList.add('translate-y-full');
+        bar.classList.add('translate-y-full');
       }
 
-      renderCartModalItems();
+      renderCartItems();
+    }
+
+    function renderCartItems() {
+      const container = document.getElementById('cart-items');
+      const items = Object.values(cart);
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-slate-400">
+            <i class="fa-solid fa-basket-shopping text-3xl mb-2 text-slate-600"></i>
+            <p class="text-xs">Tu pedido está vacío.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = items.map(item => `
+        <div class="py-2.5 flex items-center justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <h5 class="text-xs font-bold text-slate-200 truncate">${item.product.name}</h5>
+            <p class="text-[11px] text-slate-400">$${item.product.price.toFixed(2)} c/u</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-black text-emerald-400 mr-1">$${(item.product.price * item.quantity).toFixed(2)}</span>
+            <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 p-1 rounded-lg">
+              <button onclick="updateCartQuantity(${item.product.id}, -1)" class="w-5 h-5 bg-slate-800 text-slate-200 hover:bg-slate-700 rounded flex items-center justify-center text-[10px]">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <span class="w-4 text-center font-bold text-xs text-amber-400">${item.quantity}</span>
+              <button onclick="updateCartQuantity(${item.product.id}, 1)" class="w-5 h-5 bg-amber-500 text-slate-950 hover:bg-amber-400 rounded flex items-center justify-center text-[10px]">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
     }
 
     function toggleCart() {
@@ -834,141 +961,122 @@
       modal.classList.toggle('hidden');
     }
 
-    function renderCartModalItems() {
-      const container = document.getElementById('cart-items');
-      container.innerHTML = "";
-
-      if (cart.length === 0) {
-        container.innerHTML = `<p class="text-center text-slate-400 py-6 text-xs">Tu carrito está vacío.</p>`;
-        return;
-      }
-
-      cart.forEach(item => {
-        const row = document.createElement('div');
-        row.className = "py-2.5 flex items-center justify-between gap-2 text-xs";
-        row.innerHTML = `
-          <div class="min-w-0 flex-1">
-            <h5 class="font-bold text-slate-100 truncate">${item.name}</h5>
-            <p class="text-emerald-400 font-semibold">$${item.price.toFixed(2)} c/u</p>
-          </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            <button onclick="updateQty(${item.id}, -1)" class="w-6 h-6 bg-slate-700 text-amber-400 rounded font-bold flex items-center justify-center"><i class="fa-solid fa-minus text-[10px]"></i></button>
-            <span class="w-5 text-center font-black text-white">${item.qty}</span>
-            <button onclick="updateQty(${item.id}, 1)" class="w-6 h-6 bg-amber-500 text-slate-950 rounded font-bold flex items-center justify-center"><i class="fa-solid fa-plus text-[10px]"></i></button>
-            <span class="font-extrabold text-white w-12 text-right">$${(item.price * item.qty).toFixed(2)}</span>
-          </div>
-        `;
-        container.appendChild(row);
-      });
-    }
-
     function setDeliveryType(type) {
       deliveryType = type;
       const btnPickup = document.getElementById('btn-pickup');
       const btnDelivery = document.getElementById('btn-delivery');
-      const fieldsPickup = document.getElementById('pickup-fields');
-      const fieldsDelivery = document.getElementById('delivery-fields');
+      const pickupFields = document.getElementById('pickup-fields');
+      const deliveryFields = document.getElementById('delivery-fields');
 
       if (type === 'pickup') {
-        btnPickup.className = "py-2.5 px-3 rounded-xl border border-slate-700 text-xs font-bold flex items-center justify-center gap-2 bg-amber-500 text-slate-950 border-amber-400 transition";
-        btnDelivery.className = "py-2.5 px-3 rounded-xl border border-slate-700 text-xs font-bold flex items-center justify-center gap-2 bg-slate-900 text-slate-300 transition";
-        fieldsPickup.classList.remove('hidden');
-        fieldsDelivery.classList.add('hidden');
+        btnPickup.className = 'py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 bg-amber-500 text-slate-950 border-amber-400 transition';
+        btnDelivery.className = 'py-2.5 px-3 rounded-xl border border-slate-700 text-xs font-bold flex items-center justify-center gap-2 bg-slate-900 text-slate-300 transition';
+        pickupFields.classList.remove('hidden');
+        deliveryFields.classList.add('hidden');
       } else {
-        btnDelivery.className = "py-2.5 px-3 rounded-xl border border-slate-700 text-xs font-bold flex items-center justify-center gap-2 bg-amber-500 text-slate-950 border-amber-400 transition";
-        btnPickup.className = "py-2.5 px-3 rounded-xl border border-slate-700 text-xs font-bold flex items-center justify-center gap-2 bg-slate-900 text-slate-300 transition";
-        fieldsDelivery.classList.remove('hidden');
-        fieldsPickup.classList.add('hidden');
+        btnDelivery.className = 'py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 bg-amber-500 text-slate-950 border-amber-400 transition';
+        btnPickup.className = 'py-2.5 px-3 rounded-xl border border-slate-700 text-xs font-bold flex items-center justify-center gap-2 bg-slate-900 text-slate-300 transition';
+        deliveryFields.classList.remove('hidden');
+        pickupFields.classList.add('hidden');
       }
     }
 
     function sendOrder() {
-      if (cart.length === 0) {
-        alert("Tu carrito está vacío.");
+      const items = Object.values(cart);
+      if (items.length === 0) {
+        alert("Agrega al menos un producto a tu pedido.");
         return;
       }
 
-      let clientName = "", extraDetails = "";
-
+      let clientDetails = "";
       if (deliveryType === 'pickup') {
-        clientName = document.getElementById('pickup-name').value.trim();
-        const ci = document.getElementById('pickup-id').value.trim();
-        if (!clientName) {
-          alert("Por favor ingresa el nombre de quien retira en tienda.");
+        const name = document.getElementById('pickup-name').value.trim();
+        const idNum = document.getElementById('pickup-id').value.trim();
+        if (!name) {
+          alert("Por favor indica el nombre de quien retira en tienda.");
           return;
         }
-        extraDetails = `📍 *Modalidad:* RETIRO EN TIENDA (Pickup)\n👤 *Retira:* ${clientName}${ci ? ' (CI: ' + ci + ')' : ''}`;
+        clientDetails = ` Modalidad: PICKUP (Tienda)\n Cliente: ${name}${idNum ? ' | C.I: ' + idNum : ''}`;
       } else {
-        clientName = document.getElementById('delivery-name').value.trim();
+        const name = document.getElementById('delivery-name').value.trim();
         const phone = document.getElementById('delivery-phone').value.trim();
         const address = document.getElementById('delivery-address').value.trim();
-
-        if (!clientName || !phone || !address) {
-          alert("Por favor completa los datos requeridos para el delivery.");
+        if (!name || !phone || !address) {
+          alert("Por favor completa los datos obligatorios de delivery.");
           return;
         }
-        extraDetails = `🚚 *Modalidad:* DELIVERY A DOMICILIO\n👤 *Recibe:* ${clientName}\n📞 *Teléfono:* ${phone}\n🏠 *Dirección:* ${address}`;
+        clientDetails = ` Modalidad: DELIVERY (A Domicilio)\n Cliente: ${name}\n Teléfono: ${phone}\n Dirección: ${address}`;
       }
 
-      const payment = document.getElementById('payment-method').value;
-      const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+      const paymentMethod = document.getElementById('payment-method').value;
 
-      let msg = `🛒 *NUEVO PEDIDO - VARIEDADES EL TOÑECO*\n\n`;
-      msg += `${extraDetails}\n💳 *Método de Pago:* ${payment}\n\n*DETALLE DEL PEDIDO:*\n`;
+      let msg = `*NUEVO PEDIDO - VARIEDADES EL TOÑECO*\n`;
+      msg += `------------------------------------\n`;
+      msg += `${clientDetails}\n`;
+      msg += ` Forma de Pago: ${paymentMethod}\n`;
+      msg += `------------------------------------\n\n`;
+      msg += `*DETALLE DEL PEDIDO:*\n`;
 
-      cart.forEach((item, i) => {
-        msg += `${i + 1}. ${item.name} x${item.qty} -> *$${(item.price * item.qty).toFixed(2)}*\n`;
+      let total = 0;
+      items.forEach(item => {
+        const sub = item.product.price * item.quantity;
+        total += sub;
+        msg += `• ${item.quantity}x ${item.product.name} -> $${sub.toFixed(2)}\n`;
       });
 
-      msg += `\n💰 *TOTAL A PAGAR: $${totalPrice.toFixed(2)}*\n\n¡Gracias por tu compra!`;
+      msg += `\n*TOTAL A PAGAR: $${total.toFixed(2)}*`;
 
-      const phoneNum = "584161721923";
-      window.open(`https://wa.me/${phoneNum}?text=${encodeURIComponent(msg)}`, '_blank');
+      const encoded = encodeURIComponent(msg);
+      window.open(`https://wa.me/584161721923?text=${encoded}`, '_blank');
     }
 
     function openInvoiceModal() {
-      if (cart.length === 0) {
-        alert("Agrega productos al carrito para generar la factura.");
+      const items = Object.values(cart);
+      if (items.length === 0) {
+        alert("No hay productos en el pedido para generar una factura.");
         return;
       }
 
-      let clientName = "", details = "";
+      let clientName = "";
+      let clientDetails = "";
 
       if (deliveryType === 'pickup') {
-        clientName = document.getElementById('pickup-name').value.trim() || "Cliente Tienda";
-        const ci = document.getElementById('pickup-id').value.trim();
-        details = ci ? `CI: ${ci}` : "Retiro Presencial";
+        const name = document.getElementById('pickup-name').value.trim() || 'Cliente Mostrador';
+        const idNum = document.getElementById('pickup-id').value.trim();
+        clientName = `${name}${idNum ? ' (CI: ' + idNum + ')' : ''}`;
+        clientDetails = 'Retiro en Tienda (Pickup)';
       } else {
-        clientName = document.getElementById('delivery-name').value.trim() || "Cliente Delivery";
+        const name = document.getElementById('delivery-name').value.trim() || 'Cliente Delivery';
         const phone = document.getElementById('delivery-phone').value.trim();
-        details = `Tel: ${phone || 'N/A'}`;
+        const address = document.getElementById('delivery-address').value.trim();
+        clientName = `${name} - Telf: ${phone || 'N/A'}`;
+        clientDetails = `Delivery: ${address || 'Dirección no especificada'}`;
       }
 
-      const now = new Date();
-      document.getElementById('inv-date').textContent = now.toLocaleString('es-VE');
-      document.getElementById('inv-number').textContent = "FC-" + Math.floor(100000 + Math.random() * 900000);
-      document.getElementById('inv-client').textContent = clientName;
-      document.getElementById('inv-type').textContent = deliveryType === 'pickup' ? "PICKUP (TIENDA)" : "DELIVERY";
-      document.getElementById('inv-details').textContent = details;
-      document.getElementById('inv-payment').textContent = document.getElementById('payment-method').value;
+      document.getElementById('inv-date').innerText = new Date().toLocaleString('es-VE');
+      document.getElementById('inv-number').innerText = 'FACT-' + Math.floor(100000 + Math.random() * 900000);
+      document.getElementById('inv-client').innerText = clientName;
+      document.getElementById('inv-type').innerText = deliveryType.toUpperCase();
+      document.getElementById('inv-details').innerText = clientDetails;
+      document.getElementById('inv-payment').innerText = document.getElementById('payment-method').value;
 
       const tbody = document.getElementById('inv-items-body');
-      tbody.innerHTML = "";
+      let total = 0;
 
-      cart.forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="py-1">${item.qty}</td>
-          <td class="py-1 font-bold">${item.name}</td>
-          <td class="py-1 text-right">$${item.price.toFixed(2)}</td>
-          <td class="py-1 text-right">$${(item.price * item.qty).toFixed(2)}</td>
+      tbody.innerHTML = items.map(item => {
+        const sub = item.product.price * item.quantity;
+        total += sub;
+        return `
+          <tr class="border-b border-slate-100">
+            <td class="py-1">${item.quantity}</td>
+            <td class="py-1">${item.product.name}</td>
+            <td class="py-1 text-right">$${item.product.price.toFixed(2)}</td>
+            <td class="py-1 text-right">$${sub.toFixed(2)}</td>
+          </tr>
         `;
-        tbody.appendChild(row);
-      });
+      }).join('');
 
-      const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-      document.getElementById('inv-total-amount').textContent = `$${totalPrice.toFixed(2)}`;
-
+      document.getElementById('inv-total-amount').innerText = `$${total.toFixed(2)}`;
       document.getElementById('invoice-modal').classList.remove('hidden');
     }
 
@@ -976,44 +1084,64 @@
       document.getElementById('invoice-modal').classList.add('hidden');
     }
 
+    /* --- MÓDULO DE ADMINISTRACIÓN --- */
+
     function requestAdminAccess() {
-      const pwd = prompt("Ingrese la clave de administrador:");
-      if (pwd === ADMIN_PASSWORD) {
+      const pass = prompt("Ingrese la clave de administrador para acceder:");
+      if (pass === ADMIN_PASSWORD) {
         openAdminModal();
-      } else if (pwd !== null) {
-        alert("Clave incorrecta.");
+      } else if (pass !== null) {
+        alert("Clave incorrecta. Acceso denegado.");
       }
     }
 
     function openAdminModal() {
-      document.getElementById('admin-modal').classList.remove('hidden');
+      populateAdminCategories();
+      resetAdminForm();
       switchAdminTab('single');
+      document.getElementById('admin-modal').classList.remove('hidden');
     }
 
     function closeAdminModal() {
       document.getElementById('admin-modal').classList.add('hidden');
     }
 
-    function switchAdminTab(tab) {
-      document.getElementById('admin-form-single').classList.add('hidden');
-      document.getElementById('admin-form-batch').classList.add('hidden');
-      document.getElementById('admin-form-list').classList.add('hidden');
+    function populateAdminCategories() {
+      const select = document.getElementById('prod-cat');
+      select.innerHTML = Object.keys(categoriesData).map(cat => `<option value="${cat}">${cat}</option>`).join('');
+    }
 
-      document.getElementById('tab-btn-single').className = "py-2 px-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
-      document.getElementById('tab-btn-batch').className = "py-2 px-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
-      document.getElementById('tab-btn-list').className = "py-2 px-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
+    function switchAdminTab(tab) {
+      const tabSingle = document.getElementById('tab-btn-single');
+      const tabBatch = document.getElementById('tab-btn-batch');
+      const tabList = document.getElementById('tab-btn-list');
+
+      const formSingle = document.getElementById('admin-form-single');
+      const formBatch = document.getElementById('admin-form-batch');
+      const formList = document.getElementById('admin-form-list');
+
+      // Restablecer estilos de pestañas
+      [tabSingle, tabBatch, tabList].forEach(b => b.className = 'py-2 px-3 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition');
+      [formSingle, formBatch, formList].forEach(f => f.classList.add('hidden'));
 
       if (tab === 'single') {
-        document.getElementById('admin-form-single').classList.remove('hidden');
-        document.getElementById('tab-btn-single').className = "py-2 px-3 text-xs font-bold border-b-2 border-amber-400 text-amber-400 transition";
+        tabSingle.className = 'py-2 px-3 text-xs font-bold border-b-2 border-amber-400 text-amber-400 transition';
+        formSingle.classList.remove('hidden');
       } else if (tab === 'batch') {
-        document.getElementById('admin-form-batch').classList.remove('hidden');
-        document.getElementById('tab-btn-batch').className = "py-2 px-3 text-xs font-bold border-b-2 border-amber-400 text-amber-400 transition";
+        tabBatch.className = 'py-2 px-3 text-xs font-bold border-b-2 border-amber-400 text-amber-400 transition';
+        formBatch.classList.remove('hidden');
       } else if (tab === 'list') {
-        document.getElementById('admin-form-list').classList.remove('hidden');
-        document.getElementById('tab-btn-list').className = "py-2 px-3 text-xs font-bold border-b-2 border-amber-400 text-amber-400 transition";
+        tabList.className = 'py-2 px-3 text-xs font-bold border-b-2 border-amber-400 text-amber-400 transition';
+        formList.classList.remove('hidden');
         renderAdminTable();
       }
+    }
+
+    function resetAdminForm() {
+      document.getElementById('prod-id').value = '';
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-price').value = '';
+      document.getElementById('btn-save-prod').innerHTML = `<i class="fa-solid fa-floppy-disk mr-1"></i> Guardar Producto`;
     }
 
     function handleSaveProduct(e) {
@@ -1023,112 +1151,139 @@
       const price = parseFloat(document.getElementById('prod-price').value);
       const cat = document.getElementById('prod-cat').value;
 
-      if (!name || isNaN(price)) return;
+      if (!name || isNaN(price) || price < 0 || !cat) {
+        alert("Por favor completa los datos válidos.");
+        return;
+      }
 
       if (id) {
-        const prod = products.find(p => p.id === parseInt(id));
-        if (prod) {
-          prod.name = name;
-          prod.price = price;
-          prod.cat = cat;
+        // Editar
+        const index = rawProducts.findIndex(p => p.id == id);
+        if (index !== -1) {
+          rawProducts[index] = { id: parseInt(id), name, price, cat };
+          alert("Producto modificado correctamente.");
         }
       } else {
-        const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-        products.push({ id: newId, cat, name, price });
+        // Agregar Individual
+        const newId = rawProducts.length > 0 ? Math.max(...rawProducts.map(p => p.id)) + 1 : 1;
+        rawProducts.push({ id: newId, name, price, cat });
+        alert(`Producto "${name}" agregado correctamente a la categoría ${cat}.`);
       }
 
-      saveProducts();
+      saveProductsToStorage();
       resetAdminForm();
-      alert("Producto guardado exitosamente.");
-      if (currentCategory) showProductsView(currentCategory);
-    }
+      renderCategoriesGrid();
 
-    function editProduct(id) {
-      const prod = products.find(p => p.id === id);
-      if (!prod) return;
-
-      document.getElementById('prod-id').value = prod.id;
-      document.getElementById('prod-name').value = prod.name;
-      document.getElementById('prod-price').value = prod.price;
-      document.getElementById('prod-cat').value = prod.cat;
-
-      switchAdminTab('single');
-    }
-
-    function deleteProduct(id) {
-      if (confirm("¿Estás seguro de eliminar este producto?")) {
-        products = products.filter(p => p.id !== id);
-        cart = cart.filter(c => c.id !== id);
-        saveProducts();
-        saveCart();
-        renderAdminTable();
-        if (currentCategory) showProductsView(currentCategory);
+      if (currentCategory) {
+        selectCategory(currentCategory);
       }
-    }
-
-    function resetAdminForm() {
-      document.getElementById('prod-id').value = "";
-      document.getElementById('prod-name').value = "";
-      document.getElementById('prod-price').value = "";
     }
 
     function handleBatchInsert() {
       const text = document.getElementById('batch-input').value.trim();
-      if (!text) return;
+      if (!text) {
+        alert("Por favor pega o escribe al menos un producto.");
+        return;
+      }
 
       const lines = text.split('\n');
-      let count = 0;
+      let countAdded = 0;
 
       lines.forEach(line => {
-        const parts = line.split('|');
+        const parts = line.split('|').map(p => p.trim());
         if (parts.length >= 3) {
-          const name = parts[0].trim().toUpperCase();
-          const price = parseFloat(parts[1].trim());
-          const cat = parts[2].trim().toUpperCase();
+          const name = parts[0].toUpperCase();
+          const price = parseFloat(parts[1]);
+          const cat = parts[2].toUpperCase();
 
           if (name && !isNaN(price) && categoriesData[cat]) {
-            const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-            products.push({ id: newId, cat, name, price });
-            count++;
+            const newId = rawProducts.length > 0 ? Math.max(...rawProducts.map(p => p.id)) + 1 : 1;
+            rawProducts.push({ id: newId, name, price, cat });
+            countAdded++;
           }
         }
       });
 
-      if (count > 0) {
-        saveProducts();
-        document.getElementById('batch-input').value = "";
-        alert(`Se cargaron ${count} productos correctamente.`);
-        if (currentCategory) showProductsView(currentCategory);
+      if (countAdded > 0) {
+        saveProductsToStorage();
+        document.getElementById('batch-input').value = '';
+        alert(`¡Se agregaron ${countAdded} productos correctamente!`);
+        renderCategoriesGrid();
+        if (currentCategory) {
+          selectCategory(currentCategory);
+        }
       } else {
-        alert("No se pudo procesar el texto. Verifica el formato: Nombre | Precio | Categoría");
+        alert("No se pudo agregar ningún producto. Verifica el formato: Nombre | Precio | Categoría");
       }
     }
 
     function renderAdminTable() {
-      const term = document.getElementById('admin-search').value.trim().toLowerCase();
+      const query = document.getElementById('admin-search').value.toLowerCase().trim();
       const tbody = document.getElementById('admin-table-body');
-      tbody.innerHTML = "";
 
-      const filtered = products.filter(p => p.name.toLowerCase().includes(term) || p.cat.toLowerCase().includes(term));
+      const filtered = rawProducts.filter(p => p.name.toLowerCase().includes(query) || p.cat.toLowerCase().includes(query));
 
-      filtered.slice(0, 30).forEach(p => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-700/40";
-        tr.innerHTML = `
-          <td class="p-2 truncate font-semibold">${p.name} <br><span class="text-[9px] text-slate-400 font-normal">${p.cat}</span></td>
-          <td class="p-2 font-bold text-emerald-400">$${p.price.toFixed(2)}</td>
-          <td class="p-2 text-right">
-            <button onclick="editProduct(${p.id})" class="text-amber-400 hover:text-amber-300 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
-            <button onclick="deleteProduct(${p.id})" class="text-red-400 hover:text-red-300 p-1 ml-1"><i class="fa-solid fa-trash"></i></button>
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="p-3 text-center text-slate-500">No se encontraron productos</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => `
+        <tr class="hover:bg-slate-700/40 transition">
+          <td class="p-2">
+            <span class="font-bold text-slate-200 block truncate max-w-[150px]">${p.name}</span>
+            <span class="text-[9px] text-amber-400/80 uppercase font-semibold">${p.cat}</span>
           </td>
-        `;
-        tbody.appendChild(tr);
-      });
+          <td class="p-2 font-black text-emerald-400">$${p.price.toFixed(2)}</td>
+          <td class="p-2 text-right">
+            <button onclick="editAdminProduct(${p.id})" class="bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 p-1.5 rounded-lg mr-1 transition" title="Editar">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button onclick="deleteAdminProduct(${p.id})" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 p-1.5 rounded-lg transition" title="Eliminar">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
     }
 
-    // Inicializar app
-    window.onload = init;
-  </script>
+    function editAdminProduct(id) {
+      const product = rawProducts.find(p => p.id === id);
+      if (!product) return;
 
+      document.getElementById('prod-id').value = product.id;
+      document.getElementById('prod-name').value = product.name;
+      document.getElementById('prod-price').value = product.price;
+      document.getElementById('prod-cat').value = product.cat;
+      document.getElementById('btn-save-prod').innerHTML = `<i class="fa-solid fa-pen-to-square mr-1"></i> Actualizar Producto`;
+
+      switchAdminTab('single');
+    }
+
+    function deleteAdminProduct(id) {
+      const product = rawProducts.find(p => p.id === id);
+      if (!product) return;
+
+      if (confirm(`¿Estás seguro de que deseas eliminar "${product.name}"?`)) {
+        rawProducts = rawProducts.filter(p => p.id !== id);
+       
+        if (cart[id]) {
+          delete cart[id];
+          updateCartUI();
+        }
+
+        saveProductsToStorage();
+        renderAdminTable();
+        renderCategoriesGrid();
+
+        if (currentCategory) {
+          selectCategory(currentCategory);
+        }
+      }
+    }
+
+    // Inicialización al cargar página
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
 </body>
 </html>
