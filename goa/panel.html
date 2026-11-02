@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" href="icons/favicon-48.png">
+<title>GOA · Panel de licencias</title>
+<style>
+:root{--bg:#f3f5fb;--card:#fff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--pri:#2563eb;--ok:#16a34a;--warn:#f59e0b;--bad:#dc2626;--navy:#0b1038}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,#0b1038,#1d3bb8);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:5}
+header b{font-size:18px}header small{opacity:.8;display:block;font-size:12px}
+main{max-width:1100px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(15,23,42,.04)}
+h2{font-size:17px;margin:0 0 12px}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:10px 0 4px}
+input,select{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:15px;background:#fff;color:var(--text)}
+button{border:none;border-radius:10px;padding:11px 14px;font-weight:800;font-size:14px;cursor:pointer;background:var(--pri);color:#fff}
+button.o{background:#fff;color:var(--text);border:1px solid var(--border)}button.g{background:var(--ok)}button.r{background:var(--bad)}button.w{background:#22c55e}button.y{background:var(--warn);color:#3b2500}
+button.s{padding:7px 10px;font-size:12.5px;border-radius:8px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--bg);border-radius:12px;padding:12px}.kpi .l{font-size:12px;color:var(--muted);font-weight:700}.kpi .v{font-size:26px;font-weight:900;margin-top:2px}.kpi .s{font-size:12px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.lic{border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:10px;border-left:6px solid var(--ok)}
+.lic.vencida{border-left-color:var(--bad)}.lic.porvencer{border-left-color:var(--warn)}.lic.susp{border-left-color:#94a3b8;opacity:.85}.lic.dueno{border-left-color:#8b5cf6}
+.lic .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.code{font-family:ui-monospace,Consolas,monospace;font-weight:900;letter-spacing:1px;font-size:15px}
+.m{font-size:13px;color:var(--muted);margin-top:3px}
+.bd{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11.5px;font-weight:800}
+.b-ok{background:#dcfce7;color:#166534}.b-bad{background:#fee2e2;color:#991b1b}.b-warn{background:#fef3c7;color:#92400e}.b-gray{background:#e2e8f0;color:#334155}.b-pro{background:#dbeafe;color:#1e40af}.b-due{background:#ede9fe;color:#5b21b6}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.eq{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px dashed var(--border);font-size:13px}
+.big{font-family:ui-monospace,Consolas,monospace;font-size:26px;font-weight:900;letter-spacing:2px;text-align:center;background:#eff6ff;color:#1e40af;border-radius:12px;padding:14px;margin:10px 0}
+.hint{font-size:12.5px;color:var(--muted)}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;opacity:0;transition:.3s;z-index:50;max-width:90vw;text-align:center}
+#toast.on{opacity:1}
+.dona{display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center}
+.lg div{display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0}.lg i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.hb{margin:8px 0}.hb .t{display:flex;justify-content:space-between;font-size:13px;font-weight:700}.hb .bar{height:10px;background:var(--bg);border-radius:9px;overflow:hidden;margin-top:4px}.hb .bar i{display:block;height:100%;background:var(--pri);border-radius:9px}
+#login{max-width:420px;margin:40px auto}
+.hide{display:none!important}
+</style></head>
+<body>
+<header><div><b>👑 GOA · Panel de licencias</b><small id="hdrSub">Solo para el dueño</small></div><button class="o s hide" id="btnSalir" onclick="salir()">Salir</button></header>
+<main>
+  <div id="login" class="card">
+    <h2>🔐 Entrar</h2>
+    <div class="hint" id="loginMsg">Usa el correo de GOA Business (GOABusinessvzla@gmail.com). La primera vez toca "Crear mi cuenta" y confirma el correo que te llega.</div>
+    <label>Correo</label><input id="lgEmail" type="email" autocomplete="username" placeholder="GOABusinessvzla@gmail.com">
+    <label>Clave</label><input id="lgClave" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres">
+    <div style="display:grid;gap:8px;margin-top:14px">
+      <button onclick="entrar()">Entrar</button>
+      <button class="o" onclick="crearCuenta()">Crear mi cuenta (solo la primera vez)</button>
+      <button class="o" onclick="olvide()">Olvidé mi clave</button>
+    </div>
+    <div class="hint" id="nubeEstado" style="margin-top:10px">⏳ Conectando a la nube…</div>
+  </div>
+
+  <div id="app" class="hide">
+    <div class="card"><h2>📊 Resumen</h2><div class="kpis" id="kpis"></div></div>
+    <div class="grid2">
+      <div class="card"><h2>Estado de las licencias</h2><div id="gEstado"></div></div>
+      <div class="card"><h2>💵 Ingresos por mes</h2><div id="gIngresos"></div></div>
+    </div>
+    <div class="card" id="cardNueva">
+      <h2>➕ Nueva licencia</h2>
+      <div class="row">
+        <div><label>Cliente / negocio</label><input id="nCliente" placeholder="Ej: Bodega La Esquina"></div>
+        <div><label>Teléfono (WhatsApp)</label><input id="nTel" inputmode="tel" placeholder="0414-1234567"></div>
+        <div><label>Plan</label><select id="nPlan"><option value="esencial">Esencial · $100</option><option value="pro">Pro · $250</option></select></div>
+        <div><label>Tipo de negocio</label><select id="nModo"><option value="retail">🛍️ Retail (tienda)</option><option value="servicio">🍰 Repostería / Servicios</option></select></div>
+        <div><label>Equipos permitidos</label><input id="nEq" type="number" min="1" max="50" value="1"></div>
+        <div><label>Meses pagados</label><input id="nMeses" type="number" min="1" max="36" value="1"></div>
+        <div><label>Monto cobrado hoy ($)</label><input id="nMonto" type="number" min="0" step="0.01" value="102"></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;margin-top:12px;color:var(--text)"><input type="checkbox" id="nDueno" style="width:20px;height:20px"> 👑 Licencia de dueño (para mis equipos: sin vencimiento ni mensualidad)</label>
+      <button class="g" style="width:100%;margin-top:12px" onclick="crearLicencia()">✅ Crear licencia</button>
+      <div id="nuevaRes"></div>
+    </div>
+    <div class="card">
+      <h2>📋 Licencias</h2>
+      <input id="buscar" placeholder="🔍 Buscar por cliente, teléfono o código" oninput="pintarLista()">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0" id="filtros"></div>
+      <div id="lista"></div>
+    </div>
+  </div>
+</main>
+<div id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+const cfg = { apiKey:"AIzaSyDeWewWGToWWBaFbIhHq9zQCPjVAD37E5s", authDomain:"goa-business-a308f.firebaseapp.com", projectId:"goa-business-a308f",
+  storageBucket:"goa-business-a308f.firebasestorage.app", messagingSenderId:"732285068345", appId:"1:732285068345:web:ae1f23baed5d8cf7f819e8" };
+const PRECIO = {esencial:100, pro:250}, MENSUAL = 2;
+let auth, db, lics = [], filtro = 'todas', unsub = null;
+const $ = id => document.getElementById(id);
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'), 3200); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function fmt(n){ return (+n||0).toLocaleString('es-VE',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+function fecha(d){ return d ? d.toLocaleDateString('es-VE',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'; }
+function aFecha(v){ return !v ? null : v.toDate ? v.toDate() : (v.seconds!=null ? new Date(v.seconds*1000) : new Date(v)); }
+function telWA(t){ let d=String(t||'').replace(/\D/g,''); if(d.startsWith('0')) d='58'+d.slice(1); else if(d.length===10) d='58'+d; return d; }
+function nuevoCodigo(){ const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r=new Uint8Array(12); crypto.getRandomValues(r); const c=Array.from(r,b=>A[b%A.length]).join(''); return 'GOA-'+c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8,12); }
+function sumarMeses(base, m){ const d=new Date(base); d.setMonth(d.getMonth()+m); d.setHours(23,59,0,0); return d; }
+
+/* ---------- conexión ---------- */
+try{
+  firebase.initializeApp(cfg); auth=firebase.auth(); db=firebase.firestore();
+  try{ db.settings({experimentalForceLongPolling:true}); }catch(_){ }
+  $('nubeEstado').textContent='✅ Conectado a la nube';
+  auth.onAuthStateChanged(onUser);
+}catch(e){ $('nubeEstado').textContent='❌ No se pudo cargar la nube. Revisa tu internet.'; }
+function onUser(u){
+    if(!u || u.isAnonymous){ $('login').classList.remove('hide'); $('app').classList.add('hide'); $('btnSalir').classList.add('hide'); if(unsub){unsub();unsub=null;} return; }
+    if(!u.emailVerified){
+      $('loginMsg').innerHTML='📧 Te envié un correo a <b>'+esc(u.email)+'</b>. Ábrelo, toca el enlace para confirmar y luego toca <b>Entrar</b> otra vez.';
+      $('login').classList.remove('hide'); $('app').classList.add('hide'); return;
+    }
+    $('hdrSub').textContent=u.email; $('login').classList.add('hide'); $('app').classList.remove('hide'); $('btnSalir').classList.remove('hide');
+    escuchar();
+}
+
+async function entrar(){
+  try{ await auth.signInWithEmailAndPassword($('lgEmail').value.trim(), $('lgClave').value); await auth.currentUser.reload(); await auth.currentUser.getIdToken(true); if(!auth.currentUser.emailVerified){ await auth.currentUser.sendEmailVerification().catch(()=>{}); toast('Confirma tu correo primero (te reenvié el enlace) 📧'); } onUser(auth.currentUser); }
+  catch(e){ toast(e.code==='auth/invalid-credential'||e.code==='auth/wrong-password' ? 'Correo o clave incorrectos' : (e.message||e)); }
+}
+async function crearCuenta(){
+  try{ const r=await auth.createUserWithEmailAndPassword($('lgEmail').value.trim(), $('lgClave').value); await r.user.sendEmailVerification(); toast('Cuenta creada. Revisa tu correo para confirmarla 📧'); }
+  catch(e){ toast(e.code==='auth/email-already-in-use' ? 'Ese correo ya tiene cuenta: toca Entrar' : (e.message||e)); }
+}
+async function olvide(){ const em=$('lgEmail').value.trim(); if(!em){ toast('Escribe tu correo arriba'); return; } try{ await auth.sendPasswordResetEmail(em); toast('Te envié un correo para cambiar la clave'); }catch(e){ toast(e.message||e); } }
+function salir(){ auth.signOut(); }
+
+/* ---------- datos ---------- */
+function escuchar(){
+  if(unsub) return;
+  unsub = db.collection('licencias').onSnapshot(qs=>{
+    lics = []; qs.forEach(d=>{ const x=d.data(); x.id=d.id; lics.push(x); });
+    lics.sort((a,b)=>(aFecha(b.creada)||0)-(aFecha(a.creada)||0));
+    pintar();
+  }, e=>{ toast(e.code==='permission-denied' ? '⛔ Sin permiso: revisa que las reglas de Firebase tengan tu correo' : (e.message||e)); });
+}
+function estado(l){
+  if(l.activo===false) return 'susp';
+  if(l.dueno) return 'dueno';
+  const v=aFecha(l.vence); if(v && v<new Date()) return 'vencida';
+  if(v && (v-new Date())/864e5<=5) return 'porvencer';
+  return 'activa';
+}
+const EST = {activa:['Activa','b-ok','#16a34a'], porvencer:['Por vencer','b-warn','#f59e0b'], vencida:['Vencida','b-bad','#dc2626'], susp:['Suspendida','b-gray','#94a3b8'], dueno:['Dueño','b-due','#8b5cf6']};
+
+function pintar(){
+  const c={activa:0,porvencer:0,vencida:0,susp:0,dueno:0}; let eqs=0;
+  lics.forEach(l=>{ c[estado(l)]++; eqs+=Object.keys(l.equipos||{}).length; });
+  const pagan = c.activa + c.porvencer;
+  const mes = new Date(); const clave = mes.getFullYear()+'-'+mes.getMonth();
+  let cobradoMes=0; lics.forEach(l=>(l.pagos||[]).forEach(p=>{ const f=aFecha(p.fecha); if(f && f.getFullYear()+'-'+f.getMonth()===clave) cobradoMes+=+p.monto||0; }));
+  $('kpis').innerHTML =
+    kpi('Licencias que pagan', pagan, c.porvencer ? c.porvencer+' por vencer (≤5 días)' : 'Todas al día')
+    + kpi('Mensualidad esperada', '$'+fmt(pagan*MENSUAL), pagan+' × $'+MENSUAL+' al mes')
+    + kpi('Cobrado este mes', '$'+fmt(cobradoMes), 'Ventas y mensualidades')
+    + kpi('Vencidas', c.vencida, c.vencida ? 'Escríbeles para renovar' : 'Ninguna 🎉')
+    + kpi('Equipos conectados', eqs, 'En todas las licencias');
+  $('gEstado').innerHTML = dona(Object.keys(c).filter(k=>c[k]).map(k=>({n:EST[k][0], v:c[k], col:EST[k][2]})), lics.length, 'LICENCIAS');
+  // ingresos últimos 6 meses
+  const meses=[]; for(let i=5;i>=0;i--){ const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-i); meses.push({k:d.getFullYear()+'-'+d.getMonth(), n:d.toLocaleDateString('es-VE',{month:'short',year:'2-digit'}), v:0}); }
+  lics.forEach(l=>(l.pagos||[]).forEach(p=>{ const f=aFecha(p.fecha); if(!f) return; const m=meses.find(x=>x.k===f.getFullYear()+'-'+f.getMonth()); if(m) m.v+=+p.monto||0; }));
+  const mx=Math.max(1,...meses.map(m=>m.v));
+  $('gIngresos').innerHTML = meses.map(m=>`<div class="hb"><div class="t"><span>${m.n}</span><span>$${fmt(m.v)}</span></div><div class="bar"><i style="width:${Math.max(1.5,m.v/mx*100)}%"></i></div></div>`).join('');
+  $('filtros').innerHTML = [['todas','Todas ('+lics.length+')'],['activa','Activas'],['porvencer','Por vencer'],['vencida','Vencidas'],['susp','Suspendidas'],['dueno','Dueño']]
+    .map(([k,t])=>`<button class="s ${filtro===k?'':'o'}" onclick="filtro='${k}';pintar()">${t}</button>`).join('');
+  pintarLista();
+}
+function kpi(l,v,s){ return `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`; }
+function dona(items, tot, sub){
+  if(!tot) return '<div class="hint">Aún no hay licencias.</div>';
+  const R=60, C=2*Math.PI*R; let acc=0, seg='';
+  items.forEach(x=>{ const p=x.v/tot, len=Math.max(0,p*C-(items.length>1?1.5:0)); seg+=`<circle r="${R}" cx="80" cy="80" fill="none" stroke="${x.col}" stroke-width="24" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-acc}" transform="rotate(-90 80 80)"/>`; acc+=p*C; });
+  return `<div class="dona"><svg width="160" height="160" viewBox="0 0 160 160"><circle r="${R}" cx="80" cy="80" fill="none" stroke="#e2e8f0" stroke-width="24"/>${seg}<text x="80" y="84" text-anchor="middle" font-size="26" font-weight="900" fill="#0f172a">${tot}</text><text x="80" y="102" text-anchor="middle" font-size="10" font-weight="700" fill="#64748b">${sub}</text></svg>
+    <div class="lg">${items.map(x=>`<div><i style="background:${x.col}"></i>${x.n}: <b>${x.v}</b></div>`).join('')}</div></div>`;
+}
+function pintarLista(){
+  const q=($('buscar').value||'').trim().toLowerCase();
+  const L=lics.filter(l=>(filtro==='todas'||estado(l)===filtro) && (!q || [l.cliente,l.telefono,l.id].join(' ').toLowerCase().includes(q)));
+  if(!L.length){ $('lista').innerHTML='<div class="hint">No hay licencias aquí.</div>'; return; }
+  $('lista').innerHTML = L.map(l=>{
+    const e=estado(l), v=aFecha(l.vence), eq=l.equipos||{}, n=Object.keys(eq).length;
+    const dias = v ? Math.ceil((v-new Date())/864e5) : null;
+    return `<div class="lic ${e}">
+      <div class="top"><div><div class="code">${esc(l.id)}</div><div style="font-weight:800;margin-top:2px">${esc(l.cliente||'Sin nombre')}</div>
+        <div class="m">${esc(l.telefono||'')} · ${l.modo==='servicio'?'🍰 Repostería/Servicios':'🛍️ Retail'}</div></div>
+        <div style="text-align:right"><span class="bd ${EST[e][1]}">${EST[e][0]}</span> <span class="bd ${l.plan==='pro'?'b-pro':'b-gray'}">${l.plan==='pro'?'Pro':'Esencial'}</span>
+        <div class="m">${l.dueno?'Sin vencimiento':'Vence: <b>'+fecha(v)+'</b>'+(dias!=null?(dias>=0?' ('+dias+' d)':' (hace '+(-dias)+' d)'):'')}</div>
+        <div class="m">Equipos: <b>${n} de ${l.maxEquipos||1}</b></div></div></div>
+      <div class="acts">
+        ${l.dueno?'':`<button class="g s" onclick="renovar('${l.id}',1)">+1 mes ($${MENSUAL})</button><button class="g s" onclick="renovar('${l.id}',3)">+3 meses</button><button class="g s" onclick="renovar('${l.id}',12)">+12 meses</button>`}
+        <button class="o s" onclick="equipos('${l.id}',1)">+1 equipo</button><button class="o s" onclick="equipos('${l.id}',-1)">−1 equipo</button>
+        ${l.activo===false?`<button class="y s" onclick="activo('${l.id}',true)">Reactivar</button>`:`<button class="r s" onclick="activo('${l.id}',false)">Suspender</button>`}
+        <button class="w s" onclick="enviarWA('${l.id}')">💬 Enviar código</button>
+        <button class="o s" onclick="copiar('${l.id}')">📋 Copiar</button>
+        <button class="o s" onclick="this.closest('.lic').querySelector('.eqs').classList.toggle('hide')">💻 Ver equipos (${n})</button>
+      </div>
+      <div class="eqs hide">${n ? Object.keys(eq).map(u=>{ const x=eq[u]||{}; return `<div class="eq"><span>${esc(x.nombre||'Equipo')}<br><small class="m">Desde ${fecha(aFecha(x.desde))} · último uso ${fecha(aFecha(x.ultimo))}</small></span><button class="r s" onclick="quitarEquipo('${l.id}','${u}')">Quitar</button></div>`; }).join('') : '<div class="m">Aún no se ha activado en ningún equipo.</div>'}
+        <div class="m" style="margin-top:6px">Pagos: ${(l.pagos||[]).map(p=>'$'+fmt(p.monto)+' ('+fecha(aFecha(p.fecha))+')').join(' · ')||'—'}</div>
+        <button class="r s" style="margin-top:8px" onclick="borrar('${l.id}')">🗑️ Eliminar licencia</button></div>
+    </div>`; }).join('');
+}
+
+/* ---------- acciones ---------- */
+$('nPlan').onchange = $('nMeses').oninput = ()=>{ $('nMonto').value = PRECIO[$('nPlan').value] + MENSUAL*(+$('nMeses').value||1); };
+$('nDueno').onchange = ()=>{ if($('nDueno').checked){ $('nMonto').value=0; $('nEq').value=10; $('nPlan').value='pro'; } };
+async function crearLicencia(){
+  const cliente=$('nCliente').value.trim(); if(!cliente){ toast('Escribe el nombre del cliente'); return; }
+  const dueno=$('nDueno').checked, meses=Math.max(1,+$('nMeses').value||1);
+  const code=nuevoCodigo();
+  const vence = dueno ? new Date(2099,11,31) : sumarMeses(new Date(), meses);
+  const monto=+$('nMonto').value||0;
+  const d={cliente, telefono:$('nTel').value.trim(), plan:$('nPlan').value, modo:$('nModo').value, maxEquipos:Math.max(1,+$('nEq').value||1),
+    activo:true, dueno, vence:firebase.firestore.Timestamp.fromDate(vence), creada:firebase.firestore.FieldValue.serverTimestamp(), equipos:{},
+    pagos: monto>0 ? [{fecha:firebase.firestore.Timestamp.now(), monto, concepto:'Licencia '+($('nPlan').value==='pro'?'Pro':'Esencial')+' + '+meses+' mes(es)'}] : []};
+  try{
+    await db.doc('licencias/'+code).set(d);
+    $('nuevaRes').innerHTML = `<div class="big">${code}</div><div class="hint" style="text-align:center">Vence: <b>${dueno?'nunca':fecha(vence)}</b> · ${d.maxEquipos} equipo(s)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><button class="w" onclick="enviarWA('${code}')">💬 Enviar por WhatsApp</button><button class="o" onclick="copiar('${code}')">📋 Copiar código</button></div>`;
+    ['nCliente','nTel'].forEach(i=>$(i).value=''); $('nDueno').checked=false;
+    toast('✅ Licencia creada');
+  }catch(e){ toast(e.code==='permission-denied' ? '⛔ Sin permiso: revisa las reglas de Firebase' : (e.message||e)); }
+}
+function buscarL(id){ return lics.find(x=>x.id===id); }
+async function renovar(id, meses){
+  const l=buscarL(id); if(!l) return;
+  const v=aFecha(l.vence), base = v && v>new Date() ? v : new Date();
+  const nv=sumarMeses(base, meses);
+  if(!confirm('¿Renovar '+(l.cliente||id)+' por '+meses+' mes(es)?\nCobras $'+(MENSUAL*meses)+'. Nuevo vencimiento: '+fecha(nv))) return;
+  await db.doc('licencias/'+id).update({vence:firebase.firestore.Timestamp.fromDate(nv), activo:true,
+    pagos:firebase.firestore.FieldValue.arrayUnion({fecha:firebase.firestore.Timestamp.now(), monto:MENSUAL*meses, concepto:'Mensualidad x'+meses})}).then(()=>toast('✅ Renovada hasta '+fecha(nv)), e=>toast(e.message||e));
+}
+async function equipos(id, d){ const l=buscarL(id); if(!l) return; const n=Math.max(1,(l.maxEquipos||1)+d);
+  if(n < Object.keys(l.equipos||{}).length){ toast('Primero quita un equipo de la lista'); return; }
+  await db.doc('licencias/'+id).update({maxEquipos:n}).then(()=>toast('Equipos permitidos: '+n), e=>toast(e.message||e)); }
+async function activo(id, v){ if(!v && !confirm('¿Suspender esta licencia? Sus equipos se bloquean en su próxima revisión.')) return;
+  await db.doc('licencias/'+id).update({activo:v}).then(()=>toast(v?'Reactivada':'Suspendida'), e=>toast(e.message||e)); }
+async function quitarEquipo(id, uid){ if(!confirm('¿Quitar este equipo? Liberas un cupo; ese equipo se bloquea en su próxima revisión.')) return;
+  await db.doc('licencias/'+id).update({['equipos.'+uid]:firebase.firestore.FieldValue.delete()}).then(()=>toast('Equipo quitado'), e=>toast(e.message||e)); }
+async function borrar(id){ if(prompt('Para eliminar escribe: BORRAR')!=='BORRAR') return; await db.doc('licencias/'+id).delete().then(()=>toast('Eliminada'), e=>toast(e.message||e)); }
+function copiar(code){ (navigator.clipboard?navigator.clipboard.writeText(code):Promise.reject()).then(()=>toast('Copiado: '+code),()=>toast(code)); }
+function enviarWA(id){
+  const l=buscarL(id)||{}; const v=aFecha(l.vence);
+  const txt='¡Hola'+(l.cliente?' '+l.cliente:'')+'! 👋 Gracias por elegir *GOA Business*.\n\n🔑 Tu código de licencia es:\n*'+id+'*\n\n'
+    +'Cómo activarlo:\n1️⃣ Abre GOA Business\n2️⃣ Pega el código donde dice "¿Ya tienes tu código?"\n3️⃣ Toca *Activar y entrar*\n\n'
+    +'Plan: *'+(l.plan==='pro'?'Pro':'Esencial')+'* · Equipos: '+(l.maxEquipos||1)+'\n'
+    +(l.dueno?'':'Pagado hasta: *'+fecha(v)+'* (mensualidad $'+MENSUAL+')\n')+'\nCualquier duda, escríbenos por aquí. 🚀';
+  window.open('https://wa.me/'+telWA(l.telefono)+'?text='+encodeURIComponent(txt), '_blank');
+}
+</script>
+</body></html>
