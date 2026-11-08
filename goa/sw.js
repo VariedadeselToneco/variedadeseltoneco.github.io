@@ -1,5 +1,5 @@
 /* GOA Business — service worker: la app funciona sin internet */
-const VERSION = 'goa-v202611041955';
+const VERSION = 'goa-v202611081228';
 const ARCHIVOS = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/favicon-48.png', './icons/apple-touch-icon.png', './privacidad.html'];
 const SDK = /^https:\/\/www\.gstatic\.com\/firebasejs\//;   // librería de la nube: se guarda para abrir sin internet
 
