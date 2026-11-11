@@ -315,7 +315,7 @@
       'VARIEDADES Y FERRETERÍA': { icon: 'fa-screwdriver-wrench', img: 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=400&q=80' }
     };
 
-    const CATALOG_VERSION = '2026-11-10c'; // cambiar en cada actualización de precios
+    const CATALOG_VERSION = '2026-11-11c'; // cambiar en cada actualización de precios
 
     const initialProducts = [
       // SEGMENTO DE PRECIO AL MAYOR
@@ -340,6 +340,20 @@
       { id: 2018, cat: "PRECIO AL MAYOR", name: "BULTO JUANA 900g (20 UND)", price: 17.31 },
       { id: 2019, cat: "PRECIO AL MAYOR", name: "BULTO ACEITE AGROIL 500ml (12 UND)", price: 17.04 },
       { id: 2020, cat: "PRECIO AL MAYOR", name: "BULTO ACEITE AGROIL 800ML (12 UND)", price: 27.69 },
+      { id: 2022, cat: "PRECIO AL MAYOR", name: "BULTO BIG COLA - FIRTS 2lts (6 UND)", price: 5.50 },
+      { id: 2023, cat: "PRECIO AL MAYOR", name: "BULTO SUN COLA 2 LITROS (6 UND)", price: 5.60 },
+      { id: 2024, cat: "PRECIO AL MAYOR", name: "BULTO SUN COLA LITRO (12 UND)", price: 6.84 },
+      { id: 2025, cat: "PRECIO AL MAYOR", name: "BULTO FRUBYS 1.5lts (6 UND)", price: 4.47 },
+      { id: 2026, cat: "PRECIO AL MAYOR", name: "BULTO JUSTY NARANJA 1.5L (12 UND)", price: 10.96 },
+      { id: 2027, cat: "PRECIO AL MAYOR", name: "BULTO SUNTY 1.5lt (6 UND)", price: 9.78 },
+      { id: 2028, cat: "PRECIO AL MAYOR", name: "BULTO SUN COLA 400ml (15 UND)", price: 4.53 },
+      { id: 2029, cat: "PRECIO AL MAYOR", name: "BULTO FRUBYS 400ml (15 UND)", price: 4.52 },
+      { id: 2030, cat: "PRECIO AL MAYOR", name: "BULTO JUSTY 400ml (15 UND)", price: 4.95 },
+      { id: 2031, cat: "PRECIO AL MAYOR", name: "BULTO SUNTY 400ml (15 UND)", price: 4.74 },
+      { id: 2032, cat: "PRECIO AL MAYOR", name: "BULTO SUNTY 200ML (24 UND)", price: 9.16 },
+      { id: 2033, cat: "PRECIO AL MAYOR", name: "BULTO JUGO DEL VALLE 1.5lts (6 UND)", price: 7.02 },
+      { id: 2034, cat: "PRECIO AL MAYOR", name: "BULTO COCACOLA 2lts (6 UND)", price: 8.58 },
+      { id: 2035, cat: "PRECIO AL MAYOR", name: "BULTO PEPSI 2lts (6 UND)", price: 7.43 },
       // SEGMENTO DE VÍVERES
       { id: 1, cat: "VÍVERES", name: "ABCITOS CEREAL 240GRS.", price: 2.97 },
       { id: 413, cat: "VÍVERES", name: "ACEITE AGROIL 500ml", price: 1.50 },
@@ -348,7 +362,6 @@
       { id: 3, cat: "VÍVERES", name: "ACEITE OLIVA 500ml", price: 5.86 },
       { id: 416, cat: "VÍVERES", name: "ACEITE VATEL 1l SOJA", price: 3.41 },
       { id: 417, cat: "VÍVERES", name: "ACEITE VATEL 500ML", price: 1.83 },
-      { id: 5, cat: "VÍVERES", name: "AHUYAMA", price: 0.87 },
       { id: 7, cat: "VÍVERES", name: "AJO", price: 12.03 },
       { id: 8, cat: "VÍVERES", name: "ANIS DULCE", price: 0.17 },
       { id: 424, cat: "VÍVERES", name: "ARROZ AMANECER", price: 0.87 },
@@ -931,6 +944,26 @@
       { id: 412, cat: "VARIEDADES Y FERRETERÍA", name: "YESQUERO", price: 0.30 }
     ];
 
+    // Productos que se venden por peso (el cliente coloca los gramos)
+    const KG_IDS = new Set([7, 35, 81, 82, 133, 623, 632, 633, 588, 622, 481, 551, 469, 542, 342, 636, 637, 648, 649, 423, 346, 428, 501, 569, 594, 593, 595, 627]);
+    function esKg(p) { return KG_IDS.has(p.id); }
+    function fmtQty(item) {
+      if (!esKg(item.product)) return String(item.quantity);
+      const g = Math.round(item.quantity * 1000);
+      return g >= 1000 ? (g / 1000).toLocaleString('es-VE', { maximumFractionDigits: 3 }) + ' kg' : g + ' g';
+    }
+    function setCartGrams(id, val) {
+      const product = rawProducts.find(p => p.id === id);
+      if (!product) return;
+      const g = Math.max(0, Math.round(parseFloat(String(val).replace(',', '.')) || 0));
+      if (g <= 0) delete cart[id];
+      else cart[id] = { product: product, quantity: g / 1000 };
+      updateCartUI();
+      if (!document.getElementById('products-container').classList.contains('hidden')) {
+        renderProducts(document.getElementById('search-input').value.toLowerCase().trim());
+      }
+    }
+
     let rawProducts = [];
     let currentCategory = null;
     let cart = {};
@@ -1045,6 +1078,28 @@
 
       container.innerHTML = filtered.map(p => {
         const qty = cart[p.id] ? cart[p.id].quantity : 0;
+        if (esKg(p)) {
+          const g = Math.round(qty * 1000);
+          return `
+          <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-md hover:border-slate-600 transition">
+            <div class="flex-1 min-w-0">
+              <span class="text-[9px] font-bold tracking-wider text-amber-400/90 uppercase block mb-0.5">${p.cat} · POR PESO</span>
+              <h4 class="font-bold text-xs text-slate-100 truncate">${p.name}</h4>
+              <p class="text-sm font-black text-emerald-400 mt-0.5">$${p.price.toFixed(2)} <span class="text-[10px] text-slate-400 font-bold">el kilo</span>${g ? ` <span class="text-[10px] text-amber-300 font-bold">= $${(p.price * qty).toFixed(2)}</span>` : ''}</p>
+            </div>
+            <div class="flex items-center gap-1 shrink-0 bg-slate-900/80 border border-slate-700 p-1 rounded-xl">
+              <button onclick="setCartGrams(${p.id}, ${Math.max(0, g - 250)})" class="w-7 h-7 bg-slate-800 text-slate-200 hover:bg-slate-700 rounded-lg flex items-center justify-center font-bold text-xs transition active:scale-95">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <input type="number" inputmode="numeric" min="0" step="50" value="${g || ''}" placeholder="0" onchange="setCartGrams(${p.id}, this.value)" class="w-14 bg-slate-950 border border-slate-700 rounded-lg text-center font-black text-xs text-amber-400 py-1">
+              <span class="text-[10px] text-slate-400 font-bold">g</span>
+              <button onclick="setCartGrams(${p.id}, ${g + 250})" class="w-7 h-7 bg-amber-500 text-slate-950 hover:bg-amber-400 rounded-lg flex items-center justify-center font-bold text-xs transition active:scale-95 shadow-sm">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        }
         return `
           <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-md hover:border-slate-600 transition">
             <div class="flex-1 min-w-0">
@@ -1093,7 +1148,7 @@
       let totalPrice = 0;
 
       Object.values(cart).forEach(item => {
-        totalCount += item.quantity;
+        totalCount += esKg(item.product) ? 1 : item.quantity;
         totalPrice += item.product.price * item.quantity;
       });
 
@@ -1129,18 +1184,20 @@
         <div class="py-2.5 flex items-center justify-between gap-2">
           <div class="flex-1 min-w-0">
             <h5 class="text-xs font-bold text-slate-200 truncate">${item.product.name}</h5>
-            <p class="text-[11px] text-slate-400">$${item.product.price.toFixed(2)} c/u</p>
+            <p class="text-[11px] text-slate-400">$${item.product.price.toFixed(2)} ${esKg(item.product) ? 'el kilo · ' + fmtQty(item) : 'c/u'}</p>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-xs font-black text-emerald-400 mr-1">$${(item.product.price * item.quantity).toFixed(2)}</span>
             <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 p-1 rounded-lg">
-              <button onclick="updateCartQuantity(${item.product.id}, -1)" class="w-5 h-5 bg-slate-800 text-slate-200 hover:bg-slate-700 rounded flex items-center justify-center text-[10px]">
+              ${esKg(item.product) ? `<button onclick="setCartGrams(${item.product.id}, ${Math.max(0, Math.round(item.quantity * 1000) - 250)})" class="w-5 h-5 bg-slate-800 text-slate-200 hover:bg-slate-700 rounded flex items-center justify-center text-[10px]"><i class="fa-solid fa-minus"></i></button>
+              <span class="w-12 text-center font-bold text-[11px] text-amber-400">${fmtQty(item)}</span>
+              <button onclick="setCartGrams(${item.product.id}, ${Math.round(item.quantity * 1000) + 250})" class="w-5 h-5 bg-amber-500 text-slate-950 hover:bg-amber-400 rounded flex items-center justify-center text-[10px]"><i class="fa-solid fa-plus"></i></button>` : `<button onclick="updateCartQuantity(${item.product.id}, -1)" class="w-5 h-5 bg-slate-800 text-slate-200 hover:bg-slate-700 rounded flex items-center justify-center text-[10px]">
                 <i class="fa-solid fa-minus"></i>
               </button>
               <span class="w-4 text-center font-bold text-xs text-amber-400">${item.quantity}</span>
               <button onclick="updateCartQuantity(${item.product.id}, 1)" class="w-5 h-5 bg-amber-500 text-slate-950 hover:bg-amber-400 rounded flex items-center justify-center text-[10px]">
                 <i class="fa-solid fa-plus"></i>
-              </button>
+              </button>`}
             </div>
           </div>
         </div>
@@ -1212,7 +1269,7 @@
       items.forEach(item => {
         const sub = item.product.price * item.quantity;
         total += sub;
-        msg += `• ${item.quantity}x ${item.product.name} -> $${sub.toFixed(2)}\n`;
+        msg += esKg(item.product) ? `• ${fmtQty(item)} ${item.product.name} ($${item.product.price.toFixed(2)} el kilo) -> $${sub.toFixed(2)}\n` : `• ${item.quantity}x ${item.product.name} -> $${sub.toFixed(2)}\n`;
       });
 
       msg += `\n*TOTAL A PAGAR: $${total.toFixed(2)}*`;
@@ -1259,7 +1316,7 @@
         total += sub;
         return `
           <tr class="border-b border-slate-100">
-            <td class="py-1">${item.quantity}</td>
+            <td class="py-1">${fmtQty(item)}</td>
             <td class="py-1">${item.product.name}</td>
             <td class="py-1 text-right">$${item.product.price.toFixed(2)}</td>
             <td class="py-1 text-right">$${sub.toFixed(2)}</td>
