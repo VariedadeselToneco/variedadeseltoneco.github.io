@@ -59,6 +59,9 @@
     </div>
 
     <!-- VISTA 1: GRILLA DE CATEGORÍAS PRINCIPAL -->
+    <div id="portada-cashea" class="mb-4 rounded-2xl overflow-hidden border border-slate-700/80 shadow-lg">
+      <img src="portada-cashea.jpg" alt="¡Ya tenemos Cashea! Compra en cuotas sin comisiones, al mayor y al detal" class="w-full block" width="900" height="507" loading="eager">
+    </div>
     <div id="categories-grid" class="grid grid-cols-2 gap-3"></div>
 
     <!-- VISTA 2: LISTA DESPLEGABLE / PRODUCTOS -->
@@ -102,12 +105,16 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Método de Pago:</label>
-          <select id="payment-method" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-400 font-medium">
+          <select id="payment-method" onchange="document.getElementById('cashea-nota').classList.toggle('hidden', !this.value.startsWith('Cashea'))" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-400 font-medium">
             <option value="Pago Móvil / Transferencia">Pago Móvil / Transferencia</option>
+            <option value="Cashea (cuotas sin comisiones)">Cashea (cuotas sin comisiones)</option>
             <option value="Zelle">Zelle</option>
             <option value="Efectivo / Divisas">Efectivo / Divisas</option>
             <option value="Otro Método de Pago">Otro Método de Pago</option>
           </select>
+          <div id="cashea-nota" class="hidden mt-2 bg-yellow-300 text-slate-950 rounded-xl p-2.5 text-xs font-bold leading-snug">
+            <i class="fa-solid fa-credit-card"></i> Paga en cuotas con <b>Cashea</b>, sin comisiones y al mismo precio de contado. Al mayor y al detal. Te confirmamos el pedido por WhatsApp para procesar el pago.
+          </div>
         </div>
 
         <!-- SELECCIÓN DE TIPO DE ENTREGA -->
@@ -315,7 +322,7 @@
       'VARIEDADES Y FERRETERÍA': { icon: 'fa-screwdriver-wrench', img: 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=400&q=80' }
     };
 
-    const CATALOG_VERSION = '2026-11-11c'; // cambiar en cada actualización de precios
+    const CATALOG_VERSION = '2026-11-12a'; // cambiar en cada actualización de precios
 
     const initialProducts = [
       // SEGMENTO DE PRECIO AL MAYOR
@@ -1015,7 +1022,7 @@
 
     function selectCategory(cat) {
       currentCategory = cat;
-      document.getElementById('categories-grid').classList.add('hidden');
+      document.getElementById('categories-grid').classList.add('hidden'); document.getElementById('portada-cashea').classList.add('hidden');
       document.getElementById('products-container').classList.remove('hidden');
       document.getElementById('back-btn').classList.remove('hidden');
      
@@ -1030,7 +1037,7 @@
     function showCategoriesView() {
       currentCategory = null;
       document.getElementById('search-input').value = '';
-      document.getElementById('categories-grid').classList.remove('hidden');
+      document.getElementById('categories-grid').classList.remove('hidden'); document.getElementById('portada-cashea').classList.remove('hidden');
       document.getElementById('products-container').classList.add('hidden');
       document.getElementById('back-btn').classList.add('hidden');
       document.getElementById('product-count-badge').classList.add('hidden');
@@ -1042,7 +1049,7 @@
       const query = document.getElementById('search-input').value.toLowerCase().trim();
      
       if (query !== '') {
-        document.getElementById('categories-grid').classList.add('hidden');
+        document.getElementById('categories-grid').classList.add('hidden'); document.getElementById('portada-cashea').classList.add('hidden');
         document.getElementById('products-container').classList.remove('hidden');
         document.getElementById('back-btn').classList.remove('hidden');
         document.getElementById('section-title').innerText = 'Resultados de Búsqueda';
@@ -1262,6 +1269,7 @@
       msg += `------------------------------------\n`;
       msg += `${clientDetails}\n`;
       msg += ` Forma de Pago: ${paymentMethod}\n`;
+      if (paymentMethod.startsWith('Cashea')) msg += ` *Quiero pagar con CASHEA* (cuotas sin comisiones)\n`;
       msg += `------------------------------------\n\n`;
       msg += `*DETALLE DEL PEDIDO:*\n`;
 
