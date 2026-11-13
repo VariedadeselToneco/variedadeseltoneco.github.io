@@ -65,6 +65,7 @@
     <div id="categories-grid" class="grid grid-cols-2 gap-3"></div>
 
     <!-- VISTA 2: LISTA DESPLEGABLE / PRODUCTOS -->
+    <div id="cat-chips" class="hidden -mx-4 px-4 mb-3 flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none"></div>
     <div id="products-container" class="hidden space-y-2.5"></div>
 
   </main>
@@ -78,6 +79,7 @@
           <span id="floating-total-amount" class="text-2xl font-black text-emerald-400">$0.00</span>
           <span id="floating-items-count" class="text-xs font-bold text-slate-300">(0 ítems)</span>
         </div>
+        <button onclick="showCategoriesView(); window.scrollTo({top:0,behavior:'smooth'})" class="text-[11px] font-bold text-amber-400 underline underline-offset-2"><i class="fa-solid fa-plus"></i> Agregar de otra categoría</button>
       </div>
       <button onclick="toggleCart()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl shadow-md text-sm flex items-center gap-2 transition">
         <i class="fa-solid fa-basket-shopping"></i> Ver Pedido
@@ -322,7 +324,7 @@
       'VARIEDADES Y FERRETERÍA': { icon: 'fa-screwdriver-wrench', img: 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=400&q=80' }
     };
 
-    const CATALOG_VERSION = '2026-11-12a'; // cambiar en cada actualización de precios
+    const CATALOG_VERSION = '2026-11-13a'; // cambiar en cada actualización de precios
 
     const initialProducts = [
       // SEGMENTO DE PRECIO AL MAYOR
@@ -989,7 +991,33 @@
       }
 
       populateAdminCategories();
+      cargarCarrito();
       renderCategoriesGrid();
+      if (Object.keys(cart).length) updateCartUI();
+    }
+
+    function cartPorCategoria(cat) {
+      return Object.values(cart).filter(it => it.product.cat === cat).length;
+    }
+    function renderCatChips() {
+      const box = document.getElementById('cat-chips');
+      box.innerHTML = Object.keys(categoriesData).map(cat => {
+        const n = cartPorCategoria(cat), act = cat === currentCategory;
+        return `<button onclick="selectCategory('${cat}')" class="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-extrabold border whitespace-nowrap transition ${act ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-900 text-slate-300 border-slate-700'}">${cat}${n ? ` <span class="ml-1 px-1.5 rounded-full ${act ? 'bg-slate-950 text-amber-400' : 'bg-emerald-500 text-slate-950'}">${n}</span>` : ''}</button>`;
+      }).join('');
+      const a = box.querySelector('.bg-amber-500'); if (a) a.scrollIntoView({ inline: 'center', block: 'nearest' });
+    }
+    function guardarCarrito() {
+      try {
+        const o = {}; Object.values(cart).forEach(it => { o[it.product.id] = it.quantity; });
+        localStorage.setItem('toneco_cart', JSON.stringify(o));
+      } catch (e) {}
+    }
+    function cargarCarrito() {
+      try {
+        const o = JSON.parse(localStorage.getItem('toneco_cart') || '{}');
+        Object.keys(o).forEach(id => { const p = rawProducts.find(x => x.id === +id); if (p && o[id] > 0) cart[p.id] = { product: p, quantity: o[id] }; });
+      } catch (e) {}
     }
 
     function saveProductsToStorage() {
@@ -1015,6 +1043,7 @@
               <h3 class="font-extrabold text-white text-sm leading-tight">${cat}</h3>
               <p class="text-[11px] text-slate-300 font-medium">${count} productos</p>
             </div>
+            ${cartPorCategoria(cat) ? `<div class="absolute top-2 right-2 z-10 bg-emerald-500 text-slate-950 text-[11px] font-black px-2 py-0.5 rounded-full shadow-md"><i class="fa-solid fa-basket-shopping"></i> ${cartPorCategoria(cat)}</div>` : ''}
           </div>
         `;
       }).join('');
@@ -1030,7 +1059,9 @@
       badge.classList.remove('hidden');
 
       document.getElementById('section-title').innerText = cat;
-     
+      document.getElementById('cat-chips').classList.remove('hidden');
+      renderCatChips();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       renderProducts();
     }
 
@@ -1042,6 +1073,7 @@
       document.getElementById('back-btn').classList.add('hidden');
       document.getElementById('product-count-badge').classList.add('hidden');
       document.getElementById('section-title').innerText = 'Categorías';
+      document.getElementById('cat-chips').classList.add('hidden');
       renderCategoriesGrid();
     }
 
@@ -1053,6 +1085,7 @@
         document.getElementById('products-container').classList.remove('hidden');
         document.getElementById('back-btn').classList.remove('hidden');
         document.getElementById('section-title').innerText = 'Resultados de Búsqueda';
+        document.getElementById('cat-chips').classList.add('hidden');
         renderProducts(query);
       } else {
         if (currentCategory) {
@@ -1172,6 +1205,9 @@
       }
 
       renderCartItems();
+      guardarCarrito();
+      if (currentCategory && !document.getElementById('cat-chips').classList.contains('hidden')) renderCatChips();
+      if (!document.getElementById('categories-grid').classList.contains('hidden')) renderCategoriesGrid();
     }
 
     function renderCartItems() {
@@ -1187,7 +1223,13 @@
         return;
       }
 
-      container.innerHTML = items.map(item => `
+      const orden = Object.keys(categoriesData);
+      items.sort((a, b) => orden.indexOf(a.product.cat) - orden.indexOf(b.product.cat));
+      let catPrev = '';
+      container.innerHTML = items.map(item => {
+        const head = item.product.cat !== catPrev ? `<p class="pt-3 pb-1 text-[10px] font-black tracking-wider text-amber-400 uppercase">${item.product.cat}</p>` : '';
+        catPrev = item.product.cat;
+        return head + `
         <div class="py-2.5 flex items-center justify-between gap-2">
           <div class="flex-1 min-w-0">
             <h5 class="text-xs font-bold text-slate-200 truncate">${item.product.name}</h5>
@@ -1208,7 +1250,8 @@
             </div>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
 
     function toggleCart() {
@@ -1284,6 +1327,8 @@
 
       const encoded = encodeURIComponent(msg);
       window.open(`https://wa.me/584161721923?text=${encoded}`, '_blank');
+      // pedido enviado: se vacía para la próxima compra
+      setTimeout(() => { cart = {}; updateCartUI(); toggleCart(); renderCategoriesGrid(); if (currentCategory) selectCategory(currentCategory); }, 1500);
     }
 
     function openInvoiceModal() {
