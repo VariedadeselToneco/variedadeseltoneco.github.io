@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0f172a">
+<title>Conteo de inventario · Variedades el Toñeco</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding-bottom:120px}
+button{font-family:inherit;cursor:pointer;border:0}
+input{font-family:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+header{background:#111827;border-bottom:1px solid #1f2937;position:sticky;top:0;z-index:20}
+header .wrap{padding:12px 16px;display:flex;align-items:center;gap:10px}
+h1{font-size:17px;color:#fbbf24;font-weight:800;line-height:1.2}
+.sub{font-size:12px;color:#94a3b8}
+.card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:16px;margin-bottom:12px}
+.lbl{font-size:13px;color:#94a3b8;margin-bottom:6px;display:block;font-weight:600}
+.inp{width:100%;background:#0b1220;border:1px solid #334155;border-radius:12px;color:#f8fafc;font-size:17px;padding:12px 14px;outline:none}
+.inp:focus{border-color:#f59e0b}
+.btn{width:100%;background:#f59e0b;color:#0f172a;font-weight:800;font-size:16px;padding:14px;border-radius:14px}
+.btn:active{transform:scale(.98)}
+.btn2{background:#1e293b;color:#e2e8f0;border:1px solid #334155;font-weight:700;font-size:14px;padding:10px 14px;border-radius:12px}
+.err{color:#f87171;font-size:13px;margin-top:8px;min-height:18px}
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:14px;text-align:left;color:#e2e8f0;min-height:96px;display:flex;flex-direction:column;justify-content:space-between}
+.cat b{font-size:14px;font-weight:800;line-height:1.2}
+.bar{height:6px;background:#0b1220;border-radius:6px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:#10b981;border-radius:6px}
+.cat small{font-size:12px;color:#94a3b8}
+.row{display:flex;align-items:center;gap:10px;background:#1e293b;border:1px solid #334155;border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.row.ok{border-color:#065f46;background:#0d2a24}
+.row.sent{border-color:#1e3a5f;background:#0f2238}
+.row .n{flex:1;min-width:0;font-size:14px;font-weight:700;line-height:1.25}
+.row .n small{display:block;font-size:11px;font-weight:700;margin-top:2px}
+.row input{width:86px;background:#0b1220;border:1px solid #475569;border-radius:10px;color:#fbbf24;font-weight:800;font-size:18px;text-align:center;padding:8px 4px;outline:none}
+.row input:focus{border-color:#f59e0b}
+.u{font-size:11px;color:#94a3b8;font-weight:700;width:18px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.top h2{font-size:18px;font-weight:800;flex:1}
+.foot{position:fixed;left:0;right:0;bottom:0;background:#111827;border-top:1px solid #1f2937;z-index:30}
+.foot .wrap{padding:12px 16px;display:flex;align-items:center;gap:12px}
+.dots{display:flex;gap:4px;margin-top:6px}
+.dots i{width:14px;height:6px;border-radius:3px;background:#334155}
+.dots i.on{background:#f59e0b}
+.send{background:#10b981;color:#052e16;font-weight:800;font-size:15px;padding:13px 16px;border-radius:14px;white-space:nowrap}
+.send.big{animation:pulse 1s infinite alternate}
+@keyframes pulse{from{box-shadow:0 0 0 0 rgba(16,185,129,.6)}to{box-shadow:0 0 0 10px rgba(16,185,129,0)}}
+.hidden{display:none!important}
+.empty{color:#94a3b8;text-align:center;padding:24px;font-size:14px}
+.toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#f8fafc;color:#0f172a;font-weight:700;font-size:14px;padding:10px 16px;border-radius:12px;z-index:50;max-width:90%;text-align:center}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal .card{max-width:420px;width:100%}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <div style="flex:1">
+    <h1>Conteo de inventario</h1>
+    <div class="sub" id="hdrSub">Variedades el Toñeco</div>
+  </div>
+  <button class="btn2 hidden" id="btnSalir" onclick="cambiarNombre()">Cambiar</button>
+</div></header>
+
+<!-- CLAVE -->
+<div class="wrap" id="vClave">
+  <div class="card">
+    <label class="lbl" for="iClave">Clave de acceso</label>
+    <input class="inp" id="iClave" type="password" inputmode="numeric" placeholder="••••" autocomplete="off">
+    <label class="lbl" for="iNombre" style="margin-top:14px">Tu nombre</label>
+    <input class="inp" id="iNombre" type="text" placeholder="Ej: Juan" autocomplete="off">
+    <div class="err" id="eClave"></div>
+    <button class="btn" onclick="entrar()">Entrar</button>
+  </div>
+</div>
+
+<!-- CATEGORIAS -->
+<div class="wrap hidden" id="vCats">
+  <div class="card" style="padding:12px 14px">
+    <div style="font-size:14px;line-height:1.5">Escoge <b>tu grupo</b> (cada uno tiene unos 50 productos), cuenta lo que hay en anaquel <b>y</b> depósito, y cada <b>10 productos</b> le das <b>Enviar</b>.</div>
+  </div>
+  <div class="cats" id="catGrid"></div>
+  <button class="btn2" style="width:100%;margin-top:16px" onclick="reiniciar()">Empezar un inventario nuevo</button>
+</div>
+
+<!-- LISTA -->
+<div class="wrap hidden" id="vLista">
+  <div class="top">
+    <button class="btn2" onclick="verCats()">‹ Volver</button>
+    <h2 id="catTitulo"></h2>
+  </div>
+  <input class="inp" id="iBuscar" type="search" placeholder="Buscar producto…" oninput="pintarLista()" autocomplete="off" style="margin-bottom:12px">
+  <div id="lista"></div>
+  <button class="btn2" style="width:100%;margin-top:8px" onclick="agregarOtro()">+ Producto que no está en la lista</button>
+</div>
+
+<div class="foot hidden" id="foot"><div class="wrap">
+  <div style="flex:1">
+    <div style="font-size:13px;font-weight:700" id="pendTxt">0 de 10 para enviar</div>
+    <div class="dots" id="dots"></div>
+  </div>
+  <button class="send" id="btnEnviar" onclick="enviar()">Enviar</button>
+</div></div>
+
+<div class="modal hidden" id="modal"><div class="card">
+  <div style="font-size:17px;font-weight:800;margin-bottom:6px" id="mTit"></div>
+  <div style="font-size:14px;color:#cbd5e1;margin-bottom:14px;line-height:1.5" id="mTxt"></div>
+  <input class="inp hidden" id="mInp" type="text" style="margin-bottom:12px" autocomplete="off">
+  <div style="display:flex;gap:10px">
+    <button class="btn2" style="flex:1" onclick="cerrarModal(false)">Cancelar</button>
+    <button class="btn" style="flex:1" id="mOk" onclick="cerrarModal(true)">Aceptar</button>
+  </div>
+</div></div>
+
+<script>
+const WHATSAPP = '584161721923';
+const CLAVE = '1985';
+const LOTE = 10;
+const CATS = ['VÍVERES','GOLOSINAS Y TOÑECURAS','BEBIDAS','HIGIENE PERSONAL Y HOGAR','CHARCUTERÍA','COMIDA PARA ANIMALES','VARIEDADES Y FERRETERÍA'];
+// [nombre, categoría, por peso]
+const PRODUCTOS = [["ABCITOS CEREAL 240GRS.","VÍVERES",0],["ACEITE AGROIL 500ml","VÍVERES",0],["ACEITE AGROIL 800ML","VÍVERES",0],["ACEITE DON JUAN 828ml","VÍVERES",0],["ACEITE OLIVA 500ml","VÍVERES",0],["ACEITE SEMISINTETICO 15/40","VARIEDADES Y FERRETERÍA",0],["ACEITE VATEL 1l SOJA","VÍVERES",0],["ACEITE VATEL 500ML","VÍVERES",0],["ACETAMINOFEN 650m","HIGIENE PERSONAL Y HOGAR",0],["AFEITADORA LUMI COMPACT","HIGIENE PERSONAL Y HOGAR",0],["AFEITADORA LUMI INFINITY","HIGIENE PERSONAL Y HOGAR",0],["AGUA 355ml","BEBIDAS",0],["AGUA 600ml NEVADA","BEBIDAS",0],["AGUA LITRO Y MEDIO","BEBIDAS",0],["AGUA MINALBA 600ml","BEBIDAS",0],["AGUA NEVADA 355ml","BEBIDAS",0],["AGUA NEVADA GASIFICADA 355ml","BEBIDAS",0],["AGUACATE Kg","VÍVERES",1],["AJO","VÍVERES",1],["ALAS DE POLLO","CHARCUTERÍA",1],["ALCOHOL","HIGIENE PERSONAL Y HOGAR",0],["ALIMENTO Kg","COMIDA PARA ANIMALES",1],["ALIMENTO PONEDORA","COMIDA PARA ANIMALES",1],["ANIS DULCE","VÍVERES",0],["APUREÑO","VARIEDADES Y FERRETERÍA",0],["ARROZ AMANECER","VÍVERES",0],["ARROZ DOÑA ALICIA","VÍVERES",0],["ARROZ GRAN MARQUES 850g","VÍVERES",0],["ARROZ INNOVA 900g","VÍVERES",0],["ARROZ MARY TRADICIONAL","VÍVERES",0],["ARROZ MASIA 5kg","VÍVERES",0],["ARROZ MIMASA Kg","VÍVERES",0],["ARROZ PICADO Kg","COMIDA PARA ANIMALES",1],["ATUN ALDIVIA 160g","VÍVERES",0],["ATUN DESMENUZADO LAILA 160","VÍVERES",0],["ATUN EVEBA 140gr","VÍVERES",0],["ATUN MARGARITA EN ACEITE 140gr","VÍVERES",0],["ATUN MARGARITA NATURAL 140gr","VÍVERES",0],["ATUN OMEGA 140g","VÍVERES",0],["ATUN WILLINGER 142g","VÍVERES",0],["AVENA DE 800gr","VÍVERES",0],["AVENA DVITA 400G","VÍVERES",0],["AVENA GRANEL","VÍVERES",0],["AVENA QUAKER 200gr","VÍVERES",0],["AVENA QUAKER 400gr","VÍVERES",0],["AVENA VICONE 400g","VÍVERES",0],["AXION LAVAPLATOS 235g","HIGIENE PERSONAL Y HOGAR",0],["AXION LAVAPLATOS Pq","HIGIENE PERSONAL Y HOGAR",0],["AZUCAR AGROLIDER 900g","VÍVERES",0],["AZUCAR DON OREJA","VÍVERES",0],["AZUCAR LA PASTORA","VÍVERES",0],["BALANCE POMO 32G","HIGIENE PERSONAL Y HOGAR",0],["BANDEJAS","VÍVERES",0],["BAÑO DE CREMA ALIVE 400g","HIGIENE PERSONAL Y HOGAR",0],["BEBIDA ACHOCOLATADA 946ml","BEBIDAS",0],["BELMONT CAJA","VARIEDADES Y FERRETERÍA",0],["BIANCHI VARIADO BARRA","GOLOSINAS Y TOÑECURAS",0],["BICARBONATO","VÍVERES",0],["BIG COLA - FIRTS 2lts","BEBIDAS",0],["BOHEM WINE","VARIEDADES Y FERRETERÍA",0],["BOHEN SANDIA","VARIEDADES Y FERRETERÍA",0],["BOKA SOBRE","BEBIDAS",0],["BOLSA 2Kg","VARIEDADES Y FERRETERÍA",0],["BOLSA 30kg","VARIEDADES Y FERRETERÍA",0],["BOLSA C.","VARIEDADES Y FERRETERÍA",0],["BOLSA DE BASURA 40k","VARIEDADES Y FERRETERÍA",0],["BOLSAS 10Kg","VARIEDADES Y FERRETERÍA",0],["BOLSAS 1kg","VARIEDADES Y FERRETERÍA",0],["BOLSAS BASURA","VARIEDADES Y FERRETERÍA",0],["BOLSAS DE 1/2kg","VARIEDADES Y FERRETERÍA",0],["BOLSAS DE 3Kg","VARIEDADES Y FERRETERÍA",0],["BOLSAS DE 5 Kg","VARIEDADES Y FERRETERÍA",0],["BOLSAS PARA TETAS 1/4 KILO","VARIEDADES Y FERRETERÍA",0],["BOMBILLO","VARIEDADES Y FERRETERÍA",0],["BOMBILLO 10w","VARIEDADES Y FERRETERÍA",0],["BOMBILLO 15W","VARIEDADES Y FERRETERÍA",0],["BOMBILLO 15w RECARGABLE","VARIEDADES Y FERRETERÍA",0],["BOMBILLO RECARGABLE 40W","VARIEDADES Y FERRETERÍA",0],["BRISOL","HIGIENE PERSONAL Y HOGAR",0],["CACHITOS","VÍVERES",0],["CAFE ADRIANI 100g","VÍVERES",0],["CAFE AMANECER 100GR","VÍVERES",0],["CAFE AMANECER 200gr","VÍVERES",0],["CAFE AMANECER DE 500gr","VÍVERES",0],["CAFE ARAUCA 100gr","VÍVERES",0],["CAFE ARAUCA 200gr","VÍVERES",0],["CAFE DELLA NONNA 100gr","VÍVERES",0],["CAFE FAVORITO 100G","VÍVERES",0],["CAFE FAVORITO 50G","VÍVERES",0],["CAFE HEIDY 100g","VÍVERES",0],["CAFE HEIDY 200g","VÍVERES",0],["CAJETIN HEXAGONO","VARIEDADES Y FERRETERÍA",0],["CANELA EN POLVO 25g","VÍVERES",0],["CANELA EN RAMA","VÍVERES",0],["CAPI","VARIEDADES Y FERRETERÍA",0],["CARAMELO (VARIADOS)","GOLOSINAS Y TOÑECURAS",0],["CARAMELO DE COCO","GOLOSINAS Y TOÑECURAS",0],["CARAMELO DISCA","GOLOSINAS Y TOÑECURAS",0],["CARAMELO RICATO DE LECHE","GOLOSINAS Y TOÑECURAS",0],["CARAOTAS 900g MAIZAL","VÍVERES",0],["CARAOTAS ARTESANALES Kg","VÍVERES",1],["CARAOTAS MAIZAL 400g","VÍVERES",0],["CARAOTAS MARY 400gr","VÍVERES",0],["CARNE DE HAMBURGUESA","CHARCUTERÍA",0],["CATALINAS","VÍVERES",0],["CEBOLLA KILO","VÍVERES",1],["CEPILLO C/BASE","HIGIENE PERSONAL Y HOGAR",0],["CEPILLO DE BARRER","HIGIENE PERSONAL Y HOGAR",0],["CEPILLO DENTAL","HIGIENE PERSONAL Y HOGAR",0],["CEPILLO DENTAL KIDS","HIGIENE PERSONAL Y HOGAR",0],["CHAMPU PANTENE SOBRE","HIGIENE PERSONAL Y HOGAR",0],["CHARMY CHOCOLATE","GOLOSINAS Y TOÑECURAS",0],["CHARMY FRESA","GOLOSINAS Y TOÑECURAS",0],["CHARMY VAINILLA","GOLOSINAS Y TOÑECURAS",0],["CHEESE TRIS 150gr","GOLOSINAS Y TOÑECURAS",0],["CHEESE TRIS 50gr","GOLOSINAS Y TOÑECURAS",0],["CHERRY ZAPATOS","HIGIENE PERSONAL Y HOGAR",0],["CHESITOS 15gr","GOLOSINAS Y TOÑECURAS",0],["CHICHA NATULAC 473ml","BEBIDAS",0],["CHICHARRIN","GOLOSINAS Y TOÑECURAS",0],["CHICHARRON","GOLOSINAS Y TOÑECURAS",0],["CHICLE AGOGO","GOLOSINAS Y TOÑECURAS",0],["CHICLE TRIDENT","GOLOSINAS Y TOÑECURAS",0],["CHIMO TAPARO","VARIEDADES Y FERRETERÍA",0],["CHIMO TIGRE","VARIEDADES Y FERRETERÍA",0],["CHINOTO 2lts","BEBIDAS",0],["CHOCO SAFARY","GOLOSINAS Y TOÑECURAS",0],["CHOCOKING 90g","GOLOSINAS Y TOÑECURAS",0],["CHOCOLATE LANDOR 200g","GOLOSINAS Y TOÑECURAS",0],["CHOCOLATE LANDOR 400g","GOLOSINAS Y TOÑECURAS",0],["CHOCOLATE RANCH","GOLOSINAS Y TOÑECURAS",0],["CHOCOPILOS 130g","GOLOSINAS Y TOÑECURAS",0],["CHORIZO","CHARCUTERÍA",1],["CHORIZO AL VACIO","CHARCUTERÍA",0],["CHULETA AHUMADA","CHARCUTERÍA",1],["CHUPETA","GOLOSINAS Y TOÑECURAS",0],["CHUPETA PLANAS","GOLOSINAS Y TOÑECURAS",0],["CHUPON","HIGIENE PERSONAL Y HOGAR",0],["CINTA ADHESIVA CELOTET 120 METROS","VARIEDADES Y FERRETERÍA",0],["CLAVITO DE OLOR 20g","VÍVERES",0],["CLORO A GRANEL","HIGIENE PERSONAL Y HOGAR",0],["CLORO MR CLEAN LITRO","HIGIENE PERSONAL Y HOGAR",0],["CLORO OSO BLANCO LITRO","HIGIENE PERSONAL Y HOGAR",0],["CLUB SOCIAL INTEGRAL","GOLOSINAS Y TOÑECURAS",0],["COCACOLA 1.5lts","BEBIDAS",0],["COCACOLA DE 2lts","BEBIDAS",0],["COCADA","GOLOSINAS Y TOÑECURAS",0],["COCOTAZO","GOLOSINAS Y TOÑECURAS",0],["COLADOR DE CAFE","VARIEDADES Y FERRETERÍA",0],["COLETO","HIGIENE PERSONAL Y HOGAR",0],["COLGATE 90G","HIGIENE PERSONAL Y HOGAR",0],["COLGATE PREVENCION ACTIVA","HIGIENE PERSONAL Y HOGAR",0],["COLGATE TRIPLE ACCION 60ml","HIGIENE PERSONAL Y HOGAR",0],["COLORES TUBULAR 12 PZAS","VARIEDADES Y FERRETERÍA",0],["COMINO 25gr","VÍVERES",0],["COMPOTA HEINZ GRANDE 186gr","VÍVERES",0],["COMPOTA NATULAC 189G","VÍVERES",0],["COMPOTA OLE","VÍVERES",0],["COMPOTA OSOLE 100gr","VÍVERES",0],["COMPOTA OSOLE 150g","VÍVERES",0],["COMPOTA POUCH 100g POLLY","VÍVERES",0],["COMPOTA POUCH HEINZ 113g","VÍVERES",0],["CONSUL CAJA","VARIEDADES Y FERRETERÍA",0],["CONSUL PALLMAL CAJA","VARIEDADES Y FERRETERÍA",0],["COOL 2 litros","BEBIDAS",0],["COOL 400ml","BEBIDAS",0],["COSTILLAS DE RES","CHARCUTERÍA",1],["CREMA ALIVE PARA CUERPO","HIGIENE PERSONAL Y HOGAR",0],["CREMA DE ARROZ 225 gr PRIMOR","VÍVERES",0],["CREMA DE ARROZ POLLY 450gr","VÍVERES",0],["CREMA DE ARROZ PRIMOR 450gr","VÍVERES",0],["CREMA DE LECHE GUARALAC 250g","VÍVERES",0],["CREMA DENTAL ICEBERG 120G","HIGIENE PERSONAL Y HOGAR",0],["CREMA MAKSIM 135gr","HIGIENE PERSONAL Y HOGAR",0],["CREMA MAKSIM 90gr","HIGIENE PERSONAL Y HOGAR",0],["CREMA MAKSIN 50gr","HIGIENE PERSONAL Y HOGAR",0],["CREMA PARA PEINAR PANTENE SOBRE","HIGIENE PERSONAL Y HOGAR",0],["CREMA PARA ZAPATOS NEGRA","HIGIENE PERSONAL Y HOGAR",0],["CRONCH FLAKES 300gr","GOLOSINAS Y TOÑECURAS",0],["CRUNCH 120g","GOLOSINAS Y TOÑECURAS",0],["CUBITO KALDINI","VÍVERES",0],["CUBITO LAILA","VÍVERES",0],["CUBITO MAGGY","VÍVERES",0],["CUCHILLA","VARIEDADES Y FERRETERÍA",0],["CURVA 1/2","VARIEDADES Y FERRETERÍA",0],["DAMASCO 100g","VÍVERES",0],["DAMASCO 200g","VÍVERES",0],["DELECHITAS","GOLOSINAS Y TOÑECURAS",0],["DES. CLINICAL HOMBRE SPEED","HIGIENE PERSONAL Y HOGAR",0],["DESINFECTANTE A GRANEL","HIGIENE PERSONAL Y HOGAR",0],["DESINFECTANTE JEEZ","HIGIENE PERSONAL Y HOGAR",0],["DESINFECTANTE Mr CLEAN LITRO","HIGIENE PERSONAL Y HOGAR",0],["DESODORANTE BALANCE CLINICO","HIGIENE PERSONAL Y HOGAR",0],["DESODORANTE C/TAPA","HIGIENE PERSONAL Y HOGAR",0],["DESODORANTE GILLETTE ROLLON","HIGIENE PERSONAL Y HOGAR",0],["DESODORANTE LS SOBRE","HIGIENE PERSONAL Y HOGAR",0],["DESODORANTE SOBRE BALANCE","HIGIENE PERSONAL Y HOGAR",0],["DESODORANTE SS SOBRE","HIGIENE PERSONAL Y HOGAR",0],["DETERGENTE ALIVE 1Kg","HIGIENE PERSONAL Y HOGAR",0],["DETERGENTE ALIVE 500gr","HIGIENE PERSONAL Y HOGAR",0],["DETERGENTE ALMESSY 400G","HIGIENE PERSONAL Y HOGAR",0],["DETERGENTE ARIEL 400g","HIGIENE PERSONAL Y HOGAR",0],["DETERGENTE DOLPHIN 400gr","HIGIENE PERSONAL Y HOGAR",0],["DETERGENTE FREXCO 400g","HIGIENE PERSONAL Y HOGAR",0],["DETERGENTE GRANEL","HIGIENE PERSONAL Y HOGAR",0],["DETERGENTE LAS LLAVES 400gr","HIGIENE PERSONAL Y HOGAR",0],["DETERGENTE TAPA AMARILLA 400gr","HIGIENE PERSONAL Y HOGAR",0],["DETERGENTE ULTREX 250gr","HIGIENE PERSONAL Y HOGAR",0],["DETERGENTE ULTREX 500g","HIGIENE PERSONAL Y HOGAR",0],["DIABLITO 115G LATA","VÍVERES",0],["DIABLITO 50G LATA","VÍVERES",0],["DIOXOGEN 50g","HIGIENE PERSONAL Y HOGAR",0],["DIOXOGEN 90g","HIGIENE PERSONAL Y HOGAR",0],["DORCO HOJILLA","HIGIENE PERSONAL Y HOGAR",0],["DORITOS 150gr","GOLOSINAS Y TOÑECURAS",0],["DORITOS Peq. FLAMIN","GOLOSINAS Y TOÑECURAS",0],["DUX ORIGINAL","GOLOSINAS Y TOÑECURAS",0],["EGO SOBRE Pq","HIGIENE PERSONAL Y HOGAR",0],["ENGORDE AGROINLACA","COMIDA PARA ANIMALES",1],["ENJUAGUE BUCAL AMALFI 500ml","HIGIENE PERSONAL Y HOGAR",0],["ESPONJA DE ALAMBRE","HIGIENE PERSONAL Y HOGAR",0],["ESPONJA DOBLE USO","HIGIENE PERSONAL Y HOGAR",0],["ESPONJA X5","HIGIENE PERSONAL Y HOGAR",0],["EXACTO","VARIEDADES Y FERRETERÍA",0],["EXTRACTO DE VAINILLA BLANCA","VÍVERES",0],["EXTRACTO DE VAINILLA NEGRO","VÍVERES",0],["FANTA NARANJA 2L","BEBIDAS",0],["FANTA TORONJA 2lts","BEBIDAS",0],["FANTA UVA 2lts","BEBIDAS",0],["FIDEOS KALDINI","VÍVERES",0],["FORORO 400g","VÍVERES",0],["FREEGELLS","GOLOSINAS Y TOÑECURAS",0],["FRESCA FRAGANCIA","HIGIENE PERSONAL Y HOGAR",0],["FRESCOLITA 2 LITROS","BEBIDAS",0],["FRUBYS 1.5lts","BEBIDAS",0],["FRUBYS 400ml","BEBIDAS",0],["GALLETA BABO","GOLOSINAS Y TOÑECURAS",0],["GALLETA COCOCRUNCH","GOLOSINAS Y TOÑECURAS",0],["GALLETA DE SODA","GOLOSINAS Y TOÑECURAS",0],["GALLETA DE SODA CARABOBO","GOLOSINAS Y TOÑECURAS",0],["GALLETA DELEITINAS","GOLOSINAS Y TOÑECURAS",0],["GALLETA MARIA CALEDONIA 250gr","GOLOSINAS Y TOÑECURAS",0],["GALLETA MARIA CARABOBO","GOLOSINAS Y TOÑECURAS",0],["GALLETA MARIA ITALIA","GOLOSINAS Y TOÑECURAS",0],["GALLETA MARIA PAMPA CHOCOLATE","GOLOSINAS Y TOÑECURAS",0],["GALLETA PAMPA MARIA 150g","GOLOSINAS Y TOÑECURAS",0],["GALLETAS FESTIVAL 1*6","GOLOSINAS Y TOÑECURAS",0],["GALLETAS INDEPENDENCIA","GOLOSINAS Y TOÑECURAS",0],["GALLETAS MARIA INDEPENDENCIA","GOLOSINAS Y TOÑECURAS",0],["GALLETAS MINIWAFER COLOMINA Pqte","GOLOSINAS Y TOÑECURAS",0],["GALLETAS PAMPA 100g ROJA","GOLOSINAS Y TOÑECURAS",0],["GALLETAS RANCH","GOLOSINAS Y TOÑECURAS",0],["GALLETAS RENATA TUBULAR","GOLOSINAS Y TOÑECURAS",0],["GALLETAS TAM","GOLOSINAS Y TOÑECURAS",0],["GATARINA 1Kg","COMIDA PARA ANIMALES",0],["GATORADE","BEBIDAS",0],["GEL INTIMO","HIGIENE PERSONAL Y HOGAR",0],["GELATINA EVERY NIGHT 100gr","HIGIENE PERSONAL Y HOGAR",0],["GELATINA EVERY NIGHT 250g","HIGIENE PERSONAL Y HOGAR",0],["GELATINA EVERY NIGHT 500g","HIGIENE PERSONAL Y HOGAR",0],["GELATINA FRUSTY","GOLOSINAS Y TOÑECURAS",0],["GELATINA FRUTIÑO","GOLOSINAS Y TOÑECURAS",0],["GELATINA LANDOR","GOLOSINAS Y TOÑECURAS",0],["GELATINA ROLDA 120gr","HIGIENE PERSONAL Y HOGAR",0],["GELATINA SOBRE CABELLO","HIGIENE PERSONAL Y HOGAR",0],["GELATINA SONRISSA","GOLOSINAS Y TOÑECURAS",0],["GOLDEN 1.5 LITROS","BEBIDAS",0],["GOMITAS 90gr","GOLOSINAS Y TOÑECURAS",0],["GOTAS KRONC","GOLOSINAS Y TOÑECURAS",0],["HALLS","GOLOSINAS Y TOÑECURAS",0],["HARINA ANIMAL","COMIDA PARA ANIMALES",0],["HARINA AREPAMIA","VÍVERES",0],["HARINA BELEN","VÍVERES",0],["HARINA DE TRIGO LEUDANTE ROBIN HOOD","VÍVERES",0],["HARINA DE TRIGO MARY LEUDANTE KG","VÍVERES",0],["HARINA DOÑA EMILIA","VÍVERES",0],["HARINA DOÑA EMILIA MEZCLA DE ARROZ KG","VÍVERES",0],["HARINA KALY","VÍVERES",0],["HARINA MARY KG","VÍVERES",0],["HARINA MASIA 900g","VÍVERES",0],["HARINA MIMASA 1kg","VÍVERES",0],["HARINA PAMPA LEUDANTE 1Kg","VÍVERES",0],["HARINA PAN TRADICIONAL","VÍVERES",0],["HARINA TRIGO TODO USO ROBINHOOD","VÍVERES",0],["HARINA YARACUY","VÍVERES",0],["HEINZ 57 198g","VÍVERES",0],["HELADOS","GOLOSINAS Y TOÑECURAS",0],["HILO PABILO","VARIEDADES Y FERRETERÍA",0],["HISOPO","HIGIENE PERSONAL Y HOGAR",0],["HONYBRANK Y KRAKER","GOLOSINAS Y TOÑECURAS",0],["HUEVO CALIDAD","VÍVERES",0],["IBUPROFENO 800mg","HIGIENE PERSONAL Y HOGAR",0],["JABON ANITA 125gr","HIGIENE PERSONAL Y HOGAR",0],["JABON ANITA 80gr","HIGIENE PERSONAL Y HOGAR",0],["JABON LEMON","HIGIENE PERSONAL Y HOGAR",0],["JABON MEDICARE 85gr","HIGIENE PERSONAL Y HOGAR",0],["JABON MIMLOT 125g","HIGIENE PERSONAL Y HOGAR",0],["JABON MIMLOT 90g","HIGIENE PERSONAL Y HOGAR",0],["JABON OSO BLANCO 110g","HIGIENE PERSONAL Y HOGAR",0],["JABON PARA EL CUERPO ALIVE","HIGIENE PERSONAL Y HOGAR",0],["JABON PROTEX 75gr","HIGIENE PERSONAL Y HOGAR",0],["JABON REXONA 110gr","HIGIENE PERSONAL Y HOGAR",0],["JAIMITO 70g","GOLOSINAS Y TOÑECURAS",0],["JAMON AREPERO","CHARCUTERÍA",1],["JAMON DRAGO","CHARCUTERÍA",1],["JAMON ESPALDA AHUMADO","CHARCUTERÍA",1],["JAMON VARIADO","CHARCUTERÍA",1],["JET 25Gr","GOLOSINAS Y TOÑECURAS",0],["JET BOMBONES","GOLOSINAS Y TOÑECURAS",0],["JUANA 900g","VÍVERES",0],["JUCOSA LITRO","BEBIDAS",0],["JUGO DEL VALLE 1.5lts","BEBIDAS",0],["JUSTY 400ml","BEBIDAS",0],["JUSTY SABORES 1.5L","BEBIDAS",0],["KRISPIZ CHOCOLATE","GOLOSINAS Y TOÑECURAS",0],["LAGARTO CON HUESO","CHARCUTERÍA",1],["LAMPARA RECARGABLE LARGA","VARIEDADES Y FERRETERÍA",0],["LAPICERO","VARIEDADES Y FERRETERÍA",0],["LAPIZ MONGOL","VARIEDADES Y FERRETERÍA",0],["LAVAPLATO ALICLEAN 350ml","HIGIENE PERSONAL Y HOGAR",0],["LAVAPLATOS GRANEL","HIGIENE PERSONAL Y HOGAR",0],["LECHE AMANECER 125gr","VÍVERES",0],["LECHE CAMPIÑA 125g","VÍVERES",0],["LECHE COMPLETA NATULAC","VÍVERES",0],["LECHE CONDENSADA ECONOMICA CREMOR","VÍVERES",0],["LECHE CONDENSADA NATULAC 340gr","VÍVERES",0],["LECHE CONDENSADA NATULAC 397gr","VÍVERES",0],["LECHE DESCREMADA NATULAC","VÍVERES",0],["LECHE DESLACTOSADA NATULAC","VÍVERES",0],["LECHE DOBON 120gr","VÍVERES",0],["LECHE DOBON 200gr","VÍVERES",0],["LECHE DOBON 400gr","VÍVERES",0],["LECHE EN POLVO CAMPIÑA 200gr","VÍVERES",0],["LECHE ENTERA NATULAC 473ml","VÍVERES",0],["LECHE KALY 120G","VÍVERES",0],["LECHE KALY 200gr","VÍVERES",0],["LECHE MAITA LITRO","VÍVERES",0],["LENTEJA MAIZAL 900G","VÍVERES",0],["LENTEJA MAIZOLITO 400g","VÍVERES",0],["LENTEJAS GRANEL 500gr","VÍVERES",0],["LIGAS DE CABELLO","VARIEDADES Y FERRETERÍA",0],["LIMPIA POCETAS MARTY","HIGIENE PERSONAL Y HOGAR",0],["LLANA DENTADA","VARIEDADES Y FERRETERÍA",0],["LLANA LISA","VARIEDADES Y FERRETERÍA",0],["LOCION CORPORAL ALIVE","HIGIENE PERSONAL Y HOGAR",0],["LOMO DE ATUN LAILA 142g","VÍVERES",0],["LUCKY STRIKE ECLIPSE","VARIEDADES Y FERRETERÍA",0],["LUCKY STRIKE NOVA","VARIEDADES Y FERRETERÍA",0],["LUMI ALPHA","HIGIENE PERSONAL Y HOGAR",0],["MAIZ COTUFA COTUFA 400g","VÍVERES",0],["MAIZ EN CONCHA","COMIDA PARA ANIMALES",1],["MAIZORITOS AZUCARADAS 240gr","VÍVERES",0],["MALTA","BEBIDAS",0],["MALTA 207ml","BEBIDAS",0],["MALTA DE LATA","BEBIDAS",0],["MANI JAPONES MOSTAZA MIEL","VÍVERES",0],["MANI MIXTURA KG","VÍVERES",1],["MANI SALADO Kg","VÍVERES",1],["MANZANILLA 10g","VÍVERES",0],["MARGARINA DELINE 250gr","VÍVERES",0],["MARGARINA MAVESA 250gr","VÍVERES",0],["MARGARINA MAVESA 500gr","VÍVERES",0],["MARGARINA PAMPA 225g","VÍVERES",0],["MARGARINA PAMPA 450gr","VÍVERES",0],["MARIA CALEDONIA 150gr","GOLOSINAS Y TOÑECURAS",0],["MARIA PUIG","GOLOSINAS Y TOÑECURAS",0],["MARILU","GOLOSINAS Y TOÑECURAS",0],["MARMOLEADA","VÍVERES",0],["MASA FACIL 450g","VÍVERES",0],["MASA FACIL 800g","VÍVERES",0],["MATA CUCARACHA","VARIEDADES Y FERRETERÍA",0],["MAX COCO","GOLOSINAS Y TOÑECURAS",0],["MAYONESA KALDINI 445g","VÍVERES",0],["MAYONESA KEMY 190gr","VÍVERES",0],["MAYONESA KEMY 445gr","VÍVERES",0],["MAYONESA KRAFT 175gr","VÍVERES",0],["MAYONESA KRAFT 445gr","VÍVERES",0],["MAYONESA MAVESA 175gr","VÍVERES",0],["MAYONESA OSOLE 175g","VÍVERES",0],["MAYONESA PASTORA 445GR","VÍVERES",0],["MAYONESA PASTORA GALON","VÍVERES",0],["MAZEITE","VÍVERES",0],["MEDIA DE BELMONT","VARIEDADES Y FERRETERÍA",0],["MONCLER 90 gr","HIGIENE PERSONAL Y HOGAR",0],["MORTADELA ALIBAL 500g","CHARCUTERÍA",0],["MORTADELA ALIBAL 700g","CHARCUTERÍA",0],["MORTADELA ALIBAL KILO","CHARCUTERÍA",0],["MORTADELA AMANACU 900g","CHARCUTERÍA",0],["MORTADELA BOLOGNA","CHARCUTERÍA",0],["MORTADELA CARACAS 1K","CHARCUTERÍA",0],["MORTADELA CARACAS 500g","CHARCUTERÍA",0],["MORTADELA DE POLLO AMANACU 400g","CHARCUTERÍA",0],["MORTADELA DE POLLO LIDER 10*1K","CHARCUTERÍA",0],["MORTADELA DON RAMON 400gr POLLO","CHARCUTERÍA",0],["MORTADELA DON RAMON 600g","CHARCUTERÍA",0],["MORTADELA DON RAMON 900g","CHARCUTERÍA",0],["MORTADELA PUNTA DE MONTE KILO","CHARCUTERÍA",0],["MORTADELA PUNTA DEL MONTE 500G","CHARCUTERÍA",0],["MORTADELA VILLA JULIA 500G","CHARCUTERÍA",0],["MORTADELA VILLA JULIA 900G","CHARCUTERÍA",0],["MOSTAZA XPAÑOLA GALON","VÍVERES",0],["MUSLOS","CHARCUTERÍA",1],["NARANJA RANCH","GOLOSINAS Y TOÑECURAS",0],["NATY ZOO","GOLOSINAS Y TOÑECURAS",0],["NECTAR DE MANZANA NATULAC","BEBIDAS",0],["NECTAR NATULAC 200ml","BEBIDAS",0],["NUCITA TUBO 35g","GOLOSINAS Y TOÑECURAS",0],["NUTRIBELLA","HIGIENE PERSONAL Y HOGAR",0],["NUTTELINI","GOLOSINAS Y TOÑECURAS",0],["OREO","GOLOSINAS Y TOÑECURAS",0],["P1 INICIADOR LAS TUNAS POLLO","COMIDA PARA ANIMALES",1],["P1C","COMIDA PARA ANIMALES",1],["P2 POLLO","COMIDA PARA ANIMALES",1],["PALAS","VARIEDADES Y FERRETERÍA",0],["PALETA FRE FRES","GOLOSINAS Y TOÑECURAS",0],["PALETA FRES LIMON","GOLOSINAS Y TOÑECURAS",0],["PALITOS DE CHOCOLATE 18U","GOLOSINAS Y TOÑECURAS",0],["PALMERITAS","HIGIENE PERSONAL Y HOGAR",0],["PALMOLIVE 90gr","HIGIENE PERSONAL Y HOGAR",0],["PAMPERO 198gr","VÍVERES",0],["PAMPERO 397gr","VÍVERES",0],["PAN AJONJOLI 600 GR","VÍVERES",0],["PAN BLANCO","VÍVERES",0],["PAN DE ARABE","VÍVERES",0],["PAN DE DIOS","VÍVERES",0],["PAN DE GUAYABA","VÍVERES",0],["PAN DE PERRO","VÍVERES",0],["PAN DE TUNJA","VÍVERES",0],["PAN INTEGRAL CON PASAS","VÍVERES",0],["PAN ZANAHORIA","VÍVERES",0],["PANELA TRADICIONAL 200GR LAS LLAVES","HIGIENE PERSONAL Y HOGAR",0],["PANELA TRADICIONAL 250GR LAS LLAVES","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ALISOF 600H","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ALISOFT 180h","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ALISOFT 215H","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ALISOFT 300H","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ALISOFT 400h","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ALIVE 215h","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ALIVE 300h","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ALUMINIO","VARIEDADES Y FERRETERÍA",0],["PAPEL EURO 215h","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ROLLO","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ROSAL AMARILLO 600H","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ROSAL VERDE 215H X2","HIGIENE PERSONAL Y HOGAR",0],["PAPEL ROSAL VERDE 215H X4","HIGIENE PERSONAL Y HOGAR",0],["PAPELON","VÍVERES",0],["PAPITAS RALLADAS PARA PERROS","COMIDA PARA ANIMALES",0],["PASSATA KALDINI 680g","VÍVERES",0],["PASTA CARACOL 500GRS","VÍVERES",0],["PASTA CORTA 500g SINDONI","VÍVERES",0],["PASTA CORTA SINDONI KG PREMIUM","VÍVERES",0],["PASTA DE TOMATE 200gr TIQUIRE FLORES","VÍVERES",0],["PASTA DE TOMATE HEINZ DOBLE CONCENTRADA 200g","VÍVERES",0],["PASTA ESPECIAL 500gr","VÍVERES",0],["PASTA ESPECIAL CORTA 1kg","VÍVERES",0],["PASTA ESPECIAL CORTA 500g","VÍVERES",0],["PASTA ESPECIAL LARGA 1KG","VÍVERES",0],["PASTA MARY LARGA 1KG","VÍVERES",0],["PASTA SINDONI KILO LARGA","VÍVERES",0],["PASTA SINDONI LARGA 1KG","VÍVERES",0],["PASTA TALLARINES","VÍVERES",0],["PATAS DE POLLO","CHARCUTERÍA",1],["PAÑAL BABY FINGER G.","HIGIENE PERSONAL Y HOGAR",0],["PAÑAL BABY FINGER M 18 UND","HIGIENE PERSONAL Y HOGAR",0],["PAÑAL BABY FINGER XG","HIGIENE PERSONAL Y HOGAR",0],["PAÑAL FINGER XXG","HIGIENE PERSONAL Y HOGAR",0],["PAÑOS MICROFIBRA","HIGIENE PERSONAL Y HOGAR",0],["PECHO E NIÑA","VÍVERES",0],["PEGA BLANCA ASTRO","VARIEDADES Y FERRETERÍA",0],["PEGA LOKA","VARIEDADES Y FERRETERÍA",0],["PEPINO","VÍVERES",1],["PEPITA 25gr","GOLOSINAS Y TOÑECURAS",0],["PEPITO 25 GRS.","GOLOSINAS Y TOÑECURAS",0],["PEPITO RIKOS","GOLOSINAS Y TOÑECURAS",0],["PEPITO XXL","GOLOSINAS Y TOÑECURAS",0],["PEPITONA 140gr","VÍVERES",0],["PERA NATULAC LITRO","BEBIDAS",0],["PERRARINA","COMIDA PARA ANIMALES",1],["PILAS AA","VARIEDADES Y FERRETERÍA",0],["PILAS AAA","VARIEDADES Y FERRETERÍA",0],["PILSEN LATA 355ml","BEBIDAS",0],["PILSEN LIGHT 355ml","BEBIDAS",0],["PIRULIN PEQUEÑO","GOLOSINAS Y TOÑECURAS",0],["PITILLO","VARIEDADES Y FERRETERÍA",0],["PLATANITO","VÍVERES",0],["POLLO ENTERO","CHARCUTERÍA",1],["POLLO PICADO","CHARCUTERÍA",1],["POLVOROSA","VÍVERES",0],["POTATO Pq","GOLOSINAS Y TOÑECURAS",0],["PRESERVATIVOS","HIGIENE PERSONAL Y HOGAR",0],["PRESTOBARBA DORCO","HIGIENE PERSONAL Y HOGAR",0],["PRESTOBARBA GILLET","HIGIENE PERSONAL Y HOGAR",0],["PRESTOBARBA MAX 3","HIGIENE PERSONAL Y HOGAR",0],["PROTECTOR ALIVE","HIGIENE PERSONAL Y HOGAR",0],["PROTECTOR WANITA","HIGIENE PERSONAL Y HOGAR",0],["PROTECTORES DIARIOS NOSOTRAS","HIGIENE PERSONAL Y HOGAR",0],["PROTEX 110gr","HIGIENE PERSONAL Y HOGAR",0],["QUESO","CHARCUTERÍA",1],["QUESO AMARILLO","CHARCUTERÍA",1],["QUESO DE AÑO","CHARCUTERÍA",0],["QUESO PAISA","CHARCUTERÍA",1],["QUINCHONCHO 500g","VÍVERES",0],["RASTRILLO","VARIEDADES Y FERRETERÍA",0],["RECOLECTOR DE HECES","VARIEDADES Y FERRETERÍA",0],["RECOLECTOR DE ORINA","VARIEDADES Y FERRETERÍA",0],["REFRESCO BOTELLA","BEBIDAS",0],["REFRESCO DE 1,25 LITROS SABORES","BEBIDAS",0],["REPELENTE","VARIEDADES Y FERRETERÍA",0],["RESISTENCIA PARA COCINA ELECTRICA","VARIEDADES Y FERRETERÍA",0],["REXONA CLINICAL POMO","HIGIENE PERSONAL Y HOGAR",0],["RIKESA 200gr","VÍVERES",0],["RIKITO PICANTE","GOLOSINAS Y TOÑECURAS",0],["RIKO MALT LITRO","BEBIDAS",0],["RODRIGO BARRA","GOLOSINAS Y TOÑECURAS",0],["ROLLO 80*70","VÍVERES",0],["ROLLO PUNTO","VARIEDADES Y FERRETERÍA",0],["ROSCAS ROJAS","GOLOSINAS Y TOÑECURAS",0],["ROYAL","VARIEDADES Y FERRETERÍA",0],["SAL BAHIA","VÍVERES",0],["SAL ENSAL Kg","VÍVERES",0],["SAL KG","VÍVERES",0],["SALCHICHA ALIMEX 11 UNIDADES","CHARCUTERÍA",0],["SALCHICHA ALIMEX 22und","CHARCUTERÍA",0],["SALCHICHA ALIMEX GRANEL","CHARCUTERÍA",1],["SALCHICHA ALPRO","CHARCUTERÍA",1],["SALSA BOLOÑESA OLE 200G","VÍVERES",0],["SALSA BOLOÑESA OSOLE 200G","VÍVERES",0],["SALSA CHINA 150cm","VÍVERES",0],["SALSA HEINZ 198 GR","VÍVERES",0],["SALSA HEINZ 397G","VÍVERES",0],["SALSA HEINZ 57 DE 378g","VÍVERES",0],["SALSA KETCHUP KIERO 198g","VÍVERES",0],["SALSA NAPOLITANA CON TOCINETA OLE 200G","VÍVERES",0],["SALSA NAPOLITANA OLE 200G","VÍVERES",0],["SALSA NAPOLITANA OSOLE 200G","VÍVERES",0],["SALSA PARA PIZZA OSOLE 200G","VÍVERES",0],["SALSA PICANTE GIRALDA","VÍVERES",0],["SALSA PIZZA OLE 200g","VÍVERES",0],["SALSA SOYA DELICIA","VÍVERES",0],["SALTIN 1 TACOS","GOLOSINAS Y TOÑECURAS",0],["SALTIN 2 TACOS","GOLOSINAS Y TOÑECURAS",0],["SALTIN 5 TACOS","GOLOSINAS Y TOÑECURAS",0],["SALTITACOS 5 TACOS","GOLOSINAS Y TOÑECURAS",0],["SALTITACOS 7 TACOS","GOLOSINAS Y TOÑECURAS",0],["SARDINA DIFIORE","VÍVERES",0],["SARDINA INCOSA ACEITE","VÍVERES",0],["SARDINA INCOSA TOMATE","VÍVERES",0],["SARDINA NONNA","VÍVERES",0],["SARDINA OMEGA 170g","VÍVERES",0],["SARDINA PORTO ALEGRE","VÍVERES",0],["SEMILLAS NUTRITIVAS 500GR","VÍVERES",0],["SERVILLETA","HIGIENE PERSONAL Y HOGAR",0],["SHAMPO ALIVE 250ml","HIGIENE PERSONAL Y HOGAR",0],["SHAMPO DOXA T. 600ml","HIGIENE PERSONAL Y HOGAR",0],["SHAMPO ELSE","HIGIENE PERSONAL Y HOGAR",0],["SHAMPO EVERY NIGHT","HIGIENE PERSONAL Y HOGAR",0],["SHAMPO H&S SOBRE","HIGIENE PERSONAL Y HOGAR",0],["SHAMPO MOMI 400ml","HIGIENE PERSONAL Y HOGAR",0],["SHAMPOO ALIVE MEDICINAL 413ML","HIGIENE PERSONAL Y HOGAR",0],["SKALA 1000g","VÍVERES",0],["SOCATE DE GOMA","VARIEDADES Y FERRETERÍA",0],["SOFRITO ARROZ CON POLLO 200g","VÍVERES",0],["SOFRITO ASADO NEGRO 200g","VÍVERES",0],["SOFRITO CARAOTAS 200g","VÍVERES",0],["SOFRITO CARNE MECHADA 200g","VÍVERES",0],["SOFRITO CRIOLLO 200g","VÍVERES",0],["SOPA MAGGI","VÍVERES",0],["SPEED MAX LATA","BEBIDAS",0],["SPEED STICK POMO 32G","HIGIENE PERSONAL Y HOGAR",0],["SUAVITEL 430ml","HIGIENE PERSONAL Y HOGAR",0],["SUAVITEL SUAVIZANTE","HIGIENE PERSONAL Y HOGAR",0],["SUERO ANGEL","CHARCUTERÍA",0],["SUERO CRIOLLO","CHARCUTERÍA",0],["SUN COLA 2 LITROS","BEBIDAS",0],["SUN COLA 400ml","BEBIDAS",0],["SUN COLA LITRO","BEBIDAS",0],["SUNTY 1.5lt","BEBIDAS",0],["SUNTY 200ML","BEBIDAS",0],["SUNTY 400ml","BEBIDAS",0],["TALCO BERNICE 100g","HIGIENE PERSONAL Y HOGAR",0],["TALCO BOROCANFOR","HIGIENE PERSONAL Y HOGAR",0],["TALCO PARA NIÑOS 200g","HIGIENE PERSONAL Y HOGAR",0],["TE TIGO","VÍVERES",0],["TEIPE","VARIEDADES Y FERRETERÍA",0],["TENTAZIONE NARANJA","GOLOSINAS Y TOÑECURAS",0],["TENTAZIONE VAINILLA","GOLOSINAS Y TOÑECURAS",0],["TERAGRIP SOBRE","HIGIENE PERSONAL Y HOGAR",0],["TINTE COLOR EFECT","HIGIENE PERSONAL Y HOGAR",0],["TINTE LOVIA NEGRO","HIGIENE PERSONAL Y HOGAR",0],["TINTE LOVIA NEGRO Gde","HIGIENE PERSONAL Y HOGAR",0],["TINTE SHAMPO NEGRO","HIGIENE PERSONAL Y HOGAR",0],["TIRRAJE 200mm","VARIEDADES Y FERRETERÍA",0],["TOALLA ALIVE","HIGIENE PERSONAL Y HOGAR",0],["TOALLA WANITA NOCTURNA","HIGIENE PERSONAL Y HOGAR",0],["TOALLAS ALIVE EXTRA LARGAS 8 und","HIGIENE PERSONAL Y HOGAR",0],["TOALLAS HUMEDAS BABY FINGER","HIGIENE PERSONAL Y HOGAR",0],["TOALLAS HUMEDAS MIMLOT","HIGIENE PERSONAL Y HOGAR",0],["TOALLAS HUMEDAS MOMI","HIGIENE PERSONAL Y HOGAR",0],["TOALLAS HUMEDAS OKI","HIGIENE PERSONAL Y HOGAR",0],["TOALLAS HUMEDAS UNITOP","HIGIENE PERSONAL Y HOGAR",0],["TOALLAS NOSOTRAS NATURAL","HIGIENE PERSONAL Y HOGAR",0],["TOALLAS NOSOTRAS ULTRASENSIBLE","HIGIENE PERSONAL Y HOGAR",0],["TOALLAS WANITA","HIGIENE PERSONAL Y HOGAR",0],["TOCINETA GALON","VÍVERES",0],["TOCINETA Kg","VÍVERES",1],["TODDY POTE 200gr","VÍVERES",0],["TORTA DE AHUYAMA","GOLOSINAS Y TOÑECURAS",0],["TORTA DE PAN","GOLOSINAS Y TOÑECURAS",0],["TOSTON GRANDE","GOLOSINAS Y TOÑECURAS",0],["TOSTON LAJA","GOLOSINAS Y TOÑECURAS",0],["TRONKOLATE","GOLOSINAS Y TOÑECURAS",0],["TRULULU","GOLOSINAS Y TOÑECURAS",0],["VAINILLA ESENCIA","VÍVERES",0],["VAPORUB 25G","HIGIENE PERSONAL Y HOGAR",0],["VASELINA 120ml","HIGIENE PERSONAL Y HOGAR",0],["VASELINA 60ML","HIGIENE PERSONAL Y HOGAR",0],["VASO BBQ","VÍVERES",0],["VASO DE MIEL","VÍVERES",0],["VASO MAYONESA 160g","VÍVERES",0],["VASO TOCINETA","VÍVERES",0],["VASO TOMATE","VÍVERES",0],["VASO TOMATE 500gr","VÍVERES",0],["VASOS DE CAFE No17","VARIEDADES Y FERRETERÍA",0],["VASOS N\" 157","VARIEDADES Y FERRETERÍA",0],["VASOS PARA REFRESCO","VARIEDADES Y FERRETERÍA",0],["VELAS PEQUEÑA","VARIEDADES Y FERRETERÍA",0],["VICERROY","VARIEDADES Y FERRETERÍA",0],["VINAGRE 500ml MANZANA","VÍVERES",0],["VINAGRE BALSAMIC 250ml","VÍVERES",0],["VINAGRE BALSAMIC 500ml","VÍVERES",0],["WIKI WIKI","VARIEDADES Y FERRETERÍA",0],["YESQUERO","VARIEDADES Y FERRETERÍA",0],["YOGURT Pq","BEBIDAS",0],["YUKYPAK","BEBIDAS",0],["YUPI","GOLOSINAS Y TOÑECURAS",0]];
+
+// Grupos de ~50 productos para que todos cuenten parecido
+const MAX_GRUPO = 50;
+const JUNTAR = [['CHARCUTERÍA','COMIDA PARA ANIMALES']];
+const GRUPOS = (function(){
+  const g=[], hechos={};
+  CATS.forEach(cat=>{
+    if(hechos[cat]) return;
+    const junto=JUNTAR.find(j=>j.includes(cat)) || [cat];
+    junto.forEach(c=>hechos[c]=1);
+    const lista=PRODUCTOS.filter(p=>junto.includes(p[1])).map(p=>p[0]).sort((a,b)=>a.localeCompare(b,'es'));
+    const partes=Math.max(1,Math.ceil((lista.length-5)/MAX_GRUPO)), tam=Math.ceil(lista.length/partes);
+    for(let i=0;i<partes;i++){
+      const nombres=lista.slice(i*tam,(i+1)*tam);
+      const ini=nombres[0].split(' ')[0], fin=nombres[nombres.length-1].split(' ')[0];
+      g.push({id:'g'+(g.length+1), num:g.length+1, titulo:junto.join(' + ')+(partes>1?' '+(i+1):''), rango:ini===fin?ini:(ini+' a '+fin), nombres:new Set(nombres)});
+    }
+  });
+  return g;
+})();
+function grupoDe(nombre){ const g=GRUPOS.find(x=>x.nombres.has(nombre)); return g?g.id:null; }
+
+let S = cargar();
+let catActual = null;
+
+function cargar(){
+  try { return JSON.parse(localStorage.getItem('toneco_conteo') || '{}'); } catch(e){ return {}; }
+}
+function guardar(){
+  try { localStorage.setItem('toneco_conteo', JSON.stringify(S)); } catch(e){}
+}
+if(!S.items) S.items = {};      // nombre -> {cant, cat, kg, enviado}
+if(!S.extra) S.extra = [];      // productos agregados a mano
+if(!S.lote) S.lote = 0;
+
+function todos(){ return PRODUCTOS.concat(S.extra); }
+function delGrupo(gid){ const g=GRUPOS.find(x=>x.id===gid); return PRODUCTOS.filter(p=>g.nombres.has(p[0])).concat(S.extra.filter(p=>p[3]===gid)); }
+function sinAcento(t){ return String(t).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+function esc(t){ return String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(t){ const d=document.createElement('div'); d.className='toast'; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),2200); }
+function fmtCant(it){ const v=it.cant; if(it.kg) return (Math.round(v*1000)/1000).toLocaleString('es-VE',{maximumFractionDigits:3})+' kg'; return (Math.round(v*1000)/1000).toLocaleString('es-VE',{maximumFractionDigits:3}); }
+
+/* ---------- entrar ---------- */
+function entrar(){
+  const c=document.getElementById('iClave').value.trim(), n=document.getElementById('iNombre').value.trim();
+  const e=document.getElementById('eClave');
+  if(c!==CLAVE){ e.textContent='Clave incorrecta.'; return; }
+  if(!n){ e.textContent='Escribe tu nombre.'; return; }
+  S.ok=1; S.nombre=n; guardar(); verCats();
+}
+function cambiarNombre(){
+  pedir('Cambiar nombre','Escribe tu nombre:',S.nombre||'',v=>{ if(v.trim()){ S.nombre=v.trim(); guardar(); pintarHdr(); } });
+}
+function pintarHdr(){
+  document.getElementById('hdrSub').textContent = S.nombre ? ('Contando: '+S.nombre) : 'Variedades el Toñeco';
+  document.getElementById('btnSalir').classList.toggle('hidden', !S.nombre);
+}
+
+/* ---------- categorías ---------- */
+function verCats(){
+  catActual=null;
+  ['vClave','vLista'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('vCats').classList.remove('hidden');
+  pintarHdr(); pintarFoot();
+  document.getElementById('catGrid').innerHTML = GRUPOS.map(g=>{
+    const ps=delGrupo(g.id), tot=ps.length, hechos=ps.filter(p=>S.items[p[0]]).length;
+    const pct=tot?Math.round(hechos*100/tot):0;
+    return `<button class="cat" onclick="abrir('${g.id}')"><div><span style="font-size:12px;color:#fbbf24;font-weight:800">GRUPO ${g.num}</span><br><b>${g.titulo}</b><br><small>${g.rango}</small></div><div><small>${hechos} de ${tot} contados</small><div class="bar"><i style="width:${pct}%"></i></div></div></button>`;
+  }).join('');
+  window.scrollTo(0,0);
+}
+
+/* ---------- lista ---------- */
+function abrir(gid){
+  catActual=gid;
+  const g=GRUPOS.find(x=>x.id===gid);
+  document.getElementById('vCats').classList.add('hidden');
+  document.getElementById('vLista').classList.remove('hidden');
+  document.getElementById('catTitulo').textContent='Grupo '+g.num+' · '+g.titulo;
+  document.getElementById('iBuscar').value='';
+  pintarLista(); pintarFoot(); window.scrollTo(0,0);
+}
+function pintarLista(){
+  const q=sinAcento(document.getElementById('iBuscar').value.trim());
+  const lista=delGrupo(catActual).filter(p=>!q || sinAcento(p[0]).includes(q));
+  if(!lista.length){ document.getElementById('lista').innerHTML='<div class="empty">No hay productos con ese nombre.</div>'; return; }
+  document.getElementById('lista').innerHTML = lista.map(p=>{
+    const it=S.items[p[0]], cls=it?(it.enviado?'row sent':'row ok'):'row';
+    const est=it?(it.enviado?'<small style="color:#60a5fa">✓ Enviado</small>':'<small style="color:#34d399">Por enviar</small>'):(p[2]?'<small style="color:#fbbf24">Por peso (kg)</small>':'');
+    const val=it?String(it.cant).replace('.',','):'';
+    return `<div class="${cls}" data-n="${esc(p[0])}"><div class="n">${esc(p[0])}${est}</div><input type="text" inputmode="decimal" placeholder="—" value="${val}" onchange="anotar(this)" onfocus="this.select()"><span class="u">${p[2]?'kg':''}</span></div>`;
+  }).join('');
+}
+function anotar(inp){
+  const nombre=inp.closest('.row').getAttribute('data-n').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+  const p=todos().find(x=>x[0]===nombre); if(!p) return;
+  const raw=inp.value.trim().replace(',','.');
+  if(raw===''){ delete S.items[nombre]; guardar(); pintarLista(); pintarFoot(); return; }
+  const v=parseFloat(raw);
+  if(isNaN(v)||v<0){ toast('Escribe solo números.'); inp.value=''; return; }
+  const ant=S.items[nombre];
+  const gg=GRUPOS.find(x=>x.id===(p[3]||grupoDe(nombre)));
+  S.items[nombre]={cant:v, cat:gg?('Grupo '+gg.num+' · '+gg.titulo):p[1], kg:p[2]?1:0, enviado:false, corregido: !!(ant && ant.enviado && ant.cant!==v), t:Date.now()};
+  guardar();
+  const row=inp.closest('.row'); row.className='row ok';
+  row.querySelector('.n').innerHTML=esc(nombre)+'<small style="color:#34d399">Por enviar</small>';
+  pintarFoot();
+  if(pendientes().length>=LOTE){ toast('¡Ya tienes '+LOTE+'! Dale Enviar.'); }
+}
+function agregarOtro(){
+  pedir('Producto que no está','Escribe el nombre como sale en la etiqueta:','',v=>{
+    v=v.trim().toUpperCase(); if(!v) return;
+    if(todos().some(p=>p[0].toUpperCase()===v)){ toast('Ese ya está en la lista.'); return; }
+    const g=GRUPOS.find(x=>x.id===catActual);
+    S.extra.push([v,g.titulo,0,catActual]); guardar(); pintarLista();
+    toast('Agregado. Escribe la cantidad.');
+  });
+}
+
+/* ---------- enviar ---------- */
+function pendientes(){
+  return Object.keys(S.items).filter(n=>!S.items[n].enviado).map(n=>({nombre:n, ...S.items[n]})).sort((a,b)=>a.t-b.t);
+}
+function pintarFoot(){
+  const foot=document.getElementById('foot');
+  const pend=pendientes(), n=pend.length;
+  foot.classList.toggle('hidden', !S.ok || (n===0 && !catActual));
+  document.getElementById('pendTxt').textContent = n>=LOTE ? '¡Listo! Envía estos '+Math.min(n,LOTE) : (n+' de '+LOTE+' para enviar');
+  document.getElementById('dots').innerHTML = Array.from({length:LOTE},(_,i)=>`<i class="${i<n?'on':''}"></i>`).join('');
+  const b=document.getElementById('btnEnviar');
+  b.textContent = n ? ('Enviar '+Math.min(n,LOTE)) : 'Enviar';
+  b.classList.toggle('big', n>=LOTE);
+  b.style.opacity = n ? 1 : .45;
+}
+function enviar(){
+  let pend=pendientes();
+  if(!pend.length){ toast('Todavía no has contado nada.'); return; }
+  const lote=pend.slice(0,LOTE).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  const go=()=>{
+    S.lote=(S.lote||0)+1;
+    const f=new Date(), fecha=f.toLocaleDateString('es-VE')+' '+f.toLocaleTimeString('es-VE',{hour:'2-digit',minute:'2-digit'});
+    const cats=[...new Set(lote.map(x=>x.cat))].join(', ');
+    let msg='📦 *CONTEO DE INVENTARIO*\n';
+    msg+='👤 '+(S.nombre||'')+'\n🗂️ '+cats+'\n';
+    msg+='📅 '+fecha+'  ·  Lote '+S.lote+'\n\n';
+    lote.forEach((x,i)=>{ msg+=(i+1)+'. '+x.nombre+' → *'+fmtCant(x)+'*'+(x.corregido?'  ✏️ corregido':'')+'\n'; });
+    msg+='\n_Anaquel + depósito_';
+    lote.forEach(x=>{ S.items[x.nombre].enviado=true; S.items[x.nombre].corregido=false; });
+    guardar();
+    window.open('https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(msg),'_blank');
+    if(catActual) pintarLista(); else verCats();
+    pintarFoot();
+  };
+  if(pend.length<LOTE) confirmar('Enviar '+pend.length+' producto'+(pend.length>1?'s':''),'Todavía no llegas a '+LOTE+'. ¿Los envías igual? (Úsalo cuando termines tu categoría.)',go);
+  else go();
+}
+
+/* ---------- reiniciar ---------- */
+function reiniciar(){
+  const pend=pendientes().length;
+  confirmar('Inventario nuevo', (pend?('⚠️ Tienes '+pend+' sin enviar. '):'')+'Se borra todo lo contado en este teléfono. ¿Seguro?', ()=>{
+    S.items={}; S.extra=[]; S.lote=0; guardar(); verCats(); toast('Listo, puedes empezar.');
+  });
+}
+
+/* ---------- ventanitas ---------- */
+let mCb=null, mPedir=false;
+function confirmar(t,txt,cb){ mostrarModal(t,txt,false,'',cb); }
+function pedir(t,txt,val,cb){ mostrarModal(t,txt,true,val,cb); }
+function mostrarModal(t,txt,conInput,val,cb){
+  document.getElementById('mTit').textContent=t; document.getElementById('mTxt').textContent=txt;
+  const i=document.getElementById('mInp'); i.classList.toggle('hidden',!conInput); i.value=val||'';
+  mCb=cb; mPedir=conInput; document.getElementById('modal').classList.remove('hidden');
+  if(conInput) setTimeout(()=>i.focus(),50);
+}
+function cerrarModal(ok){
+  document.getElementById('modal').classList.add('hidden');
+  const cb=mCb; mCb=null;
+  if(ok && cb) cb(mPedir?document.getElementById('mInp').value:undefined);
+}
+
+/* ---------- inicio ---------- */
+if(S.ok && S.nombre) verCats(); else { document.getElementById('iNombre').value=S.nombre||''; pintarHdr(); }
+</script>
+</body>
+</html>
