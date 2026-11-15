@@ -59,6 +59,12 @@ textarea{min-height:90px;resize:vertical}
 .chip{border:2px solid var(--line);background:#fff;border-radius:99px;padding:7px 14px;font-weight:800;font-size:14px}
 .chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .empty{text-align:center;color:var(--mut);padding:24px 8px}
+.alerta{background:#fde047;border:4px solid #ca8a04;border-radius:18px;padding:16px;margin-bottom:12px;color:#422006}
+.alerta b.big{display:block;font-size:24px;line-height:1.15;margin-bottom:6px}
+.alerta p{margin:0 0 10px;font-size:16px;line-height:1.35}
+.alerta .go{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.alerta .go button{border:0;border-radius:12px;padding:12px 4px;font-weight:900;font-size:14px;background:#422006;color:#fde047}
+.alerta .go button.ok{background:#16a34a;color:#fff}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:99;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
 .days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:6px 0 4px}
@@ -148,18 +154,16 @@ const TEAM = {
     ]
   },
   osmary: {
-    name: 'Osmary', horario: '8:00 am – 6:00 pm', puesto: 'Café, charcutería, pollo y huevos', color: '#db2777',
+    name: 'Osmary', horario: '8:00 am – 6:00 pm', puesto: 'Café, charcutería y huevos', color: '#db2777',
     recordatorios: ['08:00', '17:15'],
     rol: [
       'Preparar el café de la mañana y ofrecerlo a cada cliente hasta las 10 am',
       'Tener la charcutería lista: pesado y picado antes de las horas fuertes',
-      'Llevar la hoja diaria del pollo',
-      'Cortar los cartones de huevos apenas llegan',
+      'Tener cartones de huevos cortados listos para cuando lleguen los huevos',
       'Mantener limpias la cocina, la charcutería y los baños',
       'Atender al gato: comida, agua y su área limpia'
     ],
     limites: [
-      'No se pica ni se vende pollo sin anotarlo en la hoja',
       'Nada se queda fuera de la nevera',
       'Nadie ajeno entra a la cocina',
       'El café no se bota: se ofrece a cada cliente que entra'
@@ -167,9 +171,8 @@ const TEAM = {
     metas: [
       'Checklist enviado todos los días',
       'Café listo y repartido todas las mañanas',
-      'Hoja del pollo sin diferencias',
       'Charcutería lista antes de las horas fuertes',
-      'Huevos cortados el mismo día que llegan'
+      'Siempre hay cartones de huevos cortados listos'
     ],
     checklist: [
       { s: 'Al llegar (8:00 am)', items: [
@@ -181,8 +184,7 @@ const TEAM = {
       ]},
       { s: 'Durante el día', items: [
         'Pesé y piqué lo que más se vende antes de las horas fuertes',
-        'Llené la hoja del pollo (kg entero y kg de cada parte)',
-        'Corté los cartones de huevos que llegaron',
+        'Dejé cartones de huevos cortados listos para cuando lleguen los huevos',
         'Ofrecí charcutería y la oferta del día a los clientes'
       ]},
       { s: 'Al salir (6:00 pm)', items: [
@@ -349,7 +351,11 @@ function dayState() { const k = dayKey(); S.day[k] = S.day[k] || { done: [], nov
 function wCheck() {
   const items = itemsOf(S.me), st = dayState();
   const done = items.filter(i => st.done.includes(i.id)).length, p = Math.round(done / items.length * 100);
-  let html = `<div class="card"><b>${fechaBonita(hoy())}</b> · <span class="mut">${done} de ${items.length} tareas</span>
+  const vistos = (S.vistos && S.vistos[S.me]) || [], falta = ['rol', 'metas', 'obs'].filter(x => !vistos.includes(x));
+  let html = falta.length ? `<div class="alerta"><b class="big">⚠️ ¡LEE TODO!</b>
+    <p>Esta app tiene <b>4 pestañas</b> arriba: ✅ Checklist, 👤 Mi rol, 🎯 Metas y 📝 Observaciones. Ábrelas todas y léelas completas.</p>
+    <div class="go"><button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '';
+  html += `<div class="card"><b>${fechaBonita(hoy())}</b> · <span class="mut">${done} de ${items.length} tareas</span>
     <div class="prog"><i style="width:${p}%"></i></div>${st.sent ? '<span class="mut">✅ Ya enviaste el reporte de hoy. Si haces más tareas, puedes enviarlo otra vez.</span>' : ''}</div>`;
   const secs = [...new Set(items.map(i => i.s))];
   secs.forEach(s => {
@@ -521,7 +527,7 @@ function ownerObs() {
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#eSave,#ePrint,#eMail,#eWa,#oSend');
   if (!b) return;
-  if (b.dataset.t) { view.tab = b.dataset.t; view.open = null; render(); window.scrollTo(0, 0); return; }
+  if (b.dataset.t) { view.tab = b.dataset.t; view.open = null; if (view.mode === 'worker' && S.me) { S.vistos = S.vistos || {}; S.vistos[S.me] = [...new Set([...(S.vistos[S.me] || []), b.dataset.t])]; save(); } render(); window.scrollTo(0, 0); return; }
   if (b.dataset.me) { S.me = b.dataset.me; save(); view = { mode: 'worker', tab: 'check' }; render(); return; }
   if (b.dataset.owner) { entrarDueno(); return; }
   if (b.dataset.wf) { view.wf = b.dataset.wf; view.open = null; render(); return; }
