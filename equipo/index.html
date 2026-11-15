@@ -69,6 +69,11 @@ textarea{min-height:90px;resize:vertical}
 .cods div{background:#0b3b46;color:#fff;border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-size:14px;gap:6px}
 .cods b{color:#fde047;font-size:22px}
 video.vid{width:100%;border-radius:14px;background:#000;display:block}
+.aten{display:grid;gap:8px}
+.aten>div{display:flex;gap:12px;align-items:flex-start;background:#ecfdf5;border-radius:14px;padding:12px}
+.aten i{font-style:normal;font-size:28px;line-height:1}
+.aten b{display:block;font-size:16px}
+.aten span{font-size:14px;color:var(--mut)}
 .alerta{background:#fde047;border:4px solid #ca8a04;border-radius:18px;padding:16px;margin-bottom:12px;color:#422006}
 .alerta b.big{display:block;font-size:24px;line-height:1.15;margin-bottom:6px}
 .alerta p{margin:0 0 10px;font-size:16px;line-height:1.35}
@@ -112,9 +117,22 @@ video.vid{width:100%;border-radius:14px;background:#000;display:block}
 const OWNER = { name: 'Rafael', wa: '584161721923' };   // WhatsApp donde llegan los reportes
 const STORE = 'Variedades el Toñeco';
 const COMUNES = [
+  'Ofrecí cesta o carrito a cada cliente que entró',
+  'Pregunté a cada cliente: "¿Qué más va a llevar?"',
+  'Con clientes en la tienda: cuidé el pasillo y si surtí, lo hice rápido',
+  'Atendí con una sonrisa y buenas respuestas',
   'Limpié y ordené mi área',
   'Cuando no hubo clientes: ordené, limpié o repuse'
 ];
+/* Atención al cliente: regla para TODOS */
+const ATENCION = [
+  ['😊', 'Saluda y sonríe', 'Cada cliente que entra recibe un "¡Buenos días, bienvenido!"'],
+  ['🧺', 'Ofrece cesta o carrito', 'Apenas entra, antes de que empiece a escoger.'],
+  ['🛒', '¿Qué más va a llevar?', 'Pregúntalo siempre antes de cobrar. Así se vende más.'],
+  ['🚶', 'Cuida el pasillo', 'Con clientes en la tienda, el pasillo queda libre. Si surtes, hazlo rápido.'],
+  ['💬', 'Buenas respuestas', 'Nunca "no hay" seco: ofrece otra opción o anótalo en el cuaderno.']
+];
+const BIENVENIDA = 'bienvenida.mp4';
 /* Guía de caja: cómo facturar en Chrystal (pestaña 📘 Facturar) */
 const FACTURAR = {
   video: 'facturar.mp4',
@@ -297,7 +315,7 @@ function hid(t) { let h = 0; for (const c of t) h = (h * 31 + c.charCodeAt(0)) |
 function itemsOf(w) {
   const t = TEAM[w], out = [];
   t.checklist.forEach(sec => sec.items.forEach(x => out.push({ id: hid(x), t: x, s: sec.s })));
-  COMUNES.forEach(x => out.push({ id: hid(x), t: x, s: 'Todos' }));
+  COMUNES.forEach(x => out.push({ id: hid(x), t: x, s: '⭐ Atención al cliente y orden (todos)' }));
   return out;
 }
 function textOf(w, id) { const it = itemsOf(w).find(x => x.id === id); return it ? it.t : '(tarea cambiada)'; }
@@ -383,6 +401,8 @@ function wCheck() {
   const done = items.filter(i => st.done.includes(i.id)).length, p = Math.round(done / items.length * 100);
   const vistos = (S.vistos && S.vistos[S.me]) || [], tabsLeer = (TEAM[S.me].caja ? ['fact'] : []).concat(['rol', 'metas', 'obs']), falta = tabsLeer.filter(x => !vistos.includes(x));
   let html = falta.length ? `<div class="alerta"><b class="big">⚠️ ¡LEE TODO!</b>
+    <p>Primero mira este video de bienvenida 👇</p>
+    <video class="vid" src="${BIENVENIDA}#t=0.5" controls playsinline preload="metadata" style="margin-bottom:12px"></video>
     <p>Esta app tiene <b>${tabsLeer.length + 1} pestañas</b> arriba: ✅ Checklist${TEAM[S.me].caja ? ', 📘 Facturar' : ''}, 👤 Mi rol, 🎯 Metas y 📝 Observaciones. Ábrelas todas y léelas completas.</p>
     <div class="go">${TEAM[S.me].caja ? `<button data-t="fact" class="${vistos.includes('fact') ? 'ok' : ''}">📘 Facturar</button>` : ''}<button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '';
   html += `<div class="card"><b>${fechaBonita(hoy())}</b> · <span class="mut">${done} de ${items.length} tareas</span>
@@ -412,7 +432,9 @@ function wRol() {
   const t = TEAM[S.me];
   return `<div class="card"><h2>${esc(t.puesto)}</h2><p class="mut">Horario: ${esc(t.horario)} · 1 día libre a la semana</p>
     <h3>Mis responsabilidades</h3><ul class="lst">${t.rol.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
-    <h3>Límites (lo que no se hace)</h3><ul class="lst">${t.limites.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+    <h3>Límites (lo que no se hace)</h3><ul class="lst">${t.limites.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
+    <div class="card"><h2>⭐ Atención al cliente (para todos)</h2><div class="aten">${ATENCION.map(a => `<div><i>${a[0]}</i><div><b>${esc(a[1])}</b><span>${esc(a[2])}</span></div></div>`).join('')}</div></div>
+    <div class="card"><h2>🎬 Video de bienvenida</h2><video class="vid" src="${BIENVENIDA}#t=0.5" controls playsinline preload="metadata"></video></div>`;
 }
 function wMetas() {
   const t = TEAM[S.me], w = semana(S.me, hoy());
