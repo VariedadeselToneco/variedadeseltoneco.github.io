@@ -578,6 +578,8 @@ function manejarEnlace(alArrancar) {
   if (r) toast(r.msg);
   if (alArrancar) { view = S.me && TEAM[S.me] ? { mode: 'worker', tab: 'check' } : { mode: null, tab: 'check' }; render(); }
 }
+// Enlace directo por trabajador: .../equipo/?p=osmary
+(function () { try { const q = new URLSearchParams(location.search).get('p'); if (q && TEAM[q.toLowerCase()]) { S.me = q.toLowerCase(); save(); } } catch (e) {} })();
 window.addEventListener('hashchange', () => manejarEnlace(false));
 manejarEnlace(true);
 </script>
