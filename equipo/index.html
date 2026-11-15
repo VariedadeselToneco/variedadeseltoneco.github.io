@@ -102,6 +102,7 @@ const COMUNES = [
 const TEAM = {
   fernando: {
     name: 'Fernando', horario: '7:00 am – 6:00 pm', puesto: 'Cajero', color: '#2563eb',
+    recordatorios: ['07:00', '17:15'],
     rol: [
       'Atender y cobrar a cada cliente: efectivo, pago móvil, Cashea y fiado',
       'Registrar TODA venta y todo fiado en el sistema',
@@ -140,27 +141,33 @@ const TEAM = {
     ]
   },
   osmary: {
-    name: 'Osmary', horario: '8:00 am – 6:00 pm', puesto: 'Charcutería, pollo y huevos', color: '#db2777',
+    name: 'Osmary', horario: '8:00 am – 6:00 pm', puesto: 'Café, charcutería, pollo y huevos', color: '#db2777',
+    recordatorios: ['08:00', '17:15'],
     rol: [
+      'Preparar el café de la mañana y ofrecerlo a cada cliente hasta las 10 am',
       'Tener la charcutería lista: pesado y picado antes de las horas fuertes',
       'Llevar la hoja diaria del pollo',
       'Cortar los cartones de huevos apenas llegan',
-      'Mantener limpias la cocina y la charcutería',
+      'Mantener limpias la cocina, la charcutería y los baños',
       'Atender al gato: comida, agua y su área limpia'
     ],
     limites: [
       'No se pica ni se vende pollo sin anotarlo en la hoja',
       'Nada se queda fuera de la nevera',
-      'Nadie ajeno entra a la cocina'
+      'Nadie ajeno entra a la cocina',
+      'El café no se bota: se ofrece a cada cliente que entra'
     ],
     metas: [
       'Checklist enviado todos los días',
+      'Café listo y repartido todas las mañanas',
       'Hoja del pollo sin diferencias',
       'Charcutería lista antes de las horas fuertes',
       'Huevos cortados el mismo día que llegan'
     ],
     checklist: [
-      { s: 'Al abrir', items: [
+      { s: 'Al llegar (8:00 am)', items: [
+        'Preparé el café',
+        'Ofrecí café a cada cliente hasta las 10 am',
         'Di comida y agua al gato y limpié su área',
         'Limpié la cocina y la charcutería',
         'Revisé neveras: frío y orden'
@@ -169,22 +176,24 @@ const TEAM = {
         'Pesé y piqué lo que más se vende antes de las horas fuertes',
         'Llené la hoja del pollo (kg entero y kg de cada parte)',
         'Corté los cartones de huevos que llegaron',
-        'Ofrecí charcutería y ofertas a los clientes'
+        'Ofrecí charcutería y la oferta del día a los clientes'
       ]},
-      { s: 'Al cerrar', items: [
+      { s: 'Al salir (6:00 pm)', items: [
         'Limpié rebanadora, mesones y cuchillos',
-        'Tapé y guardé todo en la nevera'
+        'Tapé y guardé todo en la nevera',
+        'Dejé los baños limpios'
       ]}
     ]
   },
   luis: {
     name: 'Luis', horario: '10:00 am – 9:30 pm', puesto: 'Recepción, depósito y cierre', color: '#ea580c',
+    recordatorios: ['10:00', '21:00'],
     rol: [
       'Recibir y contar la mercancía que llega',
       'Avisar a Rafael y cargar la mercancía en el sistema el mismo día',
       'Reponer anaqueles y mantener el depósito ordenado',
       'Mantener los pasillos libres, sin bultos en el piso',
-      'Cerrar la tienda: pasillos, baños y cestas limpias'
+      'Cerrar la tienda: pasillos y cestas limpias'
     ],
     limites: [
       'Si la mercancía no está cargada en el sistema, no se vende',
@@ -208,7 +217,7 @@ const TEAM = {
         'Mantuve los pasillos libres (sin bultos en el piso)'
       ]},
       { s: 'Al cerrar', items: [
-        'Limpié pasillos y baños',
+        'Limpié los pasillos',
         'Lavé las cestas de los clientes',
         'Saqué la basura y cerré el depósito'
       ]}
@@ -342,7 +351,10 @@ function wCheck() {
   });
   html += `<div class="card"><h2>Novedades del día</h2><p class="mut">Lo que se acabó, lo que faltó, lo que pidieron los clientes o cualquier problema.</p>
     <textarea id="nov" placeholder="Ej: se acabó la harina, un cliente pidió queso de año…">${esc(st.nov)}</textarea>
-    <button class="btn wa" id="sendRep">📤 Enviar mi checklist a ${esc(OWNER.name)}</button></div>`;
+    <button class="btn wa" id="sendRep">📤 Enviar mi checklist a ${esc(OWNER.name)}</button></div>
+    <div class="card"><h2>⏰ Recordatorios</h2><p class="mut">Tu teléfono te avisará todos los días a las <b>${(TEAM[S.me].recordatorios || []).map(h12).join('</b> y a las <b>')}</b> para hacer y enviar tu checklist.</p>
+    <button class="btn gold" id="alarmas">⏰ Activar recordatorios diarios</button>
+    <p class="mut" style="margin-top:8px">Se abre tu Calendario: toca <b>Guardar</b> o <b>Importar</b>. Solo se hace una vez.</p></div>`;
   return html;
 }
 function wRol() {
@@ -382,6 +394,31 @@ function diasHtml(w) {
     return `<div>${dn}<b style="background:${x.p === null ? '#cbd5e1' : color(x.p)}">${x.p === null ? '—' : x.p + '%'}</b></div>`;
   }).join('')}</div>`;
 }
+function h12(hm) { let [h, m] = hm.split(':').map(Number); const ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + pad(m) + ' ' + ap; }
+/* Archivo de calendario (.ics) con avisos diarios que se repiten */
+function descargarRecordatorios() {
+  const t = TEAM[S.me], hs = t.recordatorios || [];
+  const d = new Date(), ymd = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  const ev = hs.map((hm, i) => {
+    const [h, m] = hm.split(':').map(Number);
+    const hh = pad(h) + pad(m) + '00', fin = pad((h + (m >= 45 ? 1 : 0)) % 24) + pad((m + 15) % 60) + '00';
+    const txt = i === 0 ? 'Abrir mi checklist del día' : 'Terminar y ENVIAR mi checklist a ' + OWNER.name;
+    return ['BEGIN:VEVENT', 'UID:toneco-' + S.me + '-' + i + '@equipo', 'DTSTAMP:' + stamp,
+      'DTSTART;TZID=America/Caracas:' + ymd + 'T' + hh, 'DTEND;TZID=America/Caracas:' + ymd + 'T' + fin,
+      'RRULE:FREQ=DAILY', 'SUMMARY:✅ ' + txt, 'DESCRIPTION:' + pageUrl(), 'URL:' + pageUrl(),
+      'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + txt, 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT'].join('\r\n');
+  });
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Toneco//Equipo//ES', 'CALSCALE:GREGORIAN',
+    'BEGIN:VTIMEZONE', 'TZID:America/Caracas', 'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:-0400', 'TZOFFSETTO:-0400', 'TZNAME:VET', 'END:STANDARD', 'END:VTIMEZONE',
+    ...ev, 'END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+  a.download = 'Recordatorios_' + t.name + '.ics';
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  toast('Abre el archivo y toca Guardar en tu Calendario');
+}
+
 function enviarReporte() {
   const items = itemsOf(S.me), st = dayState();
   st.nov = ($('nov') || {}).value || st.nov || '';
@@ -475,7 +512,7 @@ function ownerObs() {
    Eventos
    ===================================================================== */
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#eSave,#ePrint,#eMail,#eWa,#oSend');
+  const b = e.target.closest('[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#eSave,#ePrint,#eMail,#eWa,#oSend');
   if (!b) return;
   if (b.dataset.t) { view.tab = b.dataset.t; view.open = null; render(); window.scrollTo(0, 0); return; }
   if (b.dataset.me) { S.me = b.dataset.me; save(); view = { mode: 'worker', tab: 'check' }; render(); return; }
@@ -487,6 +524,7 @@ document.addEventListener('click', e => {
   if (b.dataset.ev) { const x = S.evals[+b.dataset.ev]; if (x) imprimir(x, x.com); return; }
   if (b.id === 'whoBtn') { view = { mode: null, tab: 'check' }; if (S.me && !S.owner) { S.me = null; save(); } render(); return; }
   if (b.id === 'sendRep') { enviarReporte(); render(); return; }
+  if (b.id === 'alarmas') { descargarRecordatorios(); return; }
   const w = view.ew || Object.keys(TEAM)[0], fin = view.efin || hoy();
   if (b.id === 'eSave') { const e2 = evalData(w, fin); e2.com = $('ecom').value; e2.f = hoy(); S.evals.unshift(e2); save(); toast('Evaluación guardada ✅'); render(); return; }
   if (b.id === 'ePrint') { imprimir(evalData(w, fin), $('ecom').value); return; }
