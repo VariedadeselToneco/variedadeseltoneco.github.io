@@ -59,10 +59,20 @@ textarea{min-height:90px;resize:vertical}
 .chip{border:2px solid var(--line);background:#fff;border-radius:99px;padding:7px 14px;font-weight:800;font-size:14px}
 .chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .empty{text-align:center;color:var(--mut);padding:24px 8px}
+.pasos{counter-reset:p;list-style:none;margin:0;padding:0}
+.pasos li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.pasos li:last-child{border-bottom:0}
+.pasos .n{flex:none;width:34px;height:34px;border-radius:50%;background:#14b8a6;color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center}
+.pasos b{display:block;font-size:16px}
+.pasos span{font-size:14px;color:var(--mut)}
+.cods{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cods div{background:#0b3b46;color:#fff;border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-size:14px;gap:6px}
+.cods b{color:#fde047;font-size:22px}
+video.vid{width:100%;border-radius:14px;background:#000;display:block}
 .alerta{background:#fde047;border:4px solid #ca8a04;border-radius:18px;padding:16px;margin-bottom:12px;color:#422006}
 .alerta b.big{display:block;font-size:24px;line-height:1.15;margin-bottom:6px}
 .alerta p{margin:0 0 10px;font-size:16px;line-height:1.35}
-.alerta .go{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.alerta .go{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px}
 .alerta .go button{border:0;border-radius:12px;padding:12px 4px;font-weight:900;font-size:14px;background:#422006;color:#fde047}
 .alerta .go button.ok{background:#16a34a;color:#fff}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:99;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s}
@@ -105,10 +115,29 @@ const COMUNES = [
   'Limpié y ordené mi área',
   'Cuando no hubo clientes: ordené, limpié o repuse'
 ];
+/* Guía de caja: cómo facturar en Chrystal (pestaña 📘 Facturar) */
+const FACTURAR = {
+  video: 'facturar.mp4',
+  pasos: [
+    ['Escanea cada producto', 'Pásalo por el lector rojo. Suena y aparece en la lista.'],
+    ['¿No tiene código? Presiona ENTER', 'Escribe el nombre o el código y escoge el producto.'],
+    ['Revisa cantidades y total', 'Confírmale al cliente cuánto es antes de cobrar.'],
+    ['Cobra', 'Punto de venta, pago móvil, efectivo o Cashea. Verifica que el pago pasó.'],
+    ['Presiona F9', 'Escoge la forma de pago que usó el cliente y guarda la venta.'],
+    ['Espera "Registrando…"', 'Cuando termine, entrega el ticket al cliente.']
+  ],
+  codigos: [
+    ['Bolsa 30 kg', 'B30'], ['Bolsa 10 kg', '152'], ['Bolsa 3 kg', '37'], ['Huevos', '13'],
+    ['Caraotas artesanales', '2001'], ['Lentejas artesanales', '2002'],
+    ['Taparo', '22'], ['Tigre', '26'], ['Apureño', '41'], ['Tostón', '95'], ['Queso', 'Q']
+  ]
+};
+
 const TEAM = {
   fernando: {
     name: 'Fernando', horario: '7:00 am – 6:00 pm', puesto: 'Cajero y apertura', color: '#2563eb',
     recordatorios: ['07:00', '17:15'],
+    caja: true,
     rol: [
       'Abrir la tienda: frente barrido, matas regadas y bultos afuera para vender al mayor',
       'Atender y cobrar a cada cliente: efectivo, pago móvil, Cashea y fiado',
@@ -156,6 +185,7 @@ const TEAM = {
   osmary: {
     name: 'Osmary', horario: '8:00 am – 6:00 pm', puesto: 'Café, charcutería y huevos', color: '#db2777',
     recordatorios: ['08:00', '17:15'],
+    caja: true,
     rol: [
       'Preparar el café de la mañana y ofrecerlo a cada cliente hasta las 10 am',
       'Tener la charcutería lista: pesado y picado antes de las horas fuertes',
@@ -327,9 +357,9 @@ function render() {
     $('hTitle').innerHTML = esc(t.name) + '<small>' + esc(t.puesto) + ' · ' + esc(t.horario) + '</small>';
     who.hidden = false; who.textContent = 'Cambiar';
     const nObs = (S.obs[S.me] || []).length;
-    tabs.innerHTML = [['check', '✅ Checklist'], ['rol', '👤 Mi rol'], ['metas', '🎯 Metas'], ['obs', '📝 Observaciones' + (nObs ? ' (' + nObs + ')' : '')]]
+    tabs.innerHTML = [['check', '✅ Checklist'], ...(t.caja ? [['fact', '📘 Facturar']] : []), ['rol', '👤 Mi rol'], ['metas', '🎯 Metas'], ['obs', '📝 Observaciones' + (nObs ? ' (' + nObs + ')' : '')]]
       .map(([k, l]) => `<button class="tab ${view.tab === k ? 'on' : ''}" data-t="${k}">${l}</button>`).join('');
-    main.innerHTML = view.tab === 'rol' ? wRol() : view.tab === 'metas' ? wMetas() : view.tab === 'obs' ? wObs() : wCheck();
+    main.innerHTML = view.tab === 'fact' ? wFact() : view.tab === 'rol' ? wRol() : view.tab === 'metas' ? wMetas() : view.tab === 'obs' ? wObs() : wCheck();
   } else {
     $('hTitle').innerHTML = 'Equipo Toñeco<small>Checklist diario</small>';
     who.hidden = true; tabs.innerHTML = '';
@@ -351,10 +381,10 @@ function dayState() { const k = dayKey(); S.day[k] = S.day[k] || { done: [], nov
 function wCheck() {
   const items = itemsOf(S.me), st = dayState();
   const done = items.filter(i => st.done.includes(i.id)).length, p = Math.round(done / items.length * 100);
-  const vistos = (S.vistos && S.vistos[S.me]) || [], falta = ['rol', 'metas', 'obs'].filter(x => !vistos.includes(x));
+  const vistos = (S.vistos && S.vistos[S.me]) || [], tabsLeer = (TEAM[S.me].caja ? ['fact'] : []).concat(['rol', 'metas', 'obs']), falta = tabsLeer.filter(x => !vistos.includes(x));
   let html = falta.length ? `<div class="alerta"><b class="big">⚠️ ¡LEE TODO!</b>
-    <p>Esta app tiene <b>4 pestañas</b> arriba: ✅ Checklist, 👤 Mi rol, 🎯 Metas y 📝 Observaciones. Ábrelas todas y léelas completas.</p>
-    <div class="go"><button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '';
+    <p>Esta app tiene <b>${tabsLeer.length + 1} pestañas</b> arriba: ✅ Checklist${TEAM[S.me].caja ? ', 📘 Facturar' : ''}, 👤 Mi rol, 🎯 Metas y 📝 Observaciones. Ábrelas todas y léelas completas.</p>
+    <div class="go">${TEAM[S.me].caja ? `<button data-t="fact" class="${vistos.includes('fact') ? 'ok' : ''}">📘 Facturar</button>` : ''}<button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '';
   html += `<div class="card"><b>${fechaBonita(hoy())}</b> · <span class="mut">${done} de ${items.length} tareas</span>
     <div class="prog"><i style="width:${p}%"></i></div>${st.sent ? '<span class="mut">✅ Ya enviaste el reporte de hoy. Si haces más tareas, puedes enviarlo otra vez.</span>' : ''}</div>`;
   const secs = [...new Set(items.map(i => i.s))];
@@ -369,6 +399,14 @@ function wCheck() {
     <button class="btn gold" id="alarmas">⏰ Activar recordatorios diarios</button>
     <p class="mut" style="margin-top:8px">Se abre tu Calendario: toca <b>Guardar</b> o <b>Importar</b>. Solo se hace una vez.</p></div>`;
   return html;
+}
+function wFact() {
+  const F = FACTURAR;
+  return `<div class="card"><h2>📘 Cómo facturar en Chrystal</h2>
+    <video class="vid" src="${F.video}#t=1" controls playsinline preload="metadata"></video></div>
+    <div class="card"><h2>Paso a paso</h2><ol class="pasos">${F.pasos.map((p, i) => `<li><div class="n">${i + 1}</div><div><b>${esc(p[0])}</b><span>${esc(p[1])}</span></div></li>`).join('')}</ol></div>
+    <div class="card"><h2>Códigos rápidos</h2><p class="mut">Escríbelos después de ENTER</p>
+    <div class="cods">${F.codigos.map(c => `<div>${esc(c[0])}<b>${esc(c[1])}</b></div>`).join('')}</div></div>`;
 }
 function wRol() {
   const t = TEAM[S.me];
