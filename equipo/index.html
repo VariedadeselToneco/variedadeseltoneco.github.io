@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1f3a">
+<link rel="icon" href="../goa/icons/favicon-48.png">
+<title>Equipo Toñeco · Checklist diario</title>
+<style>
+:root{--navy:#0b1f3a;--navy2:#13305a;--gold:#f5b301;--gold2:#ffd36b;--bg:#f2f4f8;--card:#fff;--txt:#0f172a;--mut:#64748b;--ok:#16a34a;--no:#dc2626;--line:#e2e8f0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding-bottom:110px}
+button{font:inherit;cursor:pointer}
+.top{background:var(--navy);color:#fff;padding:14px 16px 0;position:sticky;top:0;z-index:20}
+.top .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.top h1{font-size:19px;margin:0;line-height:1.2}
+.top h1 small{display:block;font-size:12px;color:var(--gold2);font-weight:600}
+.who{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;padding:8px 12px;font-weight:800;font-size:13px}
+.tabs{display:flex;gap:4px;margin-top:12px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:max-content;background:none;border:0;color:#cbd5e1;padding:10px 6px;font-weight:800;font-size:13px;border-bottom:3px solid transparent;white-space:nowrap}
+.tab.on{color:#fff;border-color:var(--gold)}
+main{padding:14px 14px 0;max-width:640px;margin:0 auto}
+.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+.card h2{font-size:17px;margin:0 0 10px}
+.card h3{font-size:13px;margin:14px 0 6px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.mut{color:var(--mut);font-size:14px}
+.pick{display:grid;gap:10px}
+.pick button{display:flex;align-items:center;gap:14px;background:#fff;border:2px solid var(--line);border-radius:16px;padding:16px;text-align:left}
+.pick .av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;flex:none}
+.pick b{font-size:18px;display:block}
+.pick span{font-size:13px;color:var(--mut)}
+.prog{height:10px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin:8px 0 2px}
+.prog i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .2s}
+.it{display:flex;align-items:flex-start;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);font-size:16px;line-height:1.35}
+.it:last-child{border-bottom:0}
+.it input{width:26px;height:26px;flex:none;accent-color:var(--ok);margin:0}
+.it.done span{color:var(--mut);text-decoration:line-through}
+ul.lst{margin:0;padding-left:20px;line-height:1.5;font-size:15px}
+ul.lst li{margin-bottom:6px}
+textarea,input[type=text],input[type=password],input[type=tel],select{width:100%;border:2px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:16px;background:#fff;color:var(--txt)}
+textarea{min-height:90px;resize:vertical}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-weight:900;font-size:16px;margin-top:10px}
+.btn.wa{background:#16a34a;color:#fff}
+.btn.pri{background:var(--navy);color:#fff}
+.btn.gold{background:var(--gold);color:#1f2937}
+.btn.ghost{background:#e2e8f0;color:var(--txt)}
+.btns2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btns2 .btn{margin-top:8px}
+.obs{border-left:4px solid var(--gold);padding:8px 12px;margin:10px 0;background:#fffbeb;border-radius:0 10px 10px 0}
+.obs small{display:block;color:var(--mut);font-size:12px;margin-bottom:2px}
+.rep{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.rep:last-child{border-bottom:0}
+.pct{flex:none;width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;color:#fff}
+.rep b{display:block}
+.rep .mut{font-size:13px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:99px;padding:7px 14px;font-weight:800;font-size:14px}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.empty{text-align:center;color:var(--mut);padding:24px 8px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:99;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:6px 0 4px}
+.days div{text-align:center;font-size:11px;color:var(--mut)}
+.days b{display:block;margin-top:3px;border-radius:8px;padding:6px 0;color:#fff;font-size:12px}
+#printArea{display:none}
+@media print{
+  @page{size:80mm auto;margin:3mm}
+  body{background:#fff;padding:0}
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block;width:72mm;font:11px/1.35 "Courier New",monospace;color:#000}
+  #printArea h4{font-size:13px;text-align:center;margin:0 0 4px}
+  #printArea .c{text-align:center}
+  #printArea hr{border:0;border-top:1px dashed #000;margin:6px 0}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="row">
+    <h1 id="hTitle">Equipo Toñeco<small>Checklist diario</small></h1>
+    <button class="who" id="whoBtn" hidden>Cambiar</button>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+<main id="main"></main>
+<div class="toast" id="toast"></div>
+<div id="printArea"></div>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN — aquí se agregan tareas, roles, límites y metas.
+   (Para cambiar algo, pídeselo a Claude: se edita esta parte.)
+   ===================================================================== */
+const OWNER = { name: 'Rafael', wa: '584161721923' };   // WhatsApp donde llegan los reportes
+const STORE = 'Variedades el Toñeco';
+const COMUNES = [
+  'Limpié y ordené mi área',
+  'Cuando no hubo clientes: ordené, limpié o repuse'
+];
+const TEAM = {
+  fernando: {
+    name: 'Fernando', horario: '7:00 am – 6:00 pm', puesto: 'Cajero', color: '#2563eb',
+    rol: [
+      'Atender y cobrar a cada cliente: efectivo, pago móvil, Cashea y fiado',
+      'Registrar TODA venta y todo fiado en el sistema',
+      'Ofrecer la oferta o el combo del día a cada cliente',
+      'Llevar el cuaderno de novedades: lo que se acaba, lo que falta, lo que piden',
+      'Mantener la caja limpia y despejada'
+    ],
+    limites: [
+      'Nadie se despacha solo: amigos y visitantes compran como cualquier cliente',
+      'No se fía nada sin registrarlo en el sistema',
+      'La caja nunca se queda sola',
+      'Nadie ajeno pasa detrás del mostrador'
+    ],
+    metas: [
+      'Checklist enviado todos los días',
+      'Caja cuadrada sin diferencias',
+      'Cuaderno de novedades al día',
+      'Ofrecer la oferta del día a cada cliente'
+    ],
+    checklist: [
+      { s: 'Al abrir', items: [
+        'Conté el fondo de caja y lo anoté',
+        'Limpié y despejé el mostrador de caja',
+        'Revisé que el sistema y el punto funcionen'
+      ]},
+      { s: 'Durante el día', items: [
+        'Ofrecí la oferta o el combo del día a cada cliente',
+        'Registré toda venta y fiado en el sistema',
+        'Anoté en el cuaderno lo que se acabó, faltó o pidieron',
+        'Nadie se despachó solo (amigos o visitantes)'
+      ]},
+      { s: 'Al cerrar', items: [
+        'Cuadré la caja',
+        'Dejé el mostrador limpio y ordenado'
+      ]}
+    ]
+  },
+  osmary: {
+    name: 'Osmary', horario: '8:00 am – 6:00 pm', puesto: 'Charcutería, pollo y huevos', color: '#db2777',
+    rol: [
+      'Tener la charcutería lista: pesado y picado antes de las horas fuertes',
+      'Llevar la hoja diaria del pollo',
+      'Cortar los cartones de huevos apenas llegan',
+      'Mantener limpias la cocina y la charcutería',
+      'Atender al gato: comida, agua y su área limpia'
+    ],
+    limites: [
+      'No se pica ni se vende pollo sin anotarlo en la hoja',
+      'Nada se queda fuera de la nevera',
+      'Nadie ajeno entra a la cocina'
+    ],
+    metas: [
+      'Checklist enviado todos los días',
+      'Hoja del pollo sin diferencias',
+      'Charcutería lista antes de las horas fuertes',
+      'Huevos cortados el mismo día que llegan'
+    ],
+    checklist: [
+      { s: 'Al abrir', items: [
+        'Di comida y agua al gato y limpié su área',
+        'Limpié la cocina y la charcutería',
+        'Revisé neveras: frío y orden'
+      ]},
+      { s: 'Durante el día', items: [
+        'Pesé y piqué lo que más se vende antes de las horas fuertes',
+        'Llené la hoja del pollo (kg entero y kg de cada parte)',
+        'Corté los cartones de huevos que llegaron',
+        'Ofrecí charcutería y ofertas a los clientes'
+      ]},
+      { s: 'Al cerrar', items: [
+        'Limpié rebanadora, mesones y cuchillos',
+        'Tapé y guardé todo en la nevera'
+      ]}
+    ]
+  },
+  luis: {
+    name: 'Luis', horario: '10:00 am – 9:30 pm', puesto: 'Recepción, depósito y cierre', color: '#ea580c',
+    rol: [
+      'Recibir y contar la mercancía que llega',
+      'Avisar a Rafael y cargar la mercancía en el sistema el mismo día',
+      'Reponer anaqueles y mantener el depósito ordenado',
+      'Mantener los pasillos libres, sin bultos en el piso',
+      'Cerrar la tienda: pasillos, baños y cestas limpias'
+    ],
+    limites: [
+      'Si la mercancía no está cargada en el sistema, no se vende',
+      'Nadie ajeno entra al depósito',
+      'Nada se queda en el piso de los pasillos'
+    ],
+    metas: [
+      'Checklist enviado todos los días',
+      'Mercancía cargada el mismo día que llega',
+      'Pasillos libres y tienda limpia al cierre',
+      'Cestas limpias todos los días'
+    ],
+    checklist: [
+      { s: 'Al llegar', items: [
+        'Revisé que el depósito esté ordenado',
+        'Repuse los anaqueles vacíos'
+      ]},
+      { s: 'Durante el día', items: [
+        'Conté la mercancía que llegó y avisé a Rafael',
+        'Cargué la mercancía nueva en el sistema',
+        'Mantuve los pasillos libres (sin bultos en el piso)'
+      ]},
+      { s: 'Al cerrar', items: [
+        'Limpié pasillos y baños',
+        'Lavé las cestas de los clientes',
+        'Saqué la basura y cerré el depósito'
+      ]}
+    ]
+  }
+};
+
+/* =====================================================================
+   Datos guardados en el teléfono
+   ===================================================================== */
+const K = 'toneco_equipo_v1';
+let S = load();
+function load() {
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(K)); } catch (e) {}
+  d = d || {};
+  d.me = d.me || null;            // trabajador de este teléfono
+  d.day = d.day || {};            // { 'fernando|2026-11-14': {done:[...], nov:'', sent:false} }
+  d.obs = d.obs || {};            // { fernando: [{f, t}] } observaciones recibidas
+  d.reps = d.reps || [];          // reportes recibidos (teléfono del dueño)
+  d.evals = d.evals || [];        // evaluaciones guardadas
+  d.pin = d.pin || null;
+  d.owner = !!d.owner;
+  return d;
+}
+function save() { try { localStorage.setItem(K, JSON.stringify(S)); } catch (e) {} }
+
+/* =====================================================================
+   Utilidades
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+function hoy(d) { d = d || new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+const DIAS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+function fechaBonita(iso) { const [y, m, d] = iso.split('-').map(Number); const dt = new Date(y, m - 1, d); return DIAS[dt.getDay()] + ' ' + pad(d) + '/' + pad(m); }
+function hid(t) { let h = 0; for (const c of t) h = (h * 31 + c.charCodeAt(0)) | 0; return (h >>> 0).toString(36); }
+function itemsOf(w) {
+  const t = TEAM[w], out = [];
+  t.checklist.forEach(sec => sec.items.forEach(x => out.push({ id: hid(x), t: x, s: sec.s })));
+  COMUNES.forEach(x => out.push({ id: hid(x), t: x, s: 'Todos' }));
+  return out;
+}
+function textOf(w, id) { const it = itemsOf(w).find(x => x.id === id); return it ? it.t : '(tarea cambiada)'; }
+function color(p) { return p >= 90 ? '#16a34a' : p >= 70 ? '#ca8a04' : '#dc2626'; }
+function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2600); }
+function enc(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+function dec(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return JSON.parse(decodeURIComponent(escape(atob(s)))); }
+function pageUrl() { return location.href.split('#')[0].split('?')[0]; }
+function openWa(text, num) { const u = 'https://wa.me/' + (num || '') + '?text=' + encodeURIComponent(text); const w = window.open(u, '_blank'); if (!w) location.href = u; }
+
+/* =====================================================================
+   Enlaces que llegan por WhatsApp (#r = reporte, #o = observación)
+   ===================================================================== */
+function importarDesdeEnlace() {
+  const h = location.hash;
+  if (!h || h.length < 4) return null;
+  let res = null;
+  try {
+    if (h.startsWith('#r=')) {
+      const r = dec(h.slice(3));
+      if (r && TEAM[r.w] && r.d) {
+        const i = S.reps.findIndex(x => x.w === r.w && x.d === r.d);
+        if (i >= 0) S.reps[i] = r; else S.reps.push(r);
+        S.reps.sort((a, b) => (b.d + b.h).localeCompare(a.d + a.h));
+        save();
+        res = { kind: 'r', msg: 'Reporte de ' + TEAM[r.w].name + ' guardado ✅' };
+      }
+    } else if (h.startsWith('#o=')) {
+      const o = dec(h.slice(3));
+      if (o && TEAM[o.w] && o.t) {
+        S.obs[o.w] = S.obs[o.w] || [];
+        if (!S.obs[o.w].some(x => x.f === o.f && x.t === o.t)) S.obs[o.w].unshift({ f: o.f, t: o.t });
+        save();
+        res = { kind: 'o', w: o.w, msg: 'Nueva observación de ' + OWNER.name + ' 📝' };
+      }
+    }
+  } catch (e) { res = { kind: 'x', msg: 'Ese enlace no se pudo leer' }; }
+  history.replaceState(null, '', pageUrl());
+  return res;
+}
+
+/* =====================================================================
+   Pantallas
+   ===================================================================== */
+let view = { mode: null, tab: 'check' };   // mode: 'worker' | 'owner' | null
+
+function render() {
+  const main = $('main'), tabs = $('tabs'), who = $('whoBtn');
+  if (view.mode === 'owner') {
+    $('hTitle').innerHTML = 'Panel de ' + esc(OWNER.name) + '<small>' + esc(STORE) + '</small>';
+    who.hidden = false; who.textContent = 'Salir';
+    tabs.innerHTML = [['reps', '📥 Reportes'], ['eval', '📊 Evaluación'], ['obs', '✍️ Observación']]
+      .map(([k, l]) => `<button class="tab ${view.tab === k ? 'on' : ''}" data-t="${k}">${l}</button>`).join('');
+    main.innerHTML = view.tab === 'eval' ? ownerEval() : view.tab === 'obs' ? ownerObs() : ownerReps();
+  } else if (view.mode === 'worker' && S.me && TEAM[S.me]) {
+    const t = TEAM[S.me];
+    $('hTitle').innerHTML = esc(t.name) + '<small>' + esc(t.puesto) + ' · ' + esc(t.horario) + '</small>';
+    who.hidden = false; who.textContent = 'Cambiar';
+    const nObs = (S.obs[S.me] || []).length;
+    tabs.innerHTML = [['check', '✅ Checklist'], ['rol', '👤 Mi rol'], ['metas', '🎯 Metas'], ['obs', '📝 Observaciones' + (nObs ? ' (' + nObs + ')' : '')]]
+      .map(([k, l]) => `<button class="tab ${view.tab === k ? 'on' : ''}" data-t="${k}">${l}</button>`).join('');
+    main.innerHTML = view.tab === 'rol' ? wRol() : view.tab === 'metas' ? wMetas() : view.tab === 'obs' ? wObs() : wCheck();
+  } else {
+    $('hTitle').innerHTML = 'Equipo Toñeco<small>Checklist diario</small>';
+    who.hidden = true; tabs.innerHTML = '';
+    main.innerHTML = picker();
+  }
+}
+
+function picker() {
+  return `<div class="card"><h2>¿Quién eres?</h2><p class="mut">Escoge tu nombre. Este teléfono lo recordará.</p>
+    <div class="pick">${Object.entries(TEAM).map(([k, t]) =>
+      `<button data-me="${k}"><div class="av" style="background:${t.color}">${t.name[0]}</div><div><b>${esc(t.name)}</b><span>${esc(t.puesto)} · ${esc(t.horario)}</span></div></button>`).join('')}
+    <button data-owner="1"><div class="av" style="background:var(--navy)">🔒</div><div><b>${esc(OWNER.name)} (dueño)</b><span>Reportes, evaluaciones y observaciones</span></div></button>
+    </div></div>`;
+}
+
+/* ----- Trabajador ----- */
+function dayKey() { return S.me + '|' + hoy(); }
+function dayState() { const k = dayKey(); S.day[k] = S.day[k] || { done: [], nov: '', sent: false }; return S.day[k]; }
+function wCheck() {
+  const items = itemsOf(S.me), st = dayState();
+  const done = items.filter(i => st.done.includes(i.id)).length, p = Math.round(done / items.length * 100);
+  let html = `<div class="card"><b>${fechaBonita(hoy())}</b> · <span class="mut">${done} de ${items.length} tareas</span>
+    <div class="prog"><i style="width:${p}%"></i></div>${st.sent ? '<span class="mut">✅ Ya enviaste el reporte de hoy. Si haces más tareas, puedes enviarlo otra vez.</span>' : ''}</div>`;
+  const secs = [...new Set(items.map(i => i.s))];
+  secs.forEach(s => {
+    html += `<div class="card"><h2>${esc(s)}</h2>` + items.filter(i => i.s === s).map(i =>
+      `<label class="it ${st.done.includes(i.id) ? 'done' : ''}"><input type="checkbox" data-ck="${i.id}" ${st.done.includes(i.id) ? 'checked' : ''}><span>${esc(i.t)}</span></label>`).join('') + `</div>`;
+  });
+  html += `<div class="card"><h2>Novedades del día</h2><p class="mut">Lo que se acabó, lo que faltó, lo que pidieron los clientes o cualquier problema.</p>
+    <textarea id="nov" placeholder="Ej: se acabó la harina, un cliente pidió queso de año…">${esc(st.nov)}</textarea>
+    <button class="btn wa" id="sendRep">📤 Enviar mi checklist a ${esc(OWNER.name)}</button></div>`;
+  return html;
+}
+function wRol() {
+  const t = TEAM[S.me];
+  return `<div class="card"><h2>${esc(t.puesto)}</h2><p class="mut">Horario: ${esc(t.horario)} · 1 día libre a la semana</p>
+    <h3>Mis responsabilidades</h3><ul class="lst">${t.rol.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <h3>Límites (lo que no se hace)</h3><ul class="lst">${t.limites.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+}
+function wMetas() {
+  const t = TEAM[S.me], w = semana(S.me, hoy());
+  return `<div class="card"><h2>Mis metas</h2><ul class="lst">${t.metas.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <p class="mut">Meta de la semana: cumplir el <b>90%</b> del checklist. El bono lo define ${esc(OWNER.name)}.</p></div>
+    <div class="card"><h2>Mi semana</h2>${diasHtml(w)}<p class="mut">Promedio: <b>${w.prom}%</b> · días enviados: ${w.env} de 7</p></div>`;
+}
+function wObs() {
+  const L = S.obs[S.me] || [];
+  return `<div class="card"><h2>Observaciones de ${esc(OWNER.name)}</h2>` +
+    (L.length ? L.map(o => `<div class="obs"><small>${fechaBonita(o.f)}</small>${esc(o.t).replace(/\n/g, '<br>')}</div>`).join('')
+      : `<div class="empty">Todavía no tienes observaciones.<br>Cuando ${esc(OWNER.name)} te mande una, aparecerá aquí.</div>`) + `</div>`;
+}
+/* semana del trabajador en su propio teléfono (lo marcado cada día) */
+function semana(w, finIso) {
+  const items = itemsOf(w), out = [];
+  const [y, m, d] = finIso.split('-').map(Number), fin = new Date(y, m - 1, d);
+  for (let i = 6; i >= 0; i--) {
+    const dt = new Date(fin); dt.setDate(fin.getDate() - i); const k = hoy(dt);
+    const st = S.day[w + '|' + k];
+    const p = st ? Math.round(st.done.filter(id => items.some(x => x.id === id)).length / items.length * 100) : null;
+    out.push({ d: k, p: st && (st.done.length || st.sent) ? p : null });
+  }
+  const conDato = out.filter(x => x.p !== null);
+  return { dias: out, env: conDato.length, prom: conDato.length ? Math.round(conDato.reduce((a, x) => a + x.p, 0) / conDato.length) : 0 };
+}
+function diasHtml(w) {
+  return `<div class="days">${w.dias.map(x => {
+    const [y, m, d] = x.d.split('-').map(Number); const dn = DIAS[new Date(y, m - 1, d).getDay()];
+    return `<div>${dn}<b style="background:${x.p === null ? '#cbd5e1' : color(x.p)}">${x.p === null ? '—' : x.p + '%'}</b></div>`;
+  }).join('')}</div>`;
+}
+function enviarReporte() {
+  const items = itemsOf(S.me), st = dayState();
+  st.nov = ($('nov') || {}).value || st.nov || '';
+  const done = items.filter(i => st.done.includes(i.id)), pend = items.filter(i => !st.done.includes(i.id));
+  const p = Math.round(done.length / items.length * 100), now = new Date();
+  const r = { w: S.me, d: hoy(), h: pad(now.getHours()) + ':' + pad(now.getMinutes()), ok: done.map(i => i.id), no: pend.map(i => i.id), n: items.length, nov: st.nov };
+  let msg = `✅ *Checklist de ${TEAM[S.me].name}* · ${fechaBonita(r.d)} ${r.h}\n${done.length} de ${items.length} tareas (${p}%)\n`;
+  if (pend.length) msg += `\n❌ Pendientes:\n` + pend.map(i => '• ' + i.t).join('\n') + '\n';
+  if (r.nov.trim()) msg += `\n📝 Novedades:\n${r.nov.trim()}\n`;
+  msg += `\nAbrir y guardar en el panel:\n${pageUrl()}#r=${enc(r)}`;
+  st.sent = true; save();
+  openWa(msg, OWNER.wa);
+}
+
+/* ----- Dueño ----- */
+function ownerReps() {
+  const wf = view.wf || 'all', L = S.reps.filter(r => wf === 'all' || r.w === wf);
+  let html = `<div class="chips"><button class="chip ${wf === 'all' ? 'on' : ''}" data-wf="all">Todos</button>` +
+    Object.entries(TEAM).map(([k, t]) => `<button class="chip ${wf === k ? 'on' : ''}" data-wf="${k}">${esc(t.name)}</button>`).join('') + `</div>`;
+  if (!L.length) return html + `<div class="card empty">Todavía no hay reportes.<br><br>Cuando un trabajador te envíe su checklist por WhatsApp, toca el enlace que viene al final del mensaje y se guarda aquí.</div>`;
+  html += `<div class="card">` + L.slice(0, 60).map((r, i) => {
+    const p = Math.round(r.ok.length / r.n * 100);
+    return `<div class="rep" data-rep="${S.reps.indexOf(r)}"><div class="pct" style="background:${color(p)}">${p}%</div>
+      <div style="flex:1"><b>${esc(TEAM[r.w].name)} · ${fechaBonita(r.d)}</b><span class="mut">${r.ok.length} de ${r.n} tareas · ${r.h}${r.nov && r.nov.trim() ? ' · 📝 con novedades' : ''}</span></div><span class="mut">›</span></div>`;
+  }).join('') + `</div>`;
+  if (view.open != null && S.reps[view.open]) {
+    const r = S.reps[view.open];
+    html += `<div class="card"><h2>${esc(TEAM[r.w].name)} · ${fechaBonita(r.d)}</h2>
+      <h3>Hecho (${r.ok.length})</h3><ul class="lst">${r.ok.map(id => `<li>✅ ${esc(textOf(r.w, id))}</li>`).join('') || '<li>—</li>'}</ul>
+      <h3>Pendiente (${r.no.length})</h3><ul class="lst">${r.no.map(id => `<li>❌ ${esc(textOf(r.w, id))}</li>`).join('') || '<li>—</li>'}</ul>
+      ${r.nov && r.nov.trim() ? `<h3>Novedades</h3><div class="obs">${esc(r.nov).replace(/\n/g, '<br>')}</div>` : ''}</div>`;
+  }
+  return html;
+}
+function evalData(w, finIso) {
+  const [y, m, d] = finIso.split('-').map(Number), fin = new Date(y, m - 1, d), dias = [];
+  for (let i = 6; i >= 0; i--) { const dt = new Date(fin); dt.setDate(fin.getDate() - i); dias.push(hoy(dt)); }
+  const reps = dias.map(k => S.reps.find(r => r.w === w && r.d === k) || null);
+  const conR = reps.filter(Boolean);
+  const prom = conR.length ? Math.round(conR.reduce((a, r) => a + r.ok.length / r.n * 100, 0) / conR.length) : 0;
+  const falla = {};
+  conR.forEach(r => r.no.forEach(id => falla[id] = (falla[id] || 0) + 1));
+  const top = Object.entries(falla).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, n]) => ({ t: textOf(w, id), n }));
+  const nov = conR.filter(r => r.nov && r.nov.trim()).map(r => ({ d: r.d, t: r.nov.trim() }));
+  return { w, desde: dias[0], hasta: dias[6], dias: dias.map((k, i) => ({ d: k, p: reps[i] ? Math.round(reps[i].ok.length / reps[i].n * 100) : null })), env: conR.length, prom, top, nov };
+}
+function ownerEval() {
+  const w = view.ew || Object.keys(TEAM)[0], fin = view.efin || hoy(), e = evalData(w, fin);
+  const nota = e.prom >= 90 ? 'Excelente' : e.prom >= 70 ? 'Bien, puede mejorar' : 'Necesita mejorar';
+  const prev = S.evals.filter(x => x.w === w).slice(0, 6);
+  return `<div class="chips">${Object.entries(TEAM).map(([k, t]) => `<button class="chip ${w === k ? 'on' : ''}" data-ew="${k}">${esc(t.name)}</button>`).join('')}</div>
+  <div class="card"><h2>Semana de ${esc(TEAM[w].name)}</h2>
+    <label class="mut">Semana que termina el:</label><input type="text" id="efin" value="${fin}" inputmode="numeric" placeholder="AAAA-MM-DD">
+    ${diasHtml({ dias: e.dias })}
+    <p><b style="font-size:28px;color:${color(e.prom)}">${e.prom}%</b> <span class="mut">promedio · ${e.env} de 7 días enviados · ${nota}</span></p>
+    <h3>Tareas que más se dejaron de hacer</h3>
+    <ul class="lst">${e.top.length ? e.top.map(x => `<li>${esc(x.t)} <span class="mut">(${x.n} ${x.n === 1 ? 'vez' : 'veces'})</span></li>`).join('') : '<li class="mut">Ninguna 👏</li>'}</ul>
+    <h3>Tu comentario para ${esc(TEAM[w].name)}</h3>
+    <textarea id="ecom" placeholder="Qué hizo bien, qué debe mejorar, compromiso para la próxima semana…"></textarea>
+    <button class="btn pri" id="eSave">💾 Guardar en el historial</button>
+    <div class="btns2"><button class="btn gold" id="ePrint">🖨️ Imprimir 80mm</button><button class="btn ghost" id="eMail">✉️ Enviar por correo</button></div>
+    <button class="btn wa" id="eWa">📤 Enviar a ${esc(TEAM[w].name)} por WhatsApp</button>
+  </div>
+  <div class="card"><h2>Evaluaciones guardadas</h2>${prev.length ? prev.map(x => `<div class="rep" data-ev="${S.evals.indexOf(x)}"><div class="pct" style="background:${color(x.prom)}">${x.prom}%</div><div style="flex:1"><b>${fechaBonita(x.desde)} – ${fechaBonita(x.hasta)}</b><span class="mut">${esc((x.com || '').slice(0, 60)) || 'Sin comentario'}</span></div><span class="mut">🖨️</span></div>`).join('') : '<div class="empty">Aún no has guardado evaluaciones.</div>'}</div>`;
+}
+function evalTexto(e, com) {
+  const t = TEAM[e.w];
+  let s = `EVALUACIÓN SEMANAL\n${STORE}\n\nTrabajador: ${t.name}\nPuesto: ${t.puesto}\nSemana: ${fechaBonita(e.desde)} al ${fechaBonita(e.hasta)}\n\n`;
+  s += `Cumplimiento: ${e.prom}%\nDías enviados: ${e.env} de 7\n\n`;
+  s += e.dias.map(x => { const [y, m, d] = x.d.split('-').map(Number); return DIAS[new Date(y, m - 1, d).getDay()].padEnd(4) + ' ' + (x.p === null ? '—' : x.p + '%'); }).join('\n');
+  if (e.top.length) s += `\n\nA mejorar:\n` + e.top.map(x => '- ' + x.t + ' (' + x.n + ')').join('\n');
+  s += `\n\nMetas:\n` + t.metas.map(x => '- ' + x).join('\n');
+  if (com && com.trim()) s += `\n\nComentario:\n${com.trim()}`;
+  s += `\n\nFirma trabajador: ____________\nFirma ${OWNER.name}: ____________`;
+  return s;
+}
+function imprimir(e, com) {
+  $('printArea').innerHTML = `<h4>${esc(STORE)}</h4><div class="c">Evaluación semanal</div><hr><pre style="white-space:pre-wrap;margin:0;font:inherit">${esc(evalTexto(e, com).split('\n').slice(3).join('\n'))}</pre>`;
+  window.print();
+}
+function ownerObs() {
+  const w = view.ow || Object.keys(TEAM)[0];
+  return `<div class="chips">${Object.entries(TEAM).map(([k, t]) => `<button class="chip ${w === k ? 'on' : ''}" data-ow="${k}">${esc(t.name)}</button>`).join('')}</div>
+  <div class="card"><h2>Observación para ${esc(TEAM[w].name)}</h2>
+    <p class="mut">Se envía por WhatsApp. Cuando ${esc(TEAM[w].name)} toque el enlace, le queda guardada en su pestaña de Observaciones.</p>
+    <textarea id="otext" placeholder="Ej: hoy la caja quedó muy ordenada, ¡bien! / Recuerda cortar los cartones de huevos al llegar."></textarea>
+    <button class="btn wa" id="oSend">📤 Enviar observación</button></div>`;
+}
+
+/* =====================================================================
+   Eventos
+   ===================================================================== */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#eSave,#ePrint,#eMail,#eWa,#oSend');
+  if (!b) return;
+  if (b.dataset.t) { view.tab = b.dataset.t; view.open = null; render(); window.scrollTo(0, 0); return; }
+  if (b.dataset.me) { S.me = b.dataset.me; save(); view = { mode: 'worker', tab: 'check' }; render(); return; }
+  if (b.dataset.owner) { entrarDueno(); return; }
+  if (b.dataset.wf) { view.wf = b.dataset.wf; view.open = null; render(); return; }
+  if (b.dataset.rep) { const i = +b.dataset.rep; view.open = view.open === i ? null : i; render(); return; }
+  if (b.dataset.ew) { view.ew = b.dataset.ew; render(); return; }
+  if (b.dataset.ow) { view.ow = b.dataset.ow; render(); return; }
+  if (b.dataset.ev) { const x = S.evals[+b.dataset.ev]; if (x) imprimir(x, x.com); return; }
+  if (b.id === 'whoBtn') { view = { mode: null, tab: 'check' }; if (S.me && !S.owner) { S.me = null; save(); } render(); return; }
+  if (b.id === 'sendRep') { enviarReporte(); render(); return; }
+  const w = view.ew || Object.keys(TEAM)[0], fin = view.efin || hoy();
+  if (b.id === 'eSave') { const e2 = evalData(w, fin); e2.com = $('ecom').value; e2.f = hoy(); S.evals.unshift(e2); save(); toast('Evaluación guardada ✅'); render(); return; }
+  if (b.id === 'ePrint') { imprimir(evalData(w, fin), $('ecom').value); return; }
+  if (b.id === 'eMail') { const e2 = evalData(w, fin); location.href = 'mailto:?subject=' + encodeURIComponent('Evaluación ' + TEAM[w].name + ' ' + fechaBonita(e2.desde) + ' - ' + fechaBonita(e2.hasta)) + '&body=' + encodeURIComponent(evalTexto(e2, $('ecom').value)); return; }
+  if (b.id === 'eWa') { openWa(evalTexto(evalData(w, fin), $('ecom').value)); return; }
+  if (b.id === 'oSend') {
+    const ow = view.ow || Object.keys(TEAM)[0], t = $('otext').value.trim();
+    if (!t) { toast('Escribe la observación primero'); return; }
+    const o = { w: ow, f: hoy(), t };
+    openWa(`📝 *Observación para ${TEAM[ow].name}* · ${fechaBonita(o.f)}\n${t}\n\nToca para guardarla en tu app:\n${pageUrl()}#o=${enc(o)}`);
+    return;
+  }
+});
+document.addEventListener('change', e => {
+  const c = e.target;
+  if (c.dataset && c.dataset.ck) {
+    const st = dayState(), id = c.dataset.ck;
+    st.done = c.checked ? [...new Set([...st.done, id])] : st.done.filter(x => x !== id);
+    save();
+    const items = itemsOf(S.me), done = items.filter(i => st.done.includes(i.id)).length, p = Math.round(done / items.length * 100);
+    c.closest('.it').classList.toggle('done', c.checked);
+    const card = document.querySelector('#main .card'); card.querySelector('.prog i').style.width = p + '%';
+    card.querySelector('.mut').textContent = done + ' de ' + items.length + ' tareas';
+    if (done === items.length) toast('¡Todo listo! Ahora envía tu checklist 💪');
+  }
+  if (c.id === 'efin' && /^\d{4}-\d{2}-\d{2}$/.test(c.value)) { view.efin = c.value; render(); }
+});
+document.addEventListener('input', e => { if (e.target.id === 'nov') { dayState().nov = e.target.value; save(); } });
+
+function entrarDueno() {
+  if (!S.pin) {
+    const p = prompt('Crea un PIN de 4 números para el panel de ' + OWNER.name + ':');
+    if (!p || !/^\d{4,6}$/.test(p)) { if (p !== null) toast('El PIN debe tener 4 a 6 números'); return; }
+    S.pin = p; S.owner = true; save();
+  } else {
+    const p = prompt('PIN del panel:');
+    if (p === null) return;
+    if (p !== S.pin) { toast('PIN incorrecto'); return; }
+    S.owner = true; save();
+  }
+  view = { mode: 'owner', tab: 'reps' }; render();
+}
+
+/* =====================================================================
+   Arranque
+   ===================================================================== */
+function manejarEnlace(alArrancar) {
+  const r = importarDesdeEnlace();
+  if (r && r.kind === 'r') { if (view.mode === 'owner') { view.tab = 'reps'; render(); toast(r.msg); } else { view = { mode: null, tab: 'check' }; render(); toast(r.msg + ' · entra a tu panel'); } return; }
+  if (r && r.kind === 'o') { S.me = r.w; save(); view = { mode: 'worker', tab: 'obs' }; render(); toast(r.msg); return; }
+  if (r) toast(r.msg);
+  if (alArrancar) { view = S.me && TEAM[S.me] ? { mode: 'worker', tab: 'check' } : { mode: null, tab: 'check' }; render(); }
+}
+window.addEventListener('hashchange', () => manejarEnlace(false));
+manejarEnlace(true);
+</script>
+</body>
+</html>
