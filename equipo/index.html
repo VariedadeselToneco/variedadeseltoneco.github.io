@@ -101,14 +101,15 @@ const COMUNES = [
 ];
 const TEAM = {
   fernando: {
-    name: 'Fernando', horario: '7:00 am – 6:00 pm', puesto: 'Cajero', color: '#2563eb',
+    name: 'Fernando', horario: '7:00 am – 6:00 pm', puesto: 'Cajero y apertura', color: '#2563eb',
     recordatorios: ['07:00', '17:15'],
     rol: [
+      'Abrir la tienda: frente barrido, matas regadas y bultos afuera para vender al mayor',
       'Atender y cobrar a cada cliente: efectivo, pago móvil, Cashea y fiado',
       'Registrar TODA venta y todo fiado en el sistema',
       'Ofrecer la oferta o el combo del día a cada cliente',
       'Llevar el cuaderno de novedades: lo que se acaba, lo que falta, lo que piden',
-      'Mantener la caja limpia y despejada'
+      'Mantener los precios pegados y la caja limpia y despejada'
     ],
     limites: [
       'Nadie se despacha solo: amigos y visitantes compran como cualquier cliente',
@@ -118,12 +119,16 @@ const TEAM = {
     ],
     metas: [
       'Checklist enviado todos los días',
+      'Tienda abierta y lista a las 7:00 am',
       'Caja cuadrada sin diferencias',
       'Cuaderno de novedades al día',
       'Ofrecer la oferta del día a cada cliente'
     ],
     checklist: [
-      { s: 'Al abrir', items: [
+      { s: 'Al abrir (7:00 am)', items: [
+        'Barrí el frente de la tienda',
+        'Regué las matas',
+        'Saqué los bultos afuera, ordenados y con precio visible',
         'Conté el fondo de caja y lo anoté',
         'Limpié y despejé el mostrador de caja',
         'Revisé que el sistema y el punto funcionen'
@@ -132,11 +137,13 @@ const TEAM = {
         'Ofrecí la oferta o el combo del día a cada cliente',
         'Registré toda venta y fiado en el sistema',
         'Anoté en el cuaderno lo que se acabó, faltó o pidieron',
+        'Pegué los precios que faltaban o cambiaron',
         'Nadie se despachó solo (amigos o visitantes)'
       ]},
-      { s: 'Al cerrar', items: [
+      { s: 'Al salir (6:00 pm)', items: [
         'Cuadré la caja',
-        'Dejé el mostrador limpio y ordenado'
+        'Dejé el mostrador limpio y ordenado',
+        'Le pasé a Luis las novedades del día'
       ]}
     ]
   },
