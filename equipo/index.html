@@ -276,45 +276,69 @@ const TEAM = {
     ]
   },
   osmary: {
-    name: 'Osmary', horario: '8:00 am – 6:00 pm', puesto: 'Café, charcutería y huevos', color: '#db2777',
-    recordatorios: ['08:00', '17:15'],
+    name: 'Osmary', horario: '8:00 am – 6:00 pm', puesto: 'Responsable de piso', color: '#db2777',
+    recordatorios: ['08:00', '13:00', '17:15'],
+    insistir: ['18:00', '19:00', '20:00'],
     caja: true,
+    animo: true, campeon: 'campeona',
+    perdidos: true,
+    mision: 'Ser la cara de Variedades el Toñeco: piso limpio, productos sin polvo, todo con su precio, cada cliente recibido con su cesta y con algo más que llevarse.',
     rol: [
-      'Preparar el café de la mañana y ofrecerlo a cada cliente hasta las 10 am',
-      'Tener la charcutería lista: pesado y picado antes de las horas fuertes',
-      'Tener cartones de huevos cortados listos para cuando lleguen los huevos',
-      'Mantener limpias la cocina, la charcutería y los baños',
-      'Atender al gato: comida, agua y su área limpia'
+      'Recibir a cada cliente con una sonrisa y ofrecerle su cesta',
+      'Ofrecer productos y sugerir el complemento: "¿y el queso para esa harina?"',
+      'Mantener el piso limpio y los productos y anaqueles sin polvo',
+      'Que TODO producto tenga su precio puesto y visible',
+      'Charcutería siempre con sus mínimos (10 am y 3 pm)',
+      'Impulsar lo que está por vencer antes de que se pierda',
+      'Café de la mañana, matas y gato',
+      'Cobrar en caja cuando haga falta, registrando todo en el sistema'
     ],
     limites: [
+      'Ningún cliente se queda sin saludo ni sin su cesta',
+      'Ningún producto en el anaquel sin precio',
       'Nada se queda fuera de la nevera',
-      'Nadie ajeno entra a la cocina',
-      'El café no se bota: se ofrece a cada cliente que entra'
+      'Nadie ajeno entra a la cocina ni a la charcutería',
+      'Si cobras en caja, todo va al sistema: nada en papel suelto'
     ],
     metas: [
-      'Checklist enviado todos los días',
-      'Café listo y repartido todas las mañanas',
-      'Charcutería lista antes de las horas fuertes',
-      'Siempre hay cartones de huevos cortados listos'
+      '0 productos perdidos por falta de atención o impulso (vencidos, dañados o no ofrecidos)',
+      '100% de los productos con precio puesto',
+      'Piso limpio y productos sin polvo todos los días',
+      'Cesta ofrecida a cada cliente',
+      'Mínimos de charcutería cumplidos a las 10 am y 3 pm',
+      'Checklist enviado todos los días'
     ],
     checklist: [
-      { s: 'Al llegar (8:00 am)', items: [
-        'Preparé el café',
-        'Ofrecí café a cada cliente hasta las 10 am',
-        'Regué las matas',
-        'Di comida y agua al gato y limpié su área',
-        'Limpié la cocina y la charcutería',
-        'Revisé neveras: frío y orden'
+      { s: 'Apertura (8:00 – 8:30 am)', items: [
+        ['Café listo a las 8:15', 'Y ofrecido a cada cliente hasta las 10 am'],
+        ['Barrí y limpié el piso', 'Pasillos, entrada y detrás del mostrador'],
+        ['Quité el polvo de anaqueles y productos', 'Un pasillo distinto cada día, sin falta'],
+        ['Revisé que todo tenga su precio', 'Los que faltaban se los pedí a Fernando y los pegué'],
+        ['Regué las matas', ''],
+        ['Di comida y agua al gato y limpié su área', ''],
+        ['Revisé neveras: frío, orden y vencimientos', 'Lo más viejo adelante (primero que entra, primero que sale)']
       ]},
-      { s: 'Durante el día', items: [
-        'Pesé y piqué lo que más se vende antes de las horas fuertes',
-        'Dejé cartones de huevos cortados listos para cuando lleguen los huevos',
-        'Ofrecí charcutería y la oferta del día a los clientes'
+      { s: '🧀 Charcutería: mínimos (10 am y 3 pm)', items: [
+        ['5 rebanados de jamón listos', ''],
+        ['5 rebanados de queso amarillo listos', ''],
+        ['5 combos rebanados listos', ''],
+        ['Salsas en vasos: full', ''],
+        ['Mínimo 10 bandejas de cada uno', 'Quesos, salchichas, pollo picado y demás'],
+        ['Todo empacado con etiqueta, peso y fecha', '']
+      ]},
+      { s: '🛒 Piso y venta', items: [
+        ['Recibí a cada cliente y le ofrecí su cesta', ''],
+        ['Ofrecí productos y el complemento', 'Harina → queso · café → azúcar · pan → jamón'],
+        ['Impulsé lo que está por vencer', 'Lo puse adelante y lo ofrecí'],
+        ['Pegué los precios que faltaban o cambiaron', ''],
+        ['Si cobré en caja, registré TODO en el sistema', '']
       ]},
       { s: 'Al salir (6:00 pm)', items: [
-        'Limpié rebanadora, mesones y cuchillos',
-        'Tapé y guardé todo en la nevera',
-        'Dejé los baños limpios'
+        ['Dejé la charcutería surtida para la noche', 'Con sus mínimos para Rafael'],
+        ['Limpié rebanadora, mesones y cuchillos', ''],
+        ['Tapé y guardé todo en la nevera', ''],
+        ['Dejé los baños limpios', ''],
+        ['Anoté los productos perdidos del día', 'Abajo en "Productos perdidos hoy". Si no hubo, escribe 0']
       ]}
     ]
   },
@@ -495,6 +519,8 @@ function wCheck() {
     html += `<div class="card"><h2>${esc(s)}</h2>` + items.filter(i => i.s === s).map(i =>
       `<label class="it ${st.done.includes(i.id) ? 'done' : ''}"><input type="checkbox" data-ck="${i.id}" ${st.done.includes(i.id) ? 'checked' : ''}><span>${esc(i.t)}${i.d ? `<small class="det">${esc(i.d)}</small>` : ''}</span></label>`).join('') + `</div>`;
   });
+  if (TEAM[S.me].perdidos) html += `<div class="card"><h2>🗑️ Productos perdidos hoy</h2><p class="mut">Vencidos, dañados o que no se vendieron por no ofrecerlos. Producto y cantidad. Si no hubo, escribe <b>0</b>.</p>
+    <textarea id="perd" placeholder="Ej: 2 yogures vencidos, 1 queso dañado…">${esc(st.perd || '')}</textarea></div>`;
   html += `<div class="card"><h2>Novedades del día</h2><p class="mut">Lo que se acabó, lo que faltó, lo que pidieron los clientes o cualquier problema.</p>
     <textarea id="nov" placeholder="Ej: se acabó la harina, un cliente pidió queso de año…">${esc(st.nov)}</textarea>
     <button class="btn wa" id="sendRep">📤 Enviar mi checklist a ${esc(OWNER.name)}</button></div>
@@ -579,7 +605,7 @@ function revisarAlarmas() {
     const d = new Date(), n = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5);
     m.innerHTML = `<div class="box animo"><div class="sol">☀️</div>
       <h2>¡Hoy es tu día, ${esc(t.name)}!</h2>
-      <p class="frase">${esc(ANIMO[n % ANIMO.length])}</p>
+      <p class="frase">${esc(ANIMO[n % ANIMO.length].replace(/campeón/g, t.campeon || 'campeón').replace(/Los campeones/g, t.campeon === 'campeona' ? 'Las campeonas' : 'Los campeones'))}</p>
       <p class="mut">${fechaBonita(hoy())}</p>
       <button class="btn gold" id="bvOk">💪 ¡Vamos con todo!</button></div>`;
     m.hidden = false; return;
@@ -619,6 +645,7 @@ function descargarRecordatorios() {
 function enviarReporte() {
   const items = itemsOf(S.me), st = dayState();
   st.nov = ($('nov') || {}).value || st.nov || '';
+  if (TEAM[S.me].perdidos) st.perd = ($('perd') || {}).value || st.perd || '';
   const done = items.filter(i => st.done.includes(i.id)), pend = items.filter(i => !st.done.includes(i.id));
   const p = Math.round(done.length / items.length * 100), now = new Date();
   const r = { w: S.me, d: hoy(), h: pad(now.getHours()) + ':' + pad(now.getMinutes()), ok: done.map(i => i.id), no: pend.map(i => i.id), n: items.length, nov: st.nov };
@@ -626,6 +653,7 @@ function enviarReporte() {
   if (pend.length) msg += `\n❌ Pendientes:\n` + pend.map(i => '• ' + i.t).join('\n') + '\n';
   const mv = metasActivas(S.me).map(m => ({ p: m.producto, hoy: ventaDia(S.me, m, r.d), tot: ventaTotal(S.me, m), meta: m.meta }));
   if (mv.length) { r.mv = mv; msg += '\n🏆 ' + mv.map(x => `${x.p}: hoy ${x.hoy} · semana ${x.tot} de ${x.meta}`).join('\n🏆 ') + '\n'; }
+  if (TEAM[S.me].perdidos) { r.perd = (st.perd || '').trim(); msg += `\n🗑️ Productos perdidos: ${r.perd || '⚠️ NO LO ANOTÓ'}\n`; }
   if (r.nov.trim()) msg += `\n📝 Novedades:\n${r.nov.trim()}\n`;
   msg += `\nAbrir y guardar en el panel:\n${pageUrl()}#r=${enc(r)}`;
   st.sent = true; save();
@@ -653,6 +681,7 @@ function ownerReps() {
       <h3>Hecho (${r.ok.length})</h3><ul class="lst">${r.ok.map(id => `<li>✅ ${esc(textOf(r.w, id))}</li>`).join('') || '<li>—</li>'}</ul>
       <h3>Pendiente (${r.no.length})</h3><ul class="lst">${r.no.map(id => `<li>❌ ${esc(textOf(r.w, id))}</li>`).join('') || '<li>—</li>'}</ul>
       ${r.mv ? `<h3>Meta de ventas</h3><ul class="lst">${r.mv.map(x => `<li>🏆 ${esc(x.p)}: hoy <b>${x.hoy}</b> · semana <b>${x.tot} de ${x.meta}</b></li>`).join('')}</ul>` : ''}
+      ${r.perd !== undefined ? `<h3>🗑️ Productos perdidos</h3><div class="obs">${r.perd ? esc(r.perd).replace(/\n/g, '<br>') : '⚠️ No lo anotó'}</div>` : ''}
       ${r.nov && r.nov.trim() ? `<h3>Novedades</h3><div class="obs">${esc(r.nov).replace(/\n/g, '<br>')}</div>` : ''}</div>`;
   }
   return html;
@@ -767,7 +796,7 @@ document.addEventListener('change', e => {
   }
   if (c.id === 'efin' && /^\d{4}-\d{2}-\d{2}$/.test(c.value)) { view.efin = c.value; render(); }
 });
-document.addEventListener('input', e => { if (e.target.id === 'nov') { dayState().nov = e.target.value; save(); } });
+document.addEventListener('input', e => { if (e.target.id === 'nov') { dayState().nov = e.target.value; save(); } if (e.target.id === 'perd') { dayState().perd = e.target.value; save(); } });
 
 function entrarDueno() {
   if (!S.pin) {
