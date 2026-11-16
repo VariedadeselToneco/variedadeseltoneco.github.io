@@ -139,7 +139,7 @@ const ATENCION = [
   ['🚶', 'Cuida el pasillo', 'Con clientes en la tienda, el pasillo queda libre. Si surtes, hazlo rápido.'],
   ['💬', 'Buenas respuestas', 'Nunca "no hay" seco: ofrece otra opción o anótalo en el cuaderno.']
 ];
-const BIENVENIDA = 'bienvenida.mp4';
+const BIENVENIDA = w => 'bienvenida_' + w + '.mp4';   // video de bienvenida con voz, uno por trabajador
 /* Guía de caja: cómo facturar en Chrystal (pestaña 📘 Facturar) */
 const FACTURAR = {
   video: 'facturar.mp4',
@@ -426,7 +426,7 @@ function wCheck() {
   const vistos = (S.vistos && S.vistos[S.me]) || [], tabsLeer = (TEAM[S.me].caja ? ['fact'] : []).concat(['rol', 'metas', 'obs']), falta = tabsLeer.filter(x => !vistos.includes(x));
   let html = falta.length ? `<div class="alerta"><b class="big">⚠️ ¡LEE TODO!</b>
     <p>Primero mira este video de bienvenida 👇</p>
-    <video class="vid" src="${BIENVENIDA}#t=0.5" controls playsinline preload="metadata" style="margin-bottom:12px"></video>
+    <video class="vid" src="${BIENVENIDA(S.me)}#t=0.5" controls playsinline preload="metadata" style="margin-bottom:12px"></video>
     <p>Esta app tiene <b>${tabsLeer.length + 1} pestañas</b> arriba: ✅ Checklist${TEAM[S.me].caja ? ', 📘 Facturar' : ''}, 👤 Mi rol, 🎯 Metas y 📝 Observaciones. Ábrelas todas y léelas completas.</p>
     <div class="go">${TEAM[S.me].caja ? `<button data-t="fact" class="${vistos.includes('fact') ? 'ok' : ''}">📘 Facturar</button>` : ''}<button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '';
   const ult = (TEAM[S.me].recordatorios || []).slice(-1)[0], now = new Date();
@@ -463,7 +463,7 @@ function wRol() {
     <h3>Mis responsabilidades</h3><ul class="lst">${t.rol.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
     <h3>Límites (lo que no se hace)</h3><ul class="lst">${t.limites.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
     <div class="card"><h2>⭐ Atención al cliente (para todos)</h2><div class="aten">${ATENCION.map(a => `<div><i>${a[0]}</i><div><b>${esc(a[1])}</b><span>${esc(a[2])}</span></div></div>`).join('')}</div></div>
-    <div class="card"><h2>🎬 Video de bienvenida</h2><video class="vid" src="${BIENVENIDA}#t=0.5" controls playsinline preload="metadata"></video></div>`;
+    <div class="card"><h2>🎬 Video de bienvenida</h2><video class="vid" src="${BIENVENIDA(S.me)}#t=0.5" controls playsinline preload="metadata"></video></div>`;
 }
 function wMetas() {
   const t = TEAM[S.me], w = semana(S.me, hoy());
