@@ -94,7 +94,8 @@ video.vid{width:100%;border-radius:14px;background:#000;display:block}
 .metav small{color:#c7d2fe}
 .modal[hidden]{display:none!important}
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.75);z-index:50;display:flex;align-items:center;justify-content:center;padding:18px}
-.modal .box{background:#fff;border-radius:20px;padding:22px;max-width:420px;width:100%;text-align:center}
+.modal .box{background:#fff;border-radius:20px;padding:22px;max-width:420px;width:100%;text-align:center;max-height:92vh;overflow:auto}
+.modal video.vid{max-height:56vh;object-fit:contain}
 .modal h2{margin:0 0 8px;font-size:22px}
 .modal p{font-size:16px;line-height:1.4;margin:0 0 6px;color:#334155}
 .modal .btn:disabled{opacity:.4}
@@ -157,10 +158,10 @@ const ATENCION = [
   ['🚶', 'Cuida el pasillo', 'Con clientes en la tienda, el pasillo queda libre. Si surtes, hazlo rápido.'],
   ['💬', 'Buenas respuestas', 'Nunca "no hay" seco: ofrece otra opción o anótalo en el cuaderno.']
 ];
-const BIENVENIDA = w => ({ fernando: 'bienvenida_fernando.mp4' })[w] || 'bienvenida.mp4';   // con voz: por ahora solo Fernando
+const BIENVENIDA = w => ({ fernando: 'bienvenida_fernando_vz.mp4' })[w] || 'bienvenida.mp4';   // con voz: por ahora solo Fernando
 /* Guía de caja: cómo facturar en Chrystal (pestaña 📘 Facturar) */
 const FACTURAR = {
-  video: 'facturar.mp4',
+  video: 'facturar_rapido.mp4',
   pasos: [
     ['Escanea cada producto', 'Pásalo por el lector rojo. Suena y aparece en la lista.'],
     ['¿No tiene código? Presiona ENTER', 'Escribe el nombre o el código y escoge el producto.'],
@@ -459,8 +460,7 @@ function wCheck() {
   const done = items.filter(i => st.done.includes(i.id)).length, p = Math.round(done / items.length * 100);
   const vistos = (S.vistos && S.vistos[S.me]) || [], tabsLeer = (TEAM[S.me].caja ? ['fact'] : []).concat(['rol', 'metas', 'obs']), falta = tabsLeer.filter(x => !vistos.includes(x));
   let html = metaVentaHtml(S.me) + (falta.length ? `<div class="alerta"><b class="big">⚠️ ¡LEE TODO!</b>
-    <p>Primero mira este video de bienvenida 👇</p>
-    <video class="vid" src="${BIENVENIDA(S.me)}#t=0.5" controls playsinline preload="metadata" style="margin-bottom:12px"></video>
+
     <p>Esta app tiene <b>${tabsLeer.length + 1} pestañas</b> arriba: ✅ Checklist${TEAM[S.me].caja ? ', 📘 Facturar' : ''}, 👤 Mi rol, 🎯 Metas y 📝 Observaciones. Ábrelas todas y léelas completas.</p>
     <div class="go">${TEAM[S.me].caja ? `<button data-t="fact" class="${vistos.includes('fact') ? 'ok' : ''}">📘 Facturar</button>` : ''}<button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '');
   const ult = (TEAM[S.me].recordatorios || []).slice(-1)[0], now = new Date();
@@ -553,7 +553,17 @@ function alarmaVer(w) { const t = TEAM[w]; return (t.recordatorios || []).concat
 function revisarAlarmas() {
   const m = $('alModal'); if (!m) return;
   const t = view.mode === 'worker' && S.me && TEAM[S.me];
-  if (!t || !(t.recordatorios || []).length || (S.alarma && S.alarma[S.me] === alarmaVer(S.me))) { m.hidden = true; return; }
+  if (!t) { m.hidden = true; return; }
+  const alarmaOk = !(t.recordatorios || []).length || (S.alarma && S.alarma[S.me] === alarmaVer(S.me));
+  if (alarmaOk) {
+    const bv = BIENVENIDA(S.me);
+    if (S.bienv && S.bienv[S.me] === bv) { m.hidden = true; return; }
+    m.innerHTML = `<div class="box"><h2>🎬 ¡Bienvenido${S.me === 'osmary' ? 'a' : ''}, ${esc(t.name)}!</h2>
+      <p>Mira este video antes de empezar 👇</p>
+      <video class="vid" id="bvVid" src="${bv}" controls playsinline preload="auto" style="margin:10px 0"></video>
+      <button class="btn pri" id="bvOk">✅ Ya lo vi, ¡a trabajar!</button></div>`;
+    m.hidden = false; return;
+  }
   m.innerHTML = `<div class="box"><h2>⏰ Activa tus alarmas</h2>
     <p>Para que tu teléfono te avise todos los días a las <b>${t.recordatorios.map(h12).join(', ')}</b>${(t.insistir || []).length ? ' y te insista en la noche si no has enviado' : ''}.</p>
     <p class="mut">1) Toca el botón amarillo · 2) En el Calendario toca <b>Guardar</b></p>
@@ -686,7 +696,7 @@ function ownerObs() {
    Eventos
    ===================================================================== */
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#eSave,#ePrint,#eMail,#eWa,#oSend');
+  const b = e.target.closest('[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend');
   if (!b) return;
   if (b.dataset.vm) {
     const m = (METAS_VENTA[S.me] || []).find(x => x.id === b.dataset.vm); if (!m) return;
@@ -708,7 +718,8 @@ document.addEventListener('click', e => {
   if (b.id === 'whoBtn') { view = { mode: null, tab: 'check' }; if (S.me && !S.owner) { S.me = null; save(); } render(); return; }
   if (b.id === 'sendRep') { enviarReporte(); render(); return; }
   if (b.id === 'alarmas' || b.id === 'alGo') { descargarRecordatorios(); return; }
-  if (b.id === 'alOk') { S.alarma = S.alarma || {}; S.alarma[S.me] = alarmaVer(S.me); save(); revisarAlarmas(); toast('¡Listo! Tus alarmas quedaron activas ⏰'); return; }
+  if (b.id === 'alOk') { S.alarma = S.alarma || {}; S.alarma[S.me] = alarmaVer(S.me); save(); revisarAlarmas(); toast('¡Listo! Tus alarmas quedaron activas ⏰'); const v = $('bvVid'); if (v) { try { v.play(); } catch (e) {} } return; }
+  if (b.id === 'bvOk') { const v = $('bvVid'); if (v) v.pause(); S.bienv = S.bienv || {}; S.bienv[S.me] = BIENVENIDA(S.me); save(); revisarAlarmas(); return; }
   const w = view.ew || Object.keys(TEAM)[0], fin = view.efin || hoy();
   if (b.id === 'eSave') { const e2 = evalData(w, fin); e2.com = $('ecom').value; e2.f = hoy(); S.evals.unshift(e2); save(); toast('Evaluación guardada ✅'); render(); return; }
   if (b.id === 'ePrint') { imprimir(evalData(w, fin), $('ecom').value); return; }
