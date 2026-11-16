@@ -37,6 +37,13 @@ main{padding:14px 14px 0;max-width:640px;margin:0 auto}
 .it:last-child{border-bottom:0}
 .it input{width:26px;height:26px;flex:none;accent-color:var(--ok);margin:0}
 .it.done span{color:var(--mut);text-decoration:line-through}
+.it .det{display:block;font-size:13px;color:var(--mut);margin-top:2px;text-decoration:none}
+.mision{background:#eff6ff;border-left:4px solid #2563eb;border-radius:0 12px 12px 0;padding:10px 12px;font-size:15px;margin-bottom:6px}
+.atrasado{background:#dc2626;color:#fff;border-radius:16px;padding:16px;margin-bottom:12px;font-weight:800;font-size:18px;line-height:1.3;animation:lat 1s infinite}
+@keyframes lat{50%{background:#991b1b}}
+.hoyrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.hoyrow:last-child{border-bottom:0}
+.hoyrow button{border:0;border-radius:10px;padding:8px 12px;font-weight:800;background:#16a34a;color:#fff}
 ul.lst{margin:0;padding-left:20px;line-height:1.5;font-size:15px}
 ul.lst li{margin-bottom:6px}
 textarea,input[type=text],input[type=password],input[type=tel],select{width:100%;border:2px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:16px;background:#fff;color:var(--txt)}
@@ -154,49 +161,63 @@ const FACTURAR = {
 const TEAM = {
   fernando: {
     name: 'Fernando', horario: '7:00 am – 6:00 pm', puesto: 'Cajero y apertura', color: '#2563eb',
-    recordatorios: ['07:00', '17:15'],
+    recordatorios: ['06:45', '13:00', '17:15'],
+    insistir: ['18:00', '19:00', '20:00', '21:00'],
     caja: true,
+    mision: 'Que la tienda abra a tiempo, que cada venta quede registrada y que ningún cliente se vaya sin que le ofrezcan algo más.',
     rol: [
-      'Abrir la tienda: frente barrido, matas regadas y bultos afuera para vender al mayor',
-      'Atender y cobrar a cada cliente: efectivo, pago móvil, Cashea y fiado',
-      'Registrar TODA venta y todo fiado en el sistema',
-      'Ofrecer la oferta o el combo del día a cada cliente',
-      'Llevar el cuaderno de novedades: lo que se acaba, lo que falta, lo que piden',
-      'Mantener los precios pegados y la caja limpia y despejada'
+      'Abrir la tienda a las 7:00 en punto: luces, neveras, música y bultos afuera',
+      'Cobrar a cada cliente y registrar TODO en el sistema: ventas, fiado, Cashea y pago móvil',
+      'Ofrecer a cada cliente cesta, la oferta del día y preguntar "¿qué más va a llevar?"',
+      'Revisar el surtido de la tienda a las 10 am y 3 pm y darle indicaciones a Luis y a Osmary',
+      'Llevar el cuaderno de novedades y mantener los precios pegados',
+      'Entregar la caja cuadrada a Rafael a las 6:00 pm'
     ],
     limites: [
-      'Nadie se despacha solo: amigos y visitantes compran como cualquier cliente',
+      'Nadie se despacha solo: amigos y visitantes pagan en caja como cualquier cliente',
       'No se fía nada sin registrarlo en el sistema',
       'La caja nunca se queda sola',
-      'Nadie ajeno pasa detrás del mostrador'
+      'Nadie ajeno pasa detrás del mostrador',
+      'Nada se anota en papeles sueltos: todo va al sistema o al cuaderno'
     ],
     metas: [
       'Checklist enviado todos los días',
       'Tienda abierta y lista a las 7:00 am',
       'Caja cuadrada sin diferencias',
-      'Cuaderno de novedades al día',
-      'Ofrecer la oferta del día a cada cliente'
+      'Cero productos sin precio',
+      'Nunca falta queso, avena ni lo básico preparado',
+      'Cuaderno de novedades al día'
     ],
     checklist: [
-      { s: 'Al abrir (7:00 am)', items: [
-        'Barrí el frente de la tienda',
-        'Regué las matas',
-        'Saqué los bultos afuera, ordenados y con precio visible',
-        'Conté el fondo de caja y lo anoté',
-        'Limpié y despejé el mostrador de caja',
-        'Revisé que el sistema y el punto funcionen'
+      { s: 'Apertura (7:00 – 7:30 am)', items: [
+        ['Abrí a las 7:00 en punto', 'Santamaría arriba, luces y música encendidas'],
+        ['Encendí las luces de las neveras', ''],
+        ['Abrí la llave para llenar el tanque', 'Luis la cierra antes de irse'],
+        ['Saqué los bultos afuera', 'Ordenados por producto, con el precio al mayor visible'],
+        ['Conté el fondo de caja y lo anoté', 'En el cuaderno, con fecha y firma'],
+        ['Revisé sistema, punto e impresora', 'Y que la tasa del día esté cargada'],
+        ['Limpié y despejé el mostrador de caja', '']
       ]},
       { s: 'Durante el día', items: [
-        'Ofrecí la oferta o el combo del día a cada cliente',
-        'Registré toda venta y fiado en el sistema',
-        'Anoté en el cuaderno lo que se acabó, faltó o pidieron',
-        'Pegué los precios que faltaban o cambiaron',
-        'Nadie se despachó solo (amigos o visitantes)'
+        ['Ofrecí la oferta o el combo del día a cada cliente', ''],
+        ['Registré TODO en el sistema', 'Ventas, fiado, Cashea y pago móvil. Nada en papel suelto'],
+        ['Anoté en el cuaderno de novedades', 'Lo que se acabó, lo que pidieron y no había, cualquier problema'],
+        ['Pegué los precios que faltaban o cambiaron', 'Ningún producto sin precio en su pasillo'],
+        ['Nadie se despachó solo (amigos o visitantes)', '']
       ]},
-      { s: 'Al salir (6:00 pm)', items: [
-        'Cuadré la caja',
-        'Dejé el mostrador limpio y ordenado',
-        'Le pasé a Luis las novedades del día'
+      { s: '🔎 Revisión de surtido (10 am y 3 pm)', items: [
+        ['Queso blanco preparado', ''],
+        ['Queso amarillo preparado', ''],
+        ['Jamón preparado', ''],
+        ['Avena preparada', ''],
+        ['Caraotas preparadas', ''],
+        ['Alimentos y anaqueles surtidos', 'Revisé toda la tienda: nada vacío'],
+        ['Le di indicaciones a Luis y a Osmary de lo que falta', 'Quién lo prepara o lo repone y para qué hora']
+      ]},
+      { s: 'Entrega de caja a Rafael (6:00 pm)', items: [
+        ['Cuadré la caja', 'Efectivo, punto, pago móvil y Cashea contra el sistema'],
+        ['Le entregué la caja a Rafael con el cuadre', 'Y las novedades del día y lo que falta preparar'],
+        ['Dejé el mostrador limpio y despejado', '']
       ]}
     ]
   },
@@ -226,6 +247,7 @@ const TEAM = {
       { s: 'Al llegar (8:00 am)', items: [
         'Preparé el café',
         'Ofrecí café a cada cliente hasta las 10 am',
+        'Regué las matas',
         'Di comida y agua al gato y limpié su área',
         'Limpié la cocina y la charcutería',
         'Revisé neveras: frío y orden'
@@ -276,6 +298,8 @@ const TEAM = {
       { s: 'Al cerrar', items: [
         'Limpié los pasillos',
         'Lavé las cestas de los clientes',
+        'Barrí el frente de la tienda',
+        'Cerré la llave del tanque antes de irme',
         'Saqué la basura y cerré el depósito'
       ]}
     ]
@@ -314,7 +338,7 @@ function fechaBonita(iso) { const [y, m, d] = iso.split('-').map(Number); const 
 function hid(t) { let h = 0; for (const c of t) h = (h * 31 + c.charCodeAt(0)) | 0; return (h >>> 0).toString(36); }
 function itemsOf(w) {
   const t = TEAM[w], out = [];
-  t.checklist.forEach(sec => sec.items.forEach(x => out.push({ id: hid(x), t: x, s: sec.s })));
+  t.checklist.forEach(sec => sec.items.forEach(x => { const tt = Array.isArray(x) ? x[0] : x, dd = Array.isArray(x) ? x[1] : ''; out.push({ id: hid(tt), t: tt, d: dd, s: sec.s }); }));
   COMUNES.forEach(x => out.push({ id: hid(x), t: x, s: '⭐ Atención al cliente y orden (todos)' }));
   return out;
 }
@@ -405,17 +429,22 @@ function wCheck() {
     <video class="vid" src="${BIENVENIDA}#t=0.5" controls playsinline preload="metadata" style="margin-bottom:12px"></video>
     <p>Esta app tiene <b>${tabsLeer.length + 1} pestañas</b> arriba: ✅ Checklist${TEAM[S.me].caja ? ', 📘 Facturar' : ''}, 👤 Mi rol, 🎯 Metas y 📝 Observaciones. Ábrelas todas y léelas completas.</p>
     <div class="go">${TEAM[S.me].caja ? `<button data-t="fact" class="${vistos.includes('fact') ? 'ok' : ''}">📘 Facturar</button>` : ''}<button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '';
+  const ult = (TEAM[S.me].recordatorios || []).slice(-1)[0], now = new Date();
+  if (ult && !st.sent && (now.getHours() * 60 + now.getMinutes()) >= (+ult.split(':')[0] * 60 + +ult.split(':')[1] + 30)) {
+    html = `<div class="atrasado">🚨 ¡Todavía no has enviado tu checklist de hoy! Márcalo y toca "📤 Enviar" abajo AHORA.</div>` + html;
+    try { navigator.vibrate && navigator.vibrate([600, 300, 600, 300, 600]); } catch (e) {}
+  }
   html += `<div class="card"><b>${fechaBonita(hoy())}</b> · <span class="mut">${done} de ${items.length} tareas</span>
     <div class="prog"><i style="width:${p}%"></i></div>${st.sent ? '<span class="mut">✅ Ya enviaste el reporte de hoy. Si haces más tareas, puedes enviarlo otra vez.</span>' : ''}</div>`;
   const secs = [...new Set(items.map(i => i.s))];
   secs.forEach(s => {
     html += `<div class="card"><h2>${esc(s)}</h2>` + items.filter(i => i.s === s).map(i =>
-      `<label class="it ${st.done.includes(i.id) ? 'done' : ''}"><input type="checkbox" data-ck="${i.id}" ${st.done.includes(i.id) ? 'checked' : ''}><span>${esc(i.t)}</span></label>`).join('') + `</div>`;
+      `<label class="it ${st.done.includes(i.id) ? 'done' : ''}"><input type="checkbox" data-ck="${i.id}" ${st.done.includes(i.id) ? 'checked' : ''}><span>${esc(i.t)}${i.d ? `<small class="det">${esc(i.d)}</small>` : ''}</span></label>`).join('') + `</div>`;
   });
   html += `<div class="card"><h2>Novedades del día</h2><p class="mut">Lo que se acabó, lo que faltó, lo que pidieron los clientes o cualquier problema.</p>
     <textarea id="nov" placeholder="Ej: se acabó la harina, un cliente pidió queso de año…">${esc(st.nov)}</textarea>
     <button class="btn wa" id="sendRep">📤 Enviar mi checklist a ${esc(OWNER.name)}</button></div>
-    <div class="card"><h2>⏰ Recordatorios</h2><p class="mut">Tu teléfono te avisará todos los días a las <b>${(TEAM[S.me].recordatorios || []).map(h12).join('</b> y a las <b>')}</b> para hacer y enviar tu checklist.</p>
+    <div class="card"><h2>⏰ Recordatorios</h2><p class="mut">Tu teléfono te avisará todos los días a las <b>${(TEAM[S.me].recordatorios || []).map(h12).join('</b>, <b>')}</b>.${(TEAM[S.me].insistir || []).length ? ` Y si no lo has enviado, te insiste cada hora: <b>${TEAM[S.me].insistir.map(h12).join('</b>, <b>')}</b>.` : ''}</p>
     <button class="btn gold" id="alarmas">⏰ Activar recordatorios diarios</button>
     <p class="mut" style="margin-top:8px">Se abre tu Calendario: toca <b>Guardar</b> o <b>Importar</b>. Solo se hace una vez.</p></div>`;
   return html;
@@ -430,7 +459,7 @@ function wFact() {
 }
 function wRol() {
   const t = TEAM[S.me];
-  return `<div class="card"><h2>${esc(t.puesto)}</h2><p class="mut">Horario: ${esc(t.horario)} · 1 día libre a la semana</p>
+  return `<div class="card"><h2>${esc(t.puesto)}</h2><p class="mut">Horario: ${esc(t.horario)} · 1 día libre a la semana</p>${t.mision ? `<div class="mision"><b>Tu misión:</b> ${esc(t.mision)}</div>` : ''}
     <h3>Mis responsabilidades</h3><ul class="lst">${t.rol.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
     <h3>Límites (lo que no se hace)</h3><ul class="lst">${t.limites.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
     <div class="card"><h2>⭐ Atención al cliente (para todos)</h2><div class="aten">${ATENCION.map(a => `<div><i>${a[0]}</i><div><b>${esc(a[1])}</b><span>${esc(a[2])}</span></div></div>`).join('')}</div></div>
@@ -473,10 +502,11 @@ function descargarRecordatorios() {
   const t = TEAM[S.me], hs = t.recordatorios || [];
   const d = new Date(), ymd = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
-  const ev = hs.map((hm, i) => {
+  const ins = t.insistir || [];
+  const ev = hs.concat(ins).map((hm, i) => {
     const [h, m] = hm.split(':').map(Number);
     const hh = pad(h) + pad(m) + '00', fin = pad((h + (m >= 45 ? 1 : 0)) % 24) + pad((m + 15) % 60) + '00';
-    const txt = i === 0 ? 'Abrir mi checklist del día' : 'Terminar y ENVIAR mi checklist a ' + OWNER.name;
+    const txt = i >= hs.length ? '🚨 ¿YA ENVIASTE tu checklist? Si no, ENVÍALO YA a ' + OWNER.name : i === 0 ? 'Abrir mi checklist del día' : i === hs.length - 1 ? 'Terminar y ENVIAR mi checklist a ' + OWNER.name : 'Revisar mi checklist: ¿voy al día?';
     return ['BEGIN:VEVENT', 'UID:toneco-' + S.me + '-' + i + '@equipo', 'DTSTAMP:' + stamp,
       'DTSTART;TZID=America/Caracas:' + ymd + 'T' + hh, 'DTEND;TZID=America/Caracas:' + ymd + 'T' + fin,
       'RRULE:FREQ=DAILY', 'SUMMARY:✅ ' + txt, 'DESCRIPTION:' + pageUrl(), 'URL:' + pageUrl(),
@@ -511,6 +541,10 @@ function ownerReps() {
   const wf = view.wf || 'all', L = S.reps.filter(r => wf === 'all' || r.w === wf);
   let html = `<div class="chips"><button class="chip ${wf === 'all' ? 'on' : ''}" data-wf="all">Todos</button>` +
     Object.entries(TEAM).map(([k, t]) => `<button class="chip ${wf === k ? 'on' : ''}" data-wf="${k}">${esc(t.name)}</button>`).join('') + `</div>`;
+  html += `<div class="card"><h2>Hoy · ${fechaBonita(hoy())}</h2>` + Object.entries(TEAM).map(([k, t]) => {
+    const r = S.reps.find(x => x.w === k && x.d === hoy());
+    return `<div class="hoyrow"><div><b>${esc(t.name)}</b> <span class="mut">${r ? '✅ enviado ' + r.h + ' · ' + Math.round(r.ok.length / r.n * 100) + '%' : '❌ no ha enviado'}</span></div>${r ? '' : `<button data-nudge="${k}">📲 Recordarle</button>`}</div>`;
+  }).join('') + `</div>`;
   if (!L.length) return html + `<div class="card empty">Todavía no hay reportes.<br><br>Cuando un trabajador te envíe su checklist por WhatsApp, toca el enlace que viene al final del mensaje y se guarda aquí.</div>`;
   html += `<div class="card">` + L.slice(0, 60).map((r, i) => {
     const p = Math.round(r.ok.length / r.n * 100);
@@ -585,8 +619,9 @@ function ownerObs() {
    Eventos
    ===================================================================== */
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#eSave,#ePrint,#eMail,#eWa,#oSend');
+  const b = e.target.closest('[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#eSave,#ePrint,#eMail,#eWa,#oSend');
   if (!b) return;
+  if (b.dataset.nudge) { const k = b.dataset.nudge; openWa(`🚨 ${TEAM[k].name}, todavía no me has enviado tu checklist de hoy. Ábrelo, márcalo y envíamelo ya, por favor:\n${pageUrl()}?p=${k}`); return; }
   if (b.dataset.t) { view.tab = b.dataset.t; view.open = null; if (view.mode === 'worker' && S.me) { S.vistos = S.vistos || {}; S.vistos[S.me] = [...new Set([...(S.vistos[S.me] || []), b.dataset.t])]; save(); } render(); window.scrollTo(0, 0); return; }
   if (b.dataset.me) { S.me = b.dataset.me; save(); view = { mode: 'worker', tab: 'check' }; render(); return; }
   if (b.dataset.owner) { entrarDueno(); return; }
