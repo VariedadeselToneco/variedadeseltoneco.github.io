@@ -95,7 +95,10 @@ video.vid{width:100%;border-radius:14px;background:#000;display:block}
 .modal[hidden]{display:none!important}
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.75);z-index:50;display:flex;align-items:center;justify-content:center;padding:18px}
 .modal .box{background:#fff;border-radius:20px;padding:22px;max-width:420px;width:100%;text-align:center;max-height:92vh;overflow:auto}
-.modal video.vid{max-height:56vh;object-fit:contain}
+.modal .animo{background:linear-gradient(160deg,#fff7d6,#ffffff 60%)}
+.modal .animo .sol{font-size:64px;line-height:1;margin-bottom:6px}
+.modal .animo h2{font-size:26px}
+.modal .animo .frase{font-size:21px;font-weight:800;color:#0b1f3a;line-height:1.35;margin:12px 0 14px}
 .modal h2{margin:0 0 8px;font-size:22px}
 .modal p{font-size:16px;line-height:1.4;margin:0 0 6px;color:#334155}
 .modal .btn:disabled{opacity:.4}
@@ -158,7 +161,23 @@ const ATENCION = [
   ['🚶', 'Cuida el pasillo', 'Con clientes en la tienda, el pasillo queda libre. Si surtes, hazlo rápido.'],
   ['💬', 'Buenas respuestas', 'Nunca "no hay" seco: ofrece otra opción o anótalo en el cuaderno.']
 ];
-const BIENVENIDA = w => ({ fernando: 'bienvenida_fernando_vz.mp4' })[w] || 'bienvenida.mp4';   // con voz: por ahora solo Fernando
+/* Mensaje motivador de cada mañana (sale la primera vez que abre la app en el día) */
+const ANIMO = [
+  '¡Buenos días, campeón! Hoy es TU día. Abre con todo y que cada cliente salga contento. 💪',
+  '¡Arriba, campeón! Un día nuevo es una oportunidad nueva de hacerlo mejor que ayer. 🚀',
+  'Campeón, la actitud lo es todo: sonríe, ofrece y vende. ¡Hoy la rompes! 🔥',
+  '¡Vamos, campeón! Los grandes no esperan el momento, lo crean. ¡A darle! 🏆',
+  'Hoy no es un día más: es tu día para demostrar de qué estás hecho. ¡Vamos pues! 💥',
+  'Campeón, cada cliente bien atendido es un cliente que vuelve. ¡Hoy vas con todo! 😊',
+  '¡Buenos días! El éxito es la suma de pequeños esfuerzos todos los días. ¡Tú puedes! ⭐',
+  'Campeón, hoy enfócate en lo tuyo y hazlo excelente. ¡El resultado llega solo! 🎯',
+  '¡Arranca con energía! Una tienda limpia, surtida y con buena cara vende el doble. 💪',
+  'Campeón, recuerda: tú eres la cara de Variedades el Toñeco. ¡Hoy brilla! ✨',
+  '¡Nuevo día, nueva meta! Cada combo que vendes te acerca a tu premio. ¡Vamos! 🏆',
+  'Los campeones no se rinden: se cansan, respiran y siguen. ¡Hoy es tu día! 🔥',
+  '¡Buenos días, campeón! Haz que hoy cuente. Nadie lo hace como tú. 🚀',
+  'Campeón, la constancia gana más que la suerte. ¡Otro día para crecer! 💪'
+];
 /* Guía de caja: cómo facturar en Chrystal (pestaña 📘 Facturar) */
 const FACTURAR = {
   video: 'facturar_rapido.mp4',
@@ -198,6 +217,7 @@ const TEAM = {
     recordatorios: ['06:45', '13:00', '17:15'],
     insistir: ['18:00', '19:00', '20:00', '21:00'],
     caja: true,
+    animo: true,
     mision: 'Que la tienda abra a tiempo, que cada venta quede registrada y que ningún cliente se vaya sin que le ofrezcan algo más.',
     rol: [
       'Abrir la tienda a las 7:00 en punto: luces, neveras, música y bultos afuera',
@@ -513,8 +533,7 @@ function wRol() {
   return `<div class="card"><h2>${esc(t.puesto)}</h2><p class="mut">Horario: ${esc(t.horario)} · 1 día libre a la semana</p>${t.mision ? `<div class="mision"><b>Tu misión:</b> ${esc(t.mision)}</div>` : ''}
     <h3>Mis responsabilidades</h3><ul class="lst">${t.rol.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
     <h3>Límites (lo que no se hace)</h3><ul class="lst">${t.limites.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
-    <div class="card"><h2>⭐ Atención al cliente (para todos)</h2><div class="aten">${ATENCION.map(a => `<div><i>${a[0]}</i><div><b>${esc(a[1])}</b><span>${esc(a[2])}</span></div></div>`).join('')}</div></div>
-    <div class="card"><h2>🎬 Video de bienvenida</h2><video class="vid" src="${BIENVENIDA(S.me)}#t=0.5" controls playsinline preload="metadata"></video></div>`;
+    <div class="card"><h2>⭐ Atención al cliente (para todos)</h2><div class="aten">${ATENCION.map(a => `<div><i>${a[0]}</i><div><b>${esc(a[1])}</b><span>${esc(a[2])}</span></div></div>`).join('')}</div></div>`;
 }
 function wMetas() {
   const t = TEAM[S.me], w = semana(S.me, hoy());
@@ -556,12 +575,13 @@ function revisarAlarmas() {
   if (!t) { m.hidden = true; return; }
   const alarmaOk = !(t.recordatorios || []).length || (S.alarma && S.alarma[S.me] === alarmaVer(S.me));
   if (alarmaOk) {
-    const bv = BIENVENIDA(S.me);
-    if (S.bienv && S.bienv[S.me] === bv) { m.hidden = true; return; }
-    m.innerHTML = `<div class="box"><h2>🎬 ¡Bienvenido${S.me === 'osmary' ? 'a' : ''}, ${esc(t.name)}!</h2>
-      <p>Mira este video antes de empezar 👇</p>
-      <video class="vid" id="bvVid" src="${bv}" controls playsinline preload="auto" style="margin:10px 0"></video>
-      <button class="btn pri" id="bvOk">✅ Ya lo vi, ¡a trabajar!</button></div>`;
+    if (!t.animo || (S.animo && S.animo[S.me] === hoy())) { m.hidden = true; return; }
+    const d = new Date(), n = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5);
+    m.innerHTML = `<div class="box animo"><div class="sol">☀️</div>
+      <h2>¡Hoy es tu día, ${esc(t.name)}!</h2>
+      <p class="frase">${esc(ANIMO[n % ANIMO.length])}</p>
+      <p class="mut">${fechaBonita(hoy())}</p>
+      <button class="btn gold" id="bvOk">💪 ¡Vamos con todo!</button></div>`;
     m.hidden = false; return;
   }
   m.innerHTML = `<div class="box"><h2>⏰ Activa tus alarmas</h2>
@@ -718,8 +738,8 @@ document.addEventListener('click', e => {
   if (b.id === 'whoBtn') { view = { mode: null, tab: 'check' }; if (S.me && !S.owner) { S.me = null; save(); } render(); return; }
   if (b.id === 'sendRep') { enviarReporte(); render(); return; }
   if (b.id === 'alarmas' || b.id === 'alGo') { descargarRecordatorios(); return; }
-  if (b.id === 'alOk') { S.alarma = S.alarma || {}; S.alarma[S.me] = alarmaVer(S.me); save(); revisarAlarmas(); toast('¡Listo! Tus alarmas quedaron activas ⏰'); const v = $('bvVid'); if (v) { try { v.play(); } catch (e) {} } return; }
-  if (b.id === 'bvOk') { const v = $('bvVid'); if (v) v.pause(); S.bienv = S.bienv || {}; S.bienv[S.me] = BIENVENIDA(S.me); save(); revisarAlarmas(); return; }
+  if (b.id === 'alOk') { S.alarma = S.alarma || {}; S.alarma[S.me] = alarmaVer(S.me); save(); revisarAlarmas(); toast('¡Listo! Tus alarmas quedaron activas ⏰'); return; }
+  if (b.id === 'bvOk') { S.animo = S.animo || {}; S.animo[S.me] = hoy(); save(); revisarAlarmas(); return; }
   const w = view.ew || Object.keys(TEAM)[0], fin = view.efin || hoy();
   if (b.id === 'eSave') { const e2 = evalData(w, fin); e2.com = $('ecom').value; e2.f = hoy(); S.evals.unshift(e2); save(); toast('Evaluación guardada ✅'); render(); return; }
   if (b.id === 'ePrint') { imprimir(evalData(w, fin), $('ecom').value); return; }
