@@ -81,6 +81,17 @@ video.vid{width:100%;border-radius:14px;background:#000;display:block}
 .aten i{font-style:normal;font-size:28px;line-height:1}
 .aten b{display:block;font-size:16px}
 .aten span{font-size:14px;color:var(--mut)}
+.metav{background:linear-gradient(135deg,#0b1f3a,#1e3a8a);color:#fff;border-radius:18px;padding:16px;margin-bottom:12px}
+.metav h2{margin:0 0 4px;font-size:18px;color:#fde047}
+.metav .msg{font-size:15px;line-height:1.35;margin:6px 0 12px;color:#e0e7ff}
+.metav .big{font-size:34px;font-weight:900}
+.metav .prog{background:rgba(255,255,255,.2);height:14px}
+.metav .prog i{background:#fde047}
+.metav .ctr{display:flex;gap:8px;margin-top:12px}
+.metav .ctr button{border:0;border-radius:12px;font-weight:900;font-size:17px;padding:12px}
+.metav .ctr .mas{flex:1;background:#fde047;color:#1f2937}
+.metav .ctr .men{background:rgba(255,255,255,.18);color:#fff;width:60px}
+.metav small{color:#c7d2fe}
 .alerta{background:#fde047;border:4px solid #ca8a04;border-radius:18px;padding:16px;margin-bottom:12px;color:#422006}
 .alerta b.big{display:block;font-size:24px;line-height:1.15;margin-bottom:6px}
 .alerta p{margin:0 0 10px;font-size:16px;line-height:1.35}
@@ -139,7 +150,7 @@ const ATENCION = [
   ['🚶', 'Cuida el pasillo', 'Con clientes en la tienda, el pasillo queda libre. Si surtes, hazlo rápido.'],
   ['💬', 'Buenas respuestas', 'Nunca "no hay" seco: ofrece otra opción o anótalo en el cuaderno.']
 ];
-const BIENVENIDA = w => 'bienvenida_' + w + '.mp4';   // video de bienvenida con voz, uno por trabajador
+const BIENVENIDA = w => ({ fernando: 'bienvenida_fernando.mp4' })[w] || 'bienvenida.mp4';   // con voz: por ahora solo Fernando
 /* Guía de caja: cómo facturar en Chrystal (pestaña 📘 Facturar) */
 const FACTURAR = {
   video: 'facturar.mp4',
@@ -157,6 +168,21 @@ const FACTURAR = {
     ['Taparo', '22'], ['Tigre', '26'], ['Apureño', '41'], ['Tostón', '95'], ['Queso', 'Q']
   ]
 };
+
+/* Metas de venta de la semana (con reconocimiento) */
+const METAS_VENTA = {
+  fernando: [{ id: 'lailas-1611', producto: 'combos Lailas', meta: 60, premio: '$5 de reconocimiento', desde: '2026-11-16', hasta: '2026-11-22' }]
+};
+/* Un mensaje motivador distinto cada día de la semana (dom … sáb) */
+const MOTIVA = [
+  'Domingo de cierre: ¡último empujón! Cada combo cuenta para llegar a la meta. 🏁',
+  'Lunes de arranque: el que empieza fuerte, termina ganando. ¡Hoy ofrece el combo a cada cliente! 💪',
+  'Martes: una sonrisa y un "¿qué más va a llevar?" venden más que cualquier oferta. 😊',
+  'Miércoles: ya vas a mitad de semana. ¡Mira tu barra y súbele el ritmo! 🚀',
+  'Jueves: los clientes compran a quien les atiende con ganas. ¡Tú puedes! 🔥',
+  'Viernes: día fuerte de ventas. ¡Que ningún cliente se vaya sin conocer el combo! 💥',
+  'Sábado: la tienda se llena. ¡Es tu día para romperla con los combos! 🏆'
+];
 
 const TEAM = {
   fernando: {
@@ -424,11 +450,11 @@ function wCheck() {
   const items = itemsOf(S.me), st = dayState();
   const done = items.filter(i => st.done.includes(i.id)).length, p = Math.round(done / items.length * 100);
   const vistos = (S.vistos && S.vistos[S.me]) || [], tabsLeer = (TEAM[S.me].caja ? ['fact'] : []).concat(['rol', 'metas', 'obs']), falta = tabsLeer.filter(x => !vistos.includes(x));
-  let html = falta.length ? `<div class="alerta"><b class="big">⚠️ ¡LEE TODO!</b>
+  let html = metaVentaHtml(S.me) + (falta.length ? `<div class="alerta"><b class="big">⚠️ ¡LEE TODO!</b>
     <p>Primero mira este video de bienvenida 👇</p>
     <video class="vid" src="${BIENVENIDA(S.me)}#t=0.5" controls playsinline preload="metadata" style="margin-bottom:12px"></video>
     <p>Esta app tiene <b>${tabsLeer.length + 1} pestañas</b> arriba: ✅ Checklist${TEAM[S.me].caja ? ', 📘 Facturar' : ''}, 👤 Mi rol, 🎯 Metas y 📝 Observaciones. Ábrelas todas y léelas completas.</p>
-    <div class="go">${TEAM[S.me].caja ? `<button data-t="fact" class="${vistos.includes('fact') ? 'ok' : ''}">📘 Facturar</button>` : ''}<button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '';
+    <div class="go">${TEAM[S.me].caja ? `<button data-t="fact" class="${vistos.includes('fact') ? 'ok' : ''}">📘 Facturar</button>` : ''}<button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '');
   const ult = (TEAM[S.me].recordatorios || []).slice(-1)[0], now = new Date();
   if (ult && !st.sent && (now.getHours() * 60 + now.getMinutes()) >= (+ult.split(':')[0] * 60 + +ult.split(':')[1] + 30)) {
     html = `<div class="atrasado">🚨 ¡Todavía no has enviado tu checklist de hoy! Márcalo y toca "📤 Enviar" abajo AHORA.</div>` + html;
@@ -457,6 +483,23 @@ function wFact() {
     <div class="card"><h2>Códigos rápidos</h2><p class="mut">Escríbelos después de ENTER</p>
     <div class="cods">${F.codigos.map(c => `<div>${esc(c[0])}<b>${esc(c[1])}</b></div>`).join('')}</div></div>`;
 }
+function metasActivas(w) { const h = hoy(); return (METAS_VENTA[w] || []).filter(m => h >= m.desde && h <= m.hasta); }
+function ventaDia(w, m, d) { return (S.ventas && S.ventas[w + '|' + m.id + '|' + d]) || 0; }
+function ventaTotal(w, m) { let t = 0; Object.entries(S.ventas || {}).forEach(([k, v]) => { const [ww, id, d] = k.split('|'); if (ww === w && id === m.id && d >= m.desde && d <= m.hasta) t += v; }); return t; }
+function diasRestan(m) { const [y, mo, d] = m.hasta.split('-').map(Number); return Math.max(0, Math.round((new Date(y, mo - 1, d) - new Date(new Date().toDateString())) / 864e5) + 1); }
+function metaVentaHtml(w) {
+  return metasActivas(w).map(m => {
+    const tot = ventaTotal(w, m), p = Math.min(100, Math.round(tot / m.meta * 100)), dr = diasRestan(m), falta = Math.max(0, m.meta - tot);
+    const porDia = dr ? Math.ceil(falta / dr) : falta;
+    return `<div class="metav"><h2>🏆 Meta de la semana</h2>
+      <div><b>Vender ${m.meta} ${esc(m.producto)}</b> · premio: <b>${esc(m.premio)}</b></div>
+      <div class="msg">${esc(MOTIVA[new Date().getDay()])}</div>
+      <span class="big">${tot}</span> <span>de ${m.meta}</span> <small>· hoy: ${ventaDia(w, m, hoy())}</small>
+      <div class="prog"><i style="width:${p}%"></i></div>
+      <small>${tot >= m.meta ? '🎉 ¡META CUMPLIDA! Ganaste tu reconocimiento.' : `Faltan ${falta} · ${dr} ${dr === 1 ? 'día' : 'días'} (hasta el ${fechaBonita(m.hasta)}) · unos ${porDia} por día`}</small>
+      <div class="ctr"><button class="men" data-vm="${m.id}" data-dv="-1">−1</button><button class="mas" data-vm="${m.id}" data-dv="1">＋ Vendí 1 combo</button></div></div>`;
+  }).join('');
+}
 function wRol() {
   const t = TEAM[S.me];
   return `<div class="card"><h2>${esc(t.puesto)}</h2><p class="mut">Horario: ${esc(t.horario)} · 1 día libre a la semana</p>${t.mision ? `<div class="mision"><b>Tu misión:</b> ${esc(t.mision)}</div>` : ''}
@@ -467,7 +510,7 @@ function wRol() {
 }
 function wMetas() {
   const t = TEAM[S.me], w = semana(S.me, hoy());
-  return `<div class="card"><h2>Mis metas</h2><ul class="lst">${t.metas.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+  return metaVentaHtml(S.me) + `<div class="card"><h2>Mis metas</h2><ul class="lst">${t.metas.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
     <p class="mut">Meta de la semana: cumplir el <b>90%</b> del checklist. El bono lo define ${esc(OWNER.name)}.</p></div>
     <div class="card"><h2>Mi semana</h2>${diasHtml(w)}<p class="mut">Promedio: <b>${w.prom}%</b> · días enviados: ${w.env} de 7</p></div>`;
 }
@@ -530,6 +573,8 @@ function enviarReporte() {
   const r = { w: S.me, d: hoy(), h: pad(now.getHours()) + ':' + pad(now.getMinutes()), ok: done.map(i => i.id), no: pend.map(i => i.id), n: items.length, nov: st.nov };
   let msg = `✅ *Checklist de ${TEAM[S.me].name}* · ${fechaBonita(r.d)} ${r.h}\n${done.length} de ${items.length} tareas (${p}%)\n`;
   if (pend.length) msg += `\n❌ Pendientes:\n` + pend.map(i => '• ' + i.t).join('\n') + '\n';
+  const mv = metasActivas(S.me).map(m => ({ p: m.producto, hoy: ventaDia(S.me, m, r.d), tot: ventaTotal(S.me, m), meta: m.meta }));
+  if (mv.length) { r.mv = mv; msg += '\n🏆 ' + mv.map(x => `${x.p}: hoy ${x.hoy} · semana ${x.tot} de ${x.meta}`).join('\n🏆 ') + '\n'; }
   if (r.nov.trim()) msg += `\n📝 Novedades:\n${r.nov.trim()}\n`;
   msg += `\nAbrir y guardar en el panel:\n${pageUrl()}#r=${enc(r)}`;
   st.sent = true; save();
@@ -556,6 +601,7 @@ function ownerReps() {
     html += `<div class="card"><h2>${esc(TEAM[r.w].name)} · ${fechaBonita(r.d)}</h2>
       <h3>Hecho (${r.ok.length})</h3><ul class="lst">${r.ok.map(id => `<li>✅ ${esc(textOf(r.w, id))}</li>`).join('') || '<li>—</li>'}</ul>
       <h3>Pendiente (${r.no.length})</h3><ul class="lst">${r.no.map(id => `<li>❌ ${esc(textOf(r.w, id))}</li>`).join('') || '<li>—</li>'}</ul>
+      ${r.mv ? `<h3>Meta de ventas</h3><ul class="lst">${r.mv.map(x => `<li>🏆 ${esc(x.p)}: hoy <b>${x.hoy}</b> · semana <b>${x.tot} de ${x.meta}</b></li>`).join('')}</ul>` : ''}
       ${r.nov && r.nov.trim() ? `<h3>Novedades</h3><div class="obs">${esc(r.nov).replace(/\n/g, '<br>')}</div>` : ''}</div>`;
   }
   return html;
@@ -619,8 +665,16 @@ function ownerObs() {
    Eventos
    ===================================================================== */
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#eSave,#ePrint,#eMail,#eWa,#oSend');
+  const b = e.target.closest('[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#eSave,#ePrint,#eMail,#eWa,#oSend');
   if (!b) return;
+  if (b.dataset.vm) {
+    const m = (METAS_VENTA[S.me] || []).find(x => x.id === b.dataset.vm); if (!m) return;
+    S.ventas = S.ventas || {}; const k = S.me + '|' + m.id + '|' + hoy();
+    S.ventas[k] = Math.max(0, (S.ventas[k] || 0) + (+b.dataset.dv)); save();
+    const y = window.scrollY; render(); window.scrollTo(0, y);
+    if (+b.dataset.dv > 0) { const t = ventaTotal(S.me, m); toast(t >= m.meta ? '🎉 ¡META CUMPLIDA! ' + t + ' combos' : '¡Bien! Llevas ' + t + ' de ' + m.meta); }
+    return;
+  }
   if (b.dataset.nudge) { const k = b.dataset.nudge; openWa(`🚨 ${TEAM[k].name}, todavía no me has enviado tu checklist de hoy. Ábrelo, márcalo y envíamelo ya, por favor:\n${pageUrl()}?p=${k}`); return; }
   if (b.dataset.t) { view.tab = b.dataset.t; view.open = null; if (view.mode === 'worker' && S.me) { S.vistos = S.vistos || {}; S.vistos[S.me] = [...new Set([...(S.vistos[S.me] || []), b.dataset.t])]; save(); } render(); window.scrollTo(0, 0); return; }
   if (b.dataset.me) { S.me = b.dataset.me; save(); view = { mode: 'worker', tab: 'check' }; render(); return; }
