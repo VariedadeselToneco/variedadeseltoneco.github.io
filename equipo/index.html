@@ -198,17 +198,18 @@ const FACTURAR = {
 
 /* Metas de venta de la semana (con reconocimiento) */
 const METAS_VENTA = {
-  fernando: [{ id: 'lailas-1611', producto: 'combos Lailas', meta: 60, premio: '$5 de reconocimiento', desde: '2026-11-16', hasta: '2026-11-22' }]
+  fernando: [{ id: 'lailas-1611', producto: 'combos Lailas', uno: 'combo', meta: 60, premio: '$5 de reconocimiento', desde: '2026-11-16', hasta: '2026-11-22' }],
+  osmary: [{ id: 'cool-1611', producto: 'refrescos Cool 400 ml', uno: 'refresco Cool', meta: 80, premio: '$5 de reconocimiento', desde: '2026-11-16', hasta: '2026-11-22' }]
 };
 /* Un mensaje motivador distinto cada día de la semana (dom … sáb) */
 const MOTIVA = [
-  'Domingo de cierre: ¡último empujón! Cada combo cuenta para llegar a la meta. 🏁',
-  'Lunes de arranque: el que empieza fuerte, termina ganando. ¡Hoy ofrece el combo a cada cliente! 💪',
+  'Domingo de cierre: ¡último empujón! Cada {u} cuenta para llegar a la meta. 🏁',
+  'Lunes de arranque: el que empieza fuerte, termina ganando. ¡Hoy ofrece el {u} a cada cliente! 💪',
   'Martes: una sonrisa y un "¿qué más va a llevar?" venden más que cualquier oferta. 😊',
   'Miércoles: ya vas a mitad de semana. ¡Mira tu barra y súbele el ritmo! 🚀',
   'Jueves: los clientes compran a quien les atiende con ganas. ¡Tú puedes! 🔥',
-  'Viernes: día fuerte de ventas. ¡Que ningún cliente se vaya sin conocer el combo! 💥',
-  'Sábado: la tienda se llena. ¡Es tu día para romperla con los combos! 🏆'
+  'Viernes: día fuerte de ventas. ¡Que ningún cliente se vaya sin conocer el {u}! 💥',
+  'Sábado: la tienda se llena. ¡Es tu día para romperla con los {p}! 🏆'
 ];
 
 const TEAM = {
@@ -306,6 +307,7 @@ const TEAM = {
       'Piso limpio y productos sin polvo todos los días',
       'Cesta ofrecida a cada cliente',
       'Mínimos de charcutería cumplidos a las 10 am y 3 pm',
+      'Meta de la semana: 80 refrescos Cool 400 ml',
       'Checklist enviado todos los días'
     ],
     checklist: [
@@ -323,8 +325,7 @@ const TEAM = {
         ['5 rebanados de queso amarillo listos', ''],
         ['5 combos rebanados listos', ''],
         ['Salsas en vasos: full', ''],
-        ['Mínimo 10 bandejas de cada uno', 'Quesos, salchichas, pollo picado y demás'],
-        ['Todo empacado con etiqueta, peso y fecha', '']
+        ['Mínimo 10 bandejas de cada uno', 'Quesos, salchichas, pollo picado y demás']
       ]},
       { s: '🛒 Piso y venta', items: [
         ['Recibí a cada cliente y le ofrecí su cesta', ''],
@@ -547,11 +548,11 @@ function metaVentaHtml(w) {
     const porDia = dr ? Math.ceil(falta / dr) : falta;
     return `<div class="metav"><h2>🏆 Meta de la semana</h2>
       <div><b>Vender ${m.meta} ${esc(m.producto)}</b> · premio: <b>${esc(m.premio)}</b></div>
-      <div class="msg">${esc(MOTIVA[new Date().getDay()])}</div>
+      <div class="msg">${esc(MOTIVA[new Date().getDay()].replace('{u}', m.uno || m.producto).replace('{p}', m.producto))}</div>
       <span class="big">${tot}</span> <span>de ${m.meta}</span> <small>· hoy: ${ventaDia(w, m, hoy())}</small>
       <div class="prog"><i style="width:${p}%"></i></div>
       <small>${tot >= m.meta ? '🎉 ¡META CUMPLIDA! Ganaste tu reconocimiento.' : `Faltan ${falta} · ${dr} ${dr === 1 ? 'día' : 'días'} (hasta el ${fechaBonita(m.hasta)}) · unos ${porDia} por día`}</small>
-      <div class="ctr"><button class="men" data-vm="${m.id}" data-dv="-1">−1</button><button class="mas" data-vm="${m.id}" data-dv="1">＋ Vendí 1 combo</button></div></div>`;
+      <div class="ctr"><button class="men" data-vm="${m.id}" data-dv="-1">−1</button><button class="mas" data-vm="${m.id}" data-dv="1">＋ Vendí 1 ${esc(m.uno || '')}</button></div></div>`;
   }).join('');
 }
 function wRol() {
