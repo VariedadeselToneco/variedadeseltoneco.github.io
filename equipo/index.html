@@ -17,7 +17,7 @@
 .prow .pp{text-align:right;flex:none}.prow .pp b{display:block;font-size:18px;color:var(--navy)}.prow .pp span{font-size:13px;color:var(--mut)}
 .prow.sin{background:#fffbeb;border-radius:10px;padding-left:8px;padding-right:8px}.sinc{display:inline-block;margin-top:5px;background:var(--gold);color:#1f2937;border:0;border-radius:8px;padding:5px 10px;font-weight:800;font-size:13px}
 .pend{color:#b45309!important;font-weight:700}
-#scanBox{width:100%;min-height:10px;border-radius:12px;overflow:hidden;margin:10px 0;background:#000}#scanBox:empty{display:none}
+#scanBox{position:relative;width:100%;min-height:240px;border-radius:12px;overflow:hidden;margin:10px 0;background:#000}#scanBox:empty{display:none}#scanBox video{width:100%;display:block;max-height:52vh;object-fit:cover}#scanBox .mira{position:absolute;left:8%;right:8%;top:50%;height:34%;transform:translateY(-50%);border:3px solid #f5b301;border-radius:10px;box-shadow:0 0 0 999px rgba(0,0,0,.35);pointer-events:none}#scanBox .rayo{position:absolute;left:10%;right:10%;top:50%;height:2px;background:#ef4444}
 :root{--navy:#0b1f3a;--navy2:#13305a;--gold:#f5b301;--gold2:#ffd36b;--bg:#f2f4f8;--card:#fff;--txt:#0f172a;--mut:#64748b;--ok:#16a34a;--no:#dc2626;--line:#e2e8f0}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -778,7 +778,7 @@ function wPrecios() {
   fbIniciar().catch(() => { LP_ERR = 'Sin conexión. Cuando tengas internet se carga la lista.'; pintarLista(); });
   return `<div class="card"><h2>💲 Lista de precios</h2>
     <div class="pbus"><input type="text" id="pq" placeholder="🔎 Buscar producto o código" value="${esc(view.pq || '')}" autocomplete="off"><button id="pScan" title="Escanear">📷</button></div>
-    <p class="mut" id="pInfo" style="margin-top:8px">${infoLista()}</p>
+    <div class="mut" id="pInfo" style="margin-top:8px">${infoLista()}</div>
     <p class="mut" style="margin-top:6px">⚠️ Si un producto <b>no tiene código</b>, agrégaselo de una vez: escanéalo o ponle un código.</p></div>
     <div class="card" id="plist"></div>`;
 }
@@ -815,7 +815,11 @@ function abrirCodigo(id) {
     <button class="btn ghost" id="cCancel" style="margin-top:8px">Ahora no</button></div>`;
   m.hidden = false;
 }
-function pararScan() { if (scanner) { const s2 = scanner; scanner = null; try { s2.stop().then(() => s2.clear()).catch(() => {}); } catch (e) {} } }
+function pararScan() {
+  if (!scanner) return; const s2 = scanner; scanner = null;
+  if (s2.nativo) { s2.vivo = false; try { s2.stream.getTracks().forEach(t => t.stop()); } catch (e) {} return; }
+  try { s2.stop().then(() => s2.clear()).catch(() => {}); } catch (e) {}
+}
 function cerrarCodigo() { pararScan(); codProd = null; const m = $('alModal'); m.hidden = true; m.innerHTML = ''; setTimeout(revisarAlarmas, 0); }
 function codigoInventado() {
   let n = 1; const usados = new Set(); (LP ? LP.p : []).forEach(x => x[3].forEach(c => usados.add(c.toUpperCase())));
@@ -843,19 +847,38 @@ async function guardarCodigo() {
 function codHoy(w) { return (S.codN && S.codN[w + '|' + hoy()]) || 0; }
 /* --- escáner con la cámara --- */
 async function escanear(alLeer) {
-  try { await cargarJs('https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'); } catch (e) { toast('No se pudo abrir el escáner (sin internet)'); return; }
   let box = $('scanBox'), propio = false;
   if (!box) {   // escanear para buscar: abre su propia ventanita
     const m = $('alModal'); m.innerHTML = `<div class="box"><h2>📷 Apunta al código de barras</h2><div id="scanBox"></div><button class="btn ghost" id="cCancel">Cerrar</button></div>`; m.hidden = false; box = $('scanBox'); propio = true;
   }
   pararScan();
+  let listo = false;
+  const leido = txt => { if (listo) return; listo = true; try { navigator.vibrate && navigator.vibrate(120); } catch (e) {} pararScan(); if (propio) cerrarCodigo(); alLeer(String(txt).trim()); };
+  const falla = msg => { toast(msg || 'Permite el uso de la cámara para escanear'); pararScan(); if (propio) cerrarCodigo(); else if (box) box.innerHTML = ''; };
+  // 1) Lector nativo del teléfono (Chrome en Android): rápido y sin descargar nada
+  let nativoOk = false;
+  try { if ('BarcodeDetector' in window) { const fs = await BarcodeDetector.getSupportedFormats(); nativoOk = fs && fs.length > 0; } } catch (e) {}
+  if (nativoOk) {
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }); }
+    catch (e) { falla(); return; }
+    box.innerHTML = '<video playsinline muted autoplay></video><div class="mira"></div><div class="rayo"></div>';
+    const v = box.querySelector('video'); v.srcObject = stream;
+    try { await v.play(); } catch (e) {}
+    const det = new BarcodeDetector({ formats: (await BarcodeDetector.getSupportedFormats()).filter(f => /ean|upc|code_128|code_39|itf|qr/.test(f)) });
+    const S2 = { nativo: true, vivo: true, stream }; scanner = S2;
+    const ciclo = async () => {
+      if (!S2.vivo) return;
+      try { if (v.readyState >= 2) { const r = await det.detect(v); if (r && r.length && r[0].rawValue) { leido(r[0].rawValue); return; } } } catch (e) {}
+      setTimeout(ciclo, 180);
+    };
+    ciclo(); return;
+  }
+  // 2) Otros teléfonos (iPhone, etc.): librería html5-qrcode
+  try { await cargarJs('https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'); } catch (e) { falla('No se pudo abrir el escáner (sin internet)'); return; }
   const F = Html5QrcodeSupportedFormats, fmts = [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF, F.QR_CODE];
   scanner = new Html5Qrcode('scanBox', { formatsToSupport: fmts, verbose: false });
-  let listo = false;
-  scanner.start({ facingMode: 'environment' }, { fps: 12, qrbox: (w, h) => ({ width: Math.min(w * 0.9, 340), height: Math.min(h * 0.5, 160) }) }, txt => {
-    if (listo) return; listo = true; try { navigator.vibrate && navigator.vibrate(120); } catch (e) {}
-    pararScan(); if (propio) cerrarCodigo(); alLeer(String(txt).trim());
-  }, () => {}).catch(() => { toast('Permite el uso de la cámara para escanear'); pararScan(); if (propio) cerrarCodigo(); });
+  scanner.start({ facingMode: 'environment' }, { fps: 12, qrbox: { width: 260, height: 130 } }, leido, () => {}).catch(() => falla());
 }
 
 /* ----- Dueño ----- */
