@@ -7,6 +7,17 @@
 <link rel="icon" href="../goa/icons/favicon-48.png">
 <title>Equipo Toñeco · Checklist diario</title>
 <style>
+.ped-t{display:flex;gap:6px;margin:10px 0}.ped-t button{flex:1;border:2px solid var(--line);background:#fff;border-radius:12px;padding:9px 4px;font:inherit;font-size:13px;font-weight:700;color:var(--txt)}
+.ped-t button.on{border-color:var(--navy);background:var(--navy);color:#fff}
+.ped-r{display:flex;gap:8px}.ped-r input{flex:1}.ped-r button{flex:none;width:54px;border:0;border-radius:12px;background:var(--ok);color:#fff;font-size:26px;font-weight:800}
+.pedl{list-style:none;margin:10px 0 0;padding:0}.pedl li{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}.pedl li span{flex:1}.pedl li button{border:0;background:#fee2e2;color:var(--no);border-radius:8px;width:32px;height:32px;font-weight:800}
+.pbus{display:flex;gap:8px}.pbus input{flex:1;font-size:17px}.pbus button{flex:none;width:56px;border:0;border-radius:12px;background:var(--navy);color:#fff;font-size:24px}
+.prow{display:flex;align-items:center;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line)}.prow:last-child{border-bottom:0}
+.prow .pn{flex:1;min-width:0}.prow .pn b{display:block;font-size:15px;line-height:1.25}.prow .pn small{display:block;font-size:12px;color:var(--mut);margin-top:2px;word-break:break-all}
+.prow .pp{text-align:right;flex:none}.prow .pp b{display:block;font-size:18px;color:var(--navy)}.prow .pp span{font-size:13px;color:var(--mut)}
+.prow.sin{background:#fffbeb;border-radius:10px;padding-left:8px;padding-right:8px}.sinc{display:inline-block;margin-top:5px;background:var(--gold);color:#1f2937;border:0;border-radius:8px;padding:5px 10px;font-weight:800;font-size:13px}
+.pend{color:#b45309!important;font-weight:700}
+#scanBox{width:100%;min-height:10px;border-radius:12px;overflow:hidden;margin:10px 0;background:#000}#scanBox:empty{display:none}
 :root{--navy:#0b1f3a;--navy2:#13305a;--gold:#f5b301;--gold2:#ffd36b;--bg:#f2f4f8;--card:#fff;--txt:#0f172a;--mut:#64748b;--ok:#16a34a;--no:#dc2626;--line:#e2e8f0}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -484,17 +495,19 @@ function render() {
   if (view.mode === 'owner') {
     $('hTitle').innerHTML = 'Panel de ' + esc(OWNER.name) + '<small>' + esc(STORE) + '</small>';
     who.hidden = false; who.textContent = 'Salir';
-    tabs.innerHTML = [['reps', '📥 Reportes'], ['eval', '📊 Evaluación'], ['obs', '✍️ Observación']]
+    tabs.innerHTML = [['reps', '📥 Reportes'], ['ped', '📋 Pedidos'], ['precios', '💲 Precios'], ['eval', '📊 Evaluación'], ['obs', '✍️ Observación']]
       .map(([k, l]) => `<button class="tab ${view.tab === k ? 'on' : ''}" data-t="${k}">${l}</button>`).join('');
-    main.innerHTML = view.tab === 'eval' ? ownerEval() : view.tab === 'obs' ? ownerObs() : ownerReps();
+    main.innerHTML = view.tab === 'eval' ? ownerEval() : view.tab === 'obs' ? ownerObs() : view.tab === 'ped' ? ownerPed() : view.tab === 'precios' ? wPrecios() : ownerReps();
+    if (view.tab === 'precios') pintarLista();
   } else if (view.mode === 'worker' && S.me && TEAM[S.me]) {
     const t = TEAM[S.me];
     $('hTitle').innerHTML = esc(t.name) + '<small>' + esc(t.puesto) + ' · ' + esc(t.horario) + '</small>';
     who.hidden = false; who.textContent = 'Cambiar';
     const nObs = (S.obs[S.me] || []).length;
-    tabs.innerHTML = [['check', '✅ Checklist'], ...(t.caja ? [['fact', '📘 Facturar']] : []), ['rol', '👤 Mi rol'], ['metas', '🎯 Metas'], ['obs', '📝 Observaciones' + (nObs ? ' (' + nObs + ')' : '')]]
+    tabs.innerHTML = [['check', '✅ Checklist'], ...(t.caja ? [['fact', '📘 Facturar']] : []), ['precios', '💲 Precios'], ['rol', '👤 Mi rol'], ['metas', '🎯 Metas'], ['obs', '📝 Observaciones' + (nObs ? ' (' + nObs + ')' : '')]]
       .map(([k, l]) => `<button class="tab ${view.tab === k ? 'on' : ''}" data-t="${k}">${l}</button>`).join('');
-    main.innerHTML = view.tab === 'fact' ? wFact() : view.tab === 'rol' ? wRol() : view.tab === 'metas' ? wMetas() : view.tab === 'obs' ? wObs() : wCheck();
+    main.innerHTML = view.tab === 'precios' ? wPrecios() : view.tab === 'fact' ? wFact() : view.tab === 'rol' ? wRol() : view.tab === 'metas' ? wMetas() : view.tab === 'obs' ? wObs() : wCheck();
+    if (view.tab === 'precios') pintarLista();
   } else {
     $('hTitle').innerHTML = 'Equipo Toñeco<small>Checklist diario</small>';
     who.hidden = true; tabs.innerHTML = '';
@@ -516,11 +529,11 @@ function dayState() { const k = dayKey(); S.day[k] = S.day[k] || { done: [], nov
 function wCheck() {
   const items = itemsOf(S.me), st = dayState();
   const done = items.filter(i => st.done.includes(i.id)).length, p = Math.round(done / items.length * 100);
-  const vistos = (S.vistos && S.vistos[S.me]) || [], tabsLeer = (TEAM[S.me].caja ? ['fact'] : []).concat(['rol', 'metas', 'obs']), falta = tabsLeer.filter(x => !vistos.includes(x));
+  const vistos = (S.vistos && S.vistos[S.me]) || [], tabsLeer = (TEAM[S.me].caja ? ['fact'] : []).concat(['precios', 'rol', 'metas', 'obs']), falta = tabsLeer.filter(x => !vistos.includes(x));
   let html = metaVentaHtml(S.me) + (falta.length ? `<div class="alerta"><b class="big">⚠️ ¡LEE TODO!</b>
 
-    <p>Esta app tiene <b>${tabsLeer.length + 1} pestañas</b> arriba: ✅ Checklist${TEAM[S.me].caja ? ', 📘 Facturar' : ''}, 👤 Mi rol, 🎯 Metas y 📝 Observaciones. Ábrelas todas y léelas completas.</p>
-    <div class="go">${TEAM[S.me].caja ? `<button data-t="fact" class="${vistos.includes('fact') ? 'ok' : ''}">📘 Facturar</button>` : ''}<button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '');
+    <p>Esta app tiene <b>${tabsLeer.length + 1} pestañas</b> arriba: ✅ Checklist${TEAM[S.me].caja ? ', 📘 Facturar' : ''}, 💲 Precios, 👤 Mi rol, 🎯 Metas y 📝 Observaciones. Ábrelas todas y léelas completas.</p>
+    <div class="go">${TEAM[S.me].caja ? `<button data-t="fact" class="${vistos.includes('fact') ? 'ok' : ''}">📘 Facturar</button>` : ''}<button data-t="precios" class="${vistos.includes('precios') ? 'ok' : ''}">💲 Precios</button><button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '');
   const ult = (TEAM[S.me].recordatorios || []).slice(-1)[0], now = new Date();
   if (ult && !st.sent && (now.getHours() * 60 + now.getMinutes()) >= (+ult.split(':')[0] * 60 + +ult.split(':')[1] + 30)) {
     html = `<div class="atrasado">🚨 ¡Todavía no has enviado tu checklist de hoy! Márcalo y toca "📤 Enviar" abajo AHORA.</div>` + html;
@@ -533,6 +546,7 @@ function wCheck() {
     html += `<div class="card"><h2>${esc(s)}</h2>` + items.filter(i => i.s === s).map(i =>
       `<label class="it ${st.done.includes(i.id) ? 'done' : ''}"><input type="checkbox" data-ck="${i.id}" ${st.done.includes(i.id) ? 'checked' : ''}><span>${esc(i.t)}${i.d ? `<small class="det">${esc(i.d)}</small>` : ''}</span></label>`).join('') + `</div>`;
   });
+  html += pedCard();
   if (TEAM[S.me].perdidos) html += `<div class="card"><h2>🗑️ Productos perdidos hoy</h2><p class="mut">Vencidos, dañados o que no se vendieron por no ofrecerlos. Producto y cantidad. Si no hubo, escribe <b>0</b>.</p>
     <textarea id="perd" placeholder="Ej: 2 yogures vencidos, 1 queso dañado…">${esc(st.perd || '')}</textarea></div>`;
   html += `<div class="card"><h2>Novedades del día</h2><p class="mut">Lo que se acabó, lo que faltó, lo que pidieron los clientes o cualquier problema.</p>
@@ -611,6 +625,7 @@ function h12(hm) { let [h, m] = hm.split(':').map(Number); const ap = h >= 12 ? 
 function alarmaVer(w) { const t = TEAM[w]; return (t.recordatorios || []).concat(t.insistir || []).join(','); }
 function revisarAlarmas() {
   const m = $('alModal'); if (!m) return;
+  if (codProd || scanner) return;   // está abierto agregar código / escáner
   const t = view.mode === 'worker' && S.me && TEAM[S.me];
   if (!t) { m.hidden = true; return; }
   const alarmaOk = !(t.recordatorios || []).length || (S.alarma && S.alarma[S.me] === alarmaVer(S.me));
@@ -668,10 +683,178 @@ function enviarReporte() {
   const mv = metasActivas(S.me).map(m => ({ p: m.producto, hoy: ventaDia(S.me, m, r.d), tot: ventaTotal(S.me, m), meta: m.meta }));
   if (mv.length) { r.mv = mv; msg += '\n🏆 ' + mv.map(x => `${x.p}: hoy ${x.hoy} · semana ${x.tot} de ${x.meta}`).join('\n🏆 ') + '\n'; }
   if (TEAM[S.me].perdidos) { r.perd = (st.perd || '').trim(); msg += `\n🗑️ Productos perdidos: ${r.perd || '⚠️ NO LO ANOTÓ'}\n`; }
+  if ((st.ped || []).length) { r.ped = st.ped; msg += '\n' + pedTexto(st.ped) + '\n'; }
+  const nc = codHoy(S.me); if (nc) { r.cod = nc; msg += `\n📷 Códigos agregados a productos hoy: ${nc}\n`; }
   if (r.nov.trim()) msg += `\n📝 Novedades:\n${r.nov.trim()}\n`;
   msg += `\nAbrir y guardar en el panel:\n${pageUrl()}#r=${enc(r)}`;
   st.sent = true; save();
   openWa(msg, OWNER.wa);
+}
+
+
+/* =====================================================================
+   📋 Faltantes, pedidos de clientes y propuestas (todos los trabajadores)
+   ===================================================================== */
+const PED_T = { f: ['🚫', 'Se acabó'], c: ['🙋', 'Cliente pidió'], p: ['💡', 'Propuesta'] };
+function pedCard() {
+  const st = dayState(); st.ped = st.ped || []; const pt = view.pt || 'f';
+  return `<div class="card"><h2>📋 Faltantes y pedidos</h2>
+    <p class="mut">Lo que se acabó, lo que un cliente pidió y no había, o tu idea para mejorar la tienda. Anótalo apenas pase.</p>
+    <div class="ped-t">${Object.entries(PED_T).map(([k, v]) => `<button data-pt="${k}" class="${pt === k ? 'on' : ''}">${v[0]} ${v[1]}</button>`).join('')}</div>
+    <div class="ped-r"><input type="text" id="pedTxt" placeholder="${pt === 'p' ? 'Ej: poner las salsas al lado del pan' : pt === 'c' ? 'Ej: queso de año, pan dulce…' : 'Ej: harina PAN, azúcar…'}" autocomplete="off"><button id="pedAdd">＋</button></div>
+    ${st.ped.length ? `<ul class="pedl">${st.ped.map((x, i) => `<li><span>${PED_T[x[0]][0]} ${esc(x[1])}</span><button data-pdel="${i}">✕</button></li>`).join('')}</ul>` : ''}</div>`;
+}
+function pedAgregar() {
+  const i = $('pedTxt'), t = (i && i.value || '').trim(); if (!t) { toast('Escribe qué falta o qué pidieron'); return; }
+  const st = dayState(); st.ped = st.ped || []; st.ped.push([view.pt || 'f', t.slice(0, 120)]); save();
+  const y = window.scrollY; render(); window.scrollTo(0, y); toast('Anotado ✅'); setTimeout(() => $('pedTxt') && $('pedTxt').focus(), 50);
+}
+function pedTexto(L) {
+  return Object.entries(PED_T).map(([k, v]) => { const xs = L.filter(x => x[0] === k); return xs.length ? `${v[0]} *${v[1]}:*\n` + xs.map(x => '• ' + x[1]).join('\n') : ''; }).filter(Boolean).join('\n');
+}
+/* Dueño: todo lo anotado por el equipo en los últimos días, agrupado y contado */
+function pedJuntar(dias) {
+  const desde = new Date(); desde.setDate(desde.getDate() - dias + 1); const d0 = hoy(desde), M = {};
+  S.reps.filter(r => r.d >= d0 && r.ped).forEach(r => r.ped.forEach(([k, t]) => {
+    const key = k + '|' + t.trim().toLowerCase(); M[key] = M[key] || { k, t: t.trim(), n: 0, quien: new Set(), ult: r.d };
+    M[key].n++; M[key].quien.add(TEAM[r.w] ? TEAM[r.w].name : r.w); if (r.d > M[key].ult) M[key].ult = r.d;
+  }));
+  return Object.values(M).sort((a, b) => b.n - a.n || b.ult.localeCompare(a.ult));
+}
+function ownerPed() {
+  const dias = +(view.pd || 7), L = pedJuntar(dias);
+  let h = `<div class="chips">${[[1, 'Hoy'], [7, '7 días'], [30, '30 días']].map(([n, l]) => `<button class="chip ${dias === n ? 'on' : ''}" data-pd="${n}">${l}</button>`).join('')}</div>`;
+  if (!L.length) return h + `<div class="card empty">Todavía no hay faltantes ni pedidos anotados.<br><br>Llegan con el checklist de cada trabajador.</div>`;
+  Object.entries(PED_T).forEach(([k, v]) => {
+    const xs = L.filter(x => x.k === k); if (!xs.length) return;
+    h += `<div class="card"><h2>${v[0]} ${v[1]} (${xs.length})</h2><ul class="pedl">${xs.map(x => `<li><span><b>${esc(x.t)}</b><br><small class="mut">${[...x.quien].join(', ')} · ${fechaBonita(x.ult)}</small></span>${x.n > 1 ? `<b style="color:var(--no)">×${x.n}</b>` : ''}</li>`).join('')}</ul></div>`;
+  });
+  return h + `<button class="btn wa" id="pedWa">📤 Enviarme la lista por WhatsApp</button>`;
+}
+function pedResumenTexto() {
+  const dias = +(view.pd || 7), L = pedJuntar(dias);
+  return `📋 *Faltantes y pedidos del equipo* (${dias === 1 ? 'hoy' : 'últimos ' + dias + ' días'})\n\n` +
+    Object.entries(PED_T).map(([k, v]) => { const xs = L.filter(x => x.k === k); return xs.length ? `${v[0]} *${v[1]}:*\n` + xs.map(x => '• ' + x.t + (x.n > 1 ? ' (×' + x.n + ')' : '')).join('\n') : ''; }).filter(Boolean).join('\n\n');
+}
+
+/* =====================================================================
+   💲 Lista de precios (viene sola desde GOA) + agregar códigos de barra
+   ===================================================================== */
+const FB_CFG = { apiKey: 'AIzaSyDeWewWGToWWBaFbIhHq9zQCPjVAD37E5s', authDomain: 'goa-business-a308f.firebaseapp.com', projectId: 'goa-business-a308f', appId: '1:732285068345:web:ae1f23baed5d8cf7f819e8' };
+const LISTA_ID = 'toneco', KP = 'toneco_precios_v1';
+let LP = (() => { try { return JSON.parse(localStorage.getItem(KP)) || null; } catch (e) { return null; } })();
+let FB = null;
+function cargarJs(src) { return new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const x = document.createElement('script'); x.src = src; x.onload = ok; x.onerror = no; document.head.appendChild(x); }); }
+async function fbIniciar() {
+  if (FB) return FB;
+  const V = 'https://www.gstatic.com/firebasejs/10.14.1/';
+  FB = (async () => {
+    await cargarJs(V + 'firebase-app-compat.js'); await cargarJs(V + 'firebase-auth-compat.js'); await cargarJs(V + 'firebase-firestore-compat.js');
+    const app = firebase.initializeApp(FB_CFG, 'equipo'), db = app.firestore();
+    try { db.settings({ experimentalForceLongPolling: true }); } catch (e) {}
+    await app.auth().signInAnonymously();
+    db.doc('listas/' + LISTA_ID).onSnapshot(sn => {
+      if (!sn.exists) return; const d = sn.data();
+      let p = []; try { p = JSON.parse(d.p || '[]'); } catch (e) {}
+      LP = { p, tasa: +d.tasa || 0, red: d.red !== false, t: d.t && d.t.toMillis ? d.t.toMillis() : Date.now() };
+      try { localStorage.setItem(KP, JSON.stringify(LP)); } catch (e) {}
+      // códigos ya aplicados en GOA: se quitan de "pendientes"
+      if (S.codPend) { let ch = false; Object.entries(S.codPend).forEach(([id, c]) => { const x = p.find(q => q[0] === id); if (x && x[3].includes(c)) { delete S.codPend[id]; ch = true; } }); if (ch) save(); }
+      if (view.tab === 'precios') { const inf = $('pInfo'); if (inf) inf.innerHTML = infoLista(); pintarLista(); }
+    }, () => {});
+    return db;
+  })().catch(e => { FB = null; throw e; });
+  return FB;
+}
+function bs(v) { const x = (+v || 0) * (LP ? LP.tasa : 0); return LP && LP.red ? Math.round(x).toLocaleString('es-VE') : x.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function infoLista() {
+  if (!LP) return 'Cargando la lista desde GOA…';
+  const sin = LP.p.filter(x => !x[3].length && !(S.codPend || {})[x[0]]).length;
+  return `${LP.p.length} productos · tasa <b>${LP.tasa.toLocaleString('es-VE')}</b> Bs/$ · actualizada ${new Date(LP.t).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}` +
+    `<div class="chips" style="margin:10px 0 0"><button class="chip ${view.pf !== 'sin' ? 'on' : ''}" data-pf="todos">Todos</button><button class="chip ${view.pf === 'sin' ? 'on' : ''}" data-pf="sin">⚠️ Sin código (${sin})</button></div>`;
+}
+function wPrecios() {
+  fbIniciar().catch(() => { const inf = $('pInfo'); if (inf && !LP) inf.textContent = 'Sin conexión. Cuando tengas internet se carga la lista.'; });
+  return `<div class="card"><h2>💲 Lista de precios</h2>
+    <div class="pbus"><input type="text" id="pq" placeholder="🔎 Buscar producto o código" value="${esc(view.pq || '')}" autocomplete="off"><button id="pScan" title="Escanear">📷</button></div>
+    <p class="mut" id="pInfo" style="margin-top:8px">${infoLista()}</p>
+    <p class="mut" style="margin-top:6px">⚠️ Si un producto <b>no tiene código</b>, agrégaselo de una vez: escanéalo o ponle un código.</p></div>
+    <div class="card" id="plist"></div>`;
+}
+function norm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+function pintarLista() {
+  const el = $('plist'); if (!el) return;
+  if (!LP) { el.innerHTML = '<div class="empty">Cargando la lista de precios…</div>'; return; }
+  const q = norm(view.pq).trim(), pal = q.split(/\s+/).filter(Boolean), pend = S.codPend || {};
+  let L = LP.p;
+  if (view.pf === 'sin') L = L.filter(x => !x[3].length && !pend[x[0]]);
+  if (pal.length) L = L.filter(x => { const t = norm(x[1]) + ' ' + x[3].join(' ').toLowerCase(); return pal.every(w => t.includes(w)); });
+  const exacto = q && LP.p.find(x => x[3].some(c => c.toLowerCase() === q));
+  if (exacto) L = [exacto];
+  const tot = L.length; L = L.slice(0, 80);
+  el.innerHTML = (tot ? L.map(x => {
+    const sin = !x[3].length, pc = pend[x[0]];
+    return `<div class="prow ${sin && !pc ? 'sin' : ''}" ${sin && !pc ? `data-pc="${x[0]}"` : ''}><div class="pn"><b>${esc(x[1])}</b>` +
+      (pc ? `<small class="pend">⏳ Código ${esc(pc)} enviado a GOA</small>` : sin ? `<button class="sinc" data-pc="${x[0]}">📷 Sin código · agregar ya</button>` : `<small>${x[3].map(esc).join(' · ')}</small>`) +
+      `</div><div class="pp"><b>$${(+x[2]).toFixed(2)}</b><span>Bs ${bs(x[2])}</span></div></div>`;
+  }).join('') : `<div class="empty">No encontré "${esc(view.pq || '')}".<br>Si el cliente lo pidió, anótalo en ✅ Checklist → 📋 Faltantes y pedidos.</div>`) +
+    (tot > 80 ? `<p class="mut" style="text-align:center;margin-top:10px">Mostrando 80 de ${tot}. Escribe más para encontrarlo.</p>` : '');
+}
+/* --- modal para agregar código --- */
+let codProd = null, scanner = null;
+function abrirCodigo(id) {
+  const x = LP && LP.p.find(q => q[0] === id); if (!x) return; codProd = x;
+  const m = $('alModal');
+  m.innerHTML = `<div class="box"><h2>📷 Agregar código</h2><p style="font-size:17px;margin:6px 0 12px"><b>${esc(x[1])}</b></p>
+    <button class="btn pri" id="cScan">📷 Escanear el código de barras</button>
+    <div id="scanBox"></div>
+    <p class="mut" style="margin:12px 0 6px">¿No tiene código de barras? Escribe uno o invéntalo:</p>
+    <div class="pbus"><input type="text" id="cIn" placeholder="Código" autocomplete="off" inputmode="text"><button id="cInv" title="Inventar código" style="font-size:18px">🔢</button></div>
+    <button class="btn wa" id="cSave" style="margin-top:12px">✅ Guardar código</button>
+    <button class="btn ghost" id="cCancel" style="margin-top:8px">Ahora no</button></div>`;
+  m.hidden = false;
+}
+function pararScan() { if (scanner) { const s2 = scanner; scanner = null; try { s2.stop().then(() => s2.clear()).catch(() => {}); } catch (e) {} } }
+function cerrarCodigo() { pararScan(); codProd = null; const m = $('alModal'); m.hidden = true; m.innerHTML = ''; setTimeout(revisarAlarmas, 0); }
+function codigoInventado() {
+  let n = 1; const usados = new Set(); (LP ? LP.p : []).forEach(x => x[3].forEach(c => usados.add(c.toUpperCase())));
+  Object.values(S.codPend || {}).forEach(c => usados.add(String(c).toUpperCase()));
+  while (usados.has('T' + String(n).padStart(4, '0'))) n++;
+  return 'T' + String(n).padStart(4, '0');
+}
+async function guardarCodigo() {
+  const x = codProd, c = ($('cIn') || {}).value ? $('cIn').value.trim() : '';
+  if (!x) return; if (!c) { toast('Escanea o escribe el código'); return; }
+  if (c.length > 40) { toast('Código muy largo'); return; }
+  const cl = c.toLowerCase(), pe = Object.entries(S.codPend || {}).find(([id, k]) => id !== x[0] && String(k).toLowerCase() === cl);
+  const otro = LP.p.find(q => q !== x && q[3].some(k => k.toLowerCase() === cl)) || (pe && LP.p.find(q => q[0] === pe[0]));
+  if (otro || pe) { toast('⚠️ Ese código ya lo tiene: ' + (otro ? otro[1] : 'otro producto')); return; }
+  const quien = view.mode === 'owner' ? OWNER.name : (TEAM[S.me] ? TEAM[S.me].name : 'Equipo');
+  try {
+    const db = await fbIniciar();
+    db.collection('listas/' + LISTA_ID + '/codigos').add({ p: x[0], c, w: quien, t: firebase.firestore.FieldValue.serverTimestamp() }).catch(() => toast('⚠️ No se pudo enviar. Revisa tu internet.'));
+  } catch (e) { toast('⚠️ Sin conexión: no se pudo enviar'); return; }
+  S.codPend = S.codPend || {}; S.codPend[x[0]] = c;
+  if (view.mode === 'worker' && S.me) { S.codN = S.codN || {}; const k = S.me + '|' + hoy(); S.codN[k] = (S.codN[k] || 0) + 1; }
+  save(); cerrarCodigo(); toast('✅ Código guardado. GOA lo agrega solo.');
+  const inf = $('pInfo'); if (inf) inf.innerHTML = infoLista(); pintarLista();
+}
+function codHoy(w) { return (S.codN && S.codN[w + '|' + hoy()]) || 0; }
+/* --- escáner con la cámara --- */
+async function escanear(alLeer) {
+  try { await cargarJs('https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'); } catch (e) { toast('No se pudo abrir el escáner (sin internet)'); return; }
+  let box = $('scanBox'), propio = false;
+  if (!box) {   // escanear para buscar: abre su propia ventanita
+    const m = $('alModal'); m.innerHTML = `<div class="box"><h2>📷 Apunta al código de barras</h2><div id="scanBox"></div><button class="btn ghost" id="cCancel">Cerrar</button></div>`; m.hidden = false; box = $('scanBox'); propio = true;
+  }
+  pararScan();
+  const F = Html5QrcodeSupportedFormats, fmts = [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E, F.CODE_128, F.CODE_39, F.ITF, F.QR_CODE];
+  scanner = new Html5Qrcode('scanBox', { formatsToSupport: fmts, verbose: false });
+  let listo = false;
+  scanner.start({ facingMode: 'environment' }, { fps: 12, qrbox: (w, h) => ({ width: Math.min(w * 0.9, 340), height: Math.min(h * 0.5, 160) }) }, txt => {
+    if (listo) return; listo = true; try { navigator.vibrate && navigator.vibrate(120); } catch (e) {}
+    pararScan(); if (propio) cerrarCodigo(); alLeer(String(txt).trim());
+  }, () => {}).catch(() => { toast('Permite el uso de la cámara para escanear'); pararScan(); if (propio) cerrarCodigo(); });
 }
 
 /* ----- Dueño ----- */
@@ -687,7 +870,7 @@ function ownerReps() {
   html += `<div class="card">` + L.slice(0, 60).map((r, i) => {
     const p = Math.round(r.ok.length / r.n * 100);
     return `<div class="rep" data-rep="${S.reps.indexOf(r)}"><div class="pct" style="background:${color(p)}">${p}%</div>
-      <div style="flex:1"><b>${esc(TEAM[r.w].name)} · ${fechaBonita(r.d)}</b><span class="mut">${r.ok.length} de ${r.n} tareas · ${r.h}${r.nov && r.nov.trim() ? ' · 📝 con novedades' : ''}</span></div><span class="mut">›</span></div>`;
+      <div style="flex:1"><b>${esc(TEAM[r.w].name)} · ${fechaBonita(r.d)}</b><span class="mut">${r.ok.length} de ${r.n} tareas · ${r.h}${r.nov && r.nov.trim() ? ' · 📝 con novedades' : ''}${r.ped && r.ped.length ? ' · 📋 ' + r.ped.length + ' pedidos' : ''}</span></div><span class="mut">›</span></div>`;
   }).join('') + `</div>`;
   if (view.open != null && S.reps[view.open]) {
     const r = S.reps[view.open];
@@ -696,6 +879,8 @@ function ownerReps() {
       <h3>Pendiente (${r.no.length})</h3><ul class="lst">${r.no.map(id => `<li>❌ ${esc(textOf(r.w, id))}</li>`).join('') || '<li>—</li>'}</ul>
       ${r.mv ? `<h3>Meta de ventas</h3><ul class="lst">${r.mv.map(x => `<li>🏆 ${esc(x.p)}: hoy <b>${x.hoy}</b> · semana <b>${x.tot} de ${x.meta}</b></li>`).join('')}</ul>` : ''}
       ${r.perd !== undefined ? `<h3>🗑️ Productos perdidos</h3><div class="obs">${r.perd ? esc(r.perd).replace(/\n/g, '<br>') : '⚠️ No lo anotó'}</div>` : ''}
+      ${r.ped && r.ped.length ? `<h3>📋 Faltantes y pedidos</h3><ul class="lst">${r.ped.map(x => `<li>${PED_T[x[0]] ? PED_T[x[0]][0] : '•'} ${esc(x[1])}</li>`).join('')}</ul>` : ''}
+      ${r.cod ? `<h3>📷 Códigos agregados</h3><p>${r.cod}</p>` : ''}
       ${r.nov && r.nov.trim() ? `<h3>Novedades</h3><div class="obs">${esc(r.nov).replace(/\n/g, '<br>')}</div>` : ''}</div>`;
   }
   return html;
@@ -759,14 +944,26 @@ function ownerObs() {
    Eventos
    ===================================================================== */
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend');
+  const b = e.target.closest('[data-pd],[data-pt],[data-pdel],[data-pc],[data-pf],#pedAdd,#pScan,#cScan,#cSave,#cInv,#cCancel,#pedWa,[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend');
   if (!b) return;
+  if (b.dataset.pd) { view.pd = b.dataset.pd; render(); return; }
+  if (b.dataset.pt) { view.pt = b.dataset.pt; const y = window.scrollY; render(); window.scrollTo(0, y); setTimeout(() => $('pedTxt') && $('pedTxt').focus(), 50); return; }
+  if (b.id === 'pedAdd') { pedAgregar(); return; }
+  if (b.dataset.pdel) { const st = dayState(); st.ped.splice(+b.dataset.pdel, 1); save(); const y = window.scrollY; render(); window.scrollTo(0, y); return; }
+  if (b.id === 'pedWa') { openWa(pedResumenTexto()); return; }
+  if (b.dataset.pf) { view.pf = b.dataset.pf; pintarLista(); document.querySelectorAll('[data-pf]').forEach(x => x.classList.toggle('on', x.dataset.pf === view.pf)); return; }
+  if (b.dataset.pc) { abrirCodigo(b.dataset.pc); return; }
+  if (b.id === 'pScan') { escanear(c => { $('pq').value = c; view.pq = c; pintarLista(); }); return; }
+  if (b.id === 'cScan') { escanear(c => { $('cIn').value = c; guardarCodigo(); }); return; }
+  if (b.id === 'cInv') { $('cIn').value = codigoInventado(); return; }
+  if (b.id === 'cSave') { guardarCodigo(); return; }
+  if (b.id === 'cCancel') { cerrarCodigo(); return; }
   if (b.dataset.vm) {
     const m = (METAS_VENTA[S.me] || []).find(x => x.id === b.dataset.vm); if (!m) return;
     S.ventas = S.ventas || {}; const k = S.me + '|' + m.id + '|' + hoy();
     S.ventas[k] = Math.max(0, (S.ventas[k] || 0) + (+b.dataset.dv)); save();
     const y = window.scrollY; render(); window.scrollTo(0, y);
-    if (+b.dataset.dv > 0) { const t = ventaTotal(S.me, m); toast(t >= m.meta ? '🎉 ¡META CUMPLIDA! ' + t + ' combos' : '¡Bien! Llevas ' + t + ' de ' + m.meta); }
+    if (+b.dataset.dv > 0) { const t = ventaTotal(S.me, m); toast(t >= m.meta ? '🎉 ¡META CUMPLIDA! ' + t + ' ' + m.producto : '¡Bien! Llevas ' + t + ' de ' + m.meta); }
     return;
   }
   if (b.dataset.nudge) { const k = b.dataset.nudge; openWa(`🚨 ${TEAM[k].name}, todavía no me has enviado tu checklist de hoy. Ábrelo, márcalo y envíamelo ya, por favor:\n${pageUrl()}?p=${k}`); return; }
@@ -810,7 +1007,13 @@ document.addEventListener('change', e => {
   }
   if (c.id === 'efin' && /^\d{4}-\d{2}-\d{2}$/.test(c.value)) { view.efin = c.value; render(); }
 });
-document.addEventListener('input', e => { if (e.target.id === 'nov') { dayState().nov = e.target.value; save(); } if (e.target.id === 'perd') { dayState().perd = e.target.value; save(); } });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (e.target.id === 'pedTxt') { e.preventDefault(); pedAgregar(); }
+  if (e.target.id === 'cIn') { e.preventDefault(); guardarCodigo(); }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'pq') { view.pq = e.target.value; pintarLista(); } if (e.target.id === 'nov') { dayState().nov = e.target.value; save(); } if (e.target.id === 'perd') { dayState().perd = e.target.value; save(); } });
 
 function entrarDueno() {
   if (!S.pin) {
