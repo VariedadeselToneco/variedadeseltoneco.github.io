@@ -743,7 +743,7 @@ function pedResumenTexto() {
 const FB_CFG = { apiKey: 'AIzaSyDeWewWGToWWBaFbIhHq9zQCPjVAD37E5s', authDomain: 'goa-business-a308f.firebaseapp.com', projectId: 'goa-business-a308f', appId: '1:732285068345:web:ae1f23baed5d8cf7f819e8' };
 const LISTA_ID = 'toneco', KP = 'toneco_precios_v1';
 let LP = (() => { try { return JSON.parse(localStorage.getItem(KP)) || null; } catch (e) { return null; } })();
-let FB = null;
+let FB = null, LP_ERR = '';
 function cargarJs(src) { return new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const x = document.createElement('script'); x.src = src; x.onload = ok; x.onerror = no; document.head.appendChild(x); }); }
 async function fbIniciar() {
   if (FB) return FB;
@@ -754,14 +754,15 @@ async function fbIniciar() {
     try { db.settings({ experimentalForceLongPolling: true }); } catch (e) {}
     await app.auth().signInAnonymously();
     db.doc('listas/' + LISTA_ID).onSnapshot(sn => {
-      if (!sn.exists) return; const d = sn.data();
+      if (!sn.exists) { LP_ERR = 'La lista todavía no ha llegado. ' + OWNER.name + ' debe abrir GOA en la PC para publicarla.'; if (view.tab === 'precios') pintarLista(); return; }
+      LP_ERR = ''; const d = sn.data();
       let p = []; try { p = JSON.parse(d.p || '[]'); } catch (e) {}
       LP = { p, tasa: +d.tasa || 0, red: d.red !== false, t: d.t && d.t.toMillis ? d.t.toMillis() : Date.now() };
       try { localStorage.setItem(KP, JSON.stringify(LP)); } catch (e) {}
       // códigos ya aplicados en GOA: se quitan de "pendientes"
       if (S.codPend) { let ch = false; Object.entries(S.codPend).forEach(([id, c]) => { const x = p.find(q => q[0] === id); if (x && x[3].includes(c)) { delete S.codPend[id]; ch = true; } }); if (ch) save(); }
       if (view.tab === 'precios') { const inf = $('pInfo'); if (inf) inf.innerHTML = infoLista(); pintarLista(); }
-    }, () => {});
+    }, err => { LP_ERR = (err && err.code === 'permission-denied') ? 'La lista todavía no está activada. Avísale a ' + OWNER.name + ' (faltan las reglas de Firebase).' : 'No se pudo cargar la lista. Revisa tu internet.'; if (view.tab === 'precios') pintarLista(); });
     return db;
   })().catch(e => { FB = null; throw e; });
   return FB;
@@ -774,7 +775,7 @@ function infoLista() {
     `<div class="chips" style="margin:10px 0 0"><button class="chip ${view.pf !== 'sin' ? 'on' : ''}" data-pf="todos">Todos</button><button class="chip ${view.pf === 'sin' ? 'on' : ''}" data-pf="sin">⚠️ Sin código (${sin})</button></div>`;
 }
 function wPrecios() {
-  fbIniciar().catch(() => { const inf = $('pInfo'); if (inf && !LP) inf.textContent = 'Sin conexión. Cuando tengas internet se carga la lista.'; });
+  fbIniciar().catch(() => { LP_ERR = 'Sin conexión. Cuando tengas internet se carga la lista.'; pintarLista(); });
   return `<div class="card"><h2>💲 Lista de precios</h2>
     <div class="pbus"><input type="text" id="pq" placeholder="🔎 Buscar producto o código" value="${esc(view.pq || '')}" autocomplete="off"><button id="pScan" title="Escanear">📷</button></div>
     <p class="mut" id="pInfo" style="margin-top:8px">${infoLista()}</p>
@@ -784,7 +785,7 @@ function wPrecios() {
 function norm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
 function pintarLista() {
   const el = $('plist'); if (!el) return;
-  if (!LP) { el.innerHTML = '<div class="empty">Cargando la lista de precios…</div>'; return; }
+  if (!LP) { el.innerHTML = `<div class="empty">${LP_ERR ? '⚠️ ' + esc(LP_ERR) : 'Cargando la lista de precios…'}</div>`; return; }
   const q = norm(view.pq).trim(), pal = q.split(/\s+/).filter(Boolean), pend = S.codPend || {};
   let L = LP.p;
   if (view.pf === 'sin') L = L.filter(x => !x[3].length && !pend[x[0]]);
