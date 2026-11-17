@@ -870,7 +870,7 @@ function ownerReps() {
   html += `<div class="card">` + L.slice(0, 60).map((r, i) => {
     const p = Math.round(r.ok.length / r.n * 100);
     return `<div class="rep" data-rep="${S.reps.indexOf(r)}"><div class="pct" style="background:${color(p)}">${p}%</div>
-      <div style="flex:1"><b>${esc(TEAM[r.w].name)} · ${fechaBonita(r.d)}</b><span class="mut">${r.ok.length} de ${r.n} tareas · ${r.h}${r.nov && r.nov.trim() ? ' · 📝 con novedades' : ''}${r.ped && r.ped.length ? ' · 📋 ' + r.ped.length + ' pedidos' : ''}</span></div><span class="mut">›</span></div>`;
+      <div style="flex:1"><b>${esc(TEAM[r.w].name)} · ${fechaBonita(r.d)}</b><span class="mut">${r.ok.length} de ${r.n} tareas · ${r.h}${r.nov && r.nov.trim() ? ' · 📝 con novedades' : ''}${r.ped && r.ped.length ? ' · 📋 ' + r.ped.length + (r.ped.length === 1 ? ' pedido' : ' pedidos') : ''}</span></div><span class="mut">›</span></div>`;
   }).join('') + `</div>`;
   if (view.open != null && S.reps[view.open]) {
     const r = S.reps[view.open];
