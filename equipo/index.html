@@ -766,7 +766,7 @@ async function fbIniciar() {
   })().catch(e => { FB = null; throw e; });
   return FB;
 }
-function bs(v) { const x = (+v || 0) * (LP ? LP.tasa : 0); return LP && LP.red ? Math.round(x).toLocaleString('es-VE') : x.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function bs(v) { if (!LP || !LP.tasa) return '—'; const x = (+v || 0) * (LP ? LP.tasa : 0); return LP && LP.red ? Math.round(x).toLocaleString('es-VE') : x.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function infoLista() {
   if (!LP) return 'Cargando la lista desde GOA…';
   const sin = LP.p.filter(x => !x[3].length && !(S.codPend || {})[x[0]]).length;
