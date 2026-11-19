@@ -88,15 +88,20 @@ S.L = S.L || {};          // lo contado en este teléfono (queda guardado aunque
 function save() { try { localStorage.setItem(KS, JSON.stringify(S)); } catch (e) {} }
 if (TOKEN && !H.get('d')) try { localStorage.setItem('conteo_link', location.href); } catch (e) {}   // la app Equipo lo muestra en su pestaña Conteo
 
+// &p=2-6 = parte 2 de 6: la lista ordenada por departamento y nombre, repartida en partes iguales y seguidas
+const PARTE = (() => { const m = /^(\d+)-(\d+)$/.exec(H.get('p') || ''); return m && +m[1] >= 1 && +m[1] <= +m[2] ? { i: +m[1], n: +m[2] } : null; })();
+const ORDEN = LISTA.slice().sort((p, q) => p[2].localeCompare(q[2], 'es') || p[1].localeCompare(q[1], 'es'));
+const EN_PARTE = (() => { if (!PARTE) return null; const t = Math.ceil(ORDEN.length / PARTE.n); return new Set(ORDEN.slice((PARTE.i - 1) * t, PARTE.i * t).map(x => x[0])); })();
 function enSegmento(x) {
+  if (EN_PARTE) return EN_PARTE.has(x[0]);
   if (SEG.deps.length && !SEG.deps.includes(x[2])) return false;
   const l = sinAcento(x[1]).charAt(0);
   if (SEG.a && l < SEG.a) return false;
   if (SEG.b && l > SEG.b) return false;
   return true;
 }
-const MIOS = LISTA.filter(enSegmento).sort((p, q) => p[1].localeCompare(q[1], 'es'));
-function segTexto(seg) { seg = seg || SEG; const d = seg.deps.length ? seg.deps.join(', ') : 'Todos los departamentos'; return d + (seg.a || seg.b ? ' · letras ' + (seg.a || 'A') + '–' + (seg.b || 'Z') : ''); }
+const MIOS = PARTE ? ORDEN.filter(enSegmento) : LISTA.filter(enSegmento).sort((p, q) => p[1].localeCompare(q[1], 'es'));
+function segTexto(seg) { if (!seg && PARTE) { const d = [...new Set(MIOS.map(x => x[2]))]; return 'Parte ' + PARTE.i + ' de ' + PARTE.n + ' · ' + (d.length > 3 ? d.slice(0, 3).join(', ') + ' y ' + (d.length - 3) + ' más' : d.join(', ')); } seg = seg || SEG; const d = seg.deps.length ? seg.deps.join(', ') : 'Todos los departamentos'; return d + (seg.a || seg.b ? ' · letras ' + (seg.a || 'A') + '–' + (seg.b || 'Z') : ''); }
 
 /* ---------- Firebase ---------- */
 let DB = null, L = Object.assign({}, S.L), CFG = null, FB_ERR = '';
