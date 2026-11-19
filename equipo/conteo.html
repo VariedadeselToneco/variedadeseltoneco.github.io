@@ -31,6 +31,8 @@ input[type=text],input[type=password],select{width:100%;font:inherit;font-size:1
 .it .n{font-weight:700;font-size:15px;line-height:1.25}
 .it .n small{display:block;font-weight:500;color:var(--mut);font-size:12px;margin-top:2px}
 .it input{text-align:center;font-weight:800;font-size:18px;padding:10px 6px}
+.it .q{display:flex;flex-direction:column;gap:4px}.it .q small{font-size:11px;color:var(--mut);text-align:center;font-weight:700;margin-bottom:-2px}
+.it .ub{margin-top:6px;border:1px dashed var(--line);background:#fff;color:var(--navy);border-radius:8px;padding:4px 9px;font-weight:700;font-size:12px}
 .it.ok .n{text-decoration:line-through;color:var(--mut)}
 .it.ok input{background:#f0fdf4;border-color:#86efac;color:#15803d}
 .it .ed{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px;font-weight:800;font-size:16px;color:var(--navy)}
@@ -70,6 +72,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2200); }
 function idDe(c) { return String(c).replace(/[\/.#$\[\]]/g, '_').slice(0, 100); }
 function num(v) { let t = String(v == null ? '' : v).trim().replace(/\s/g, ''); if (t === '') return null; if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.'); const n = parseFloat(t); return isFinite(n) && n >= 0 && n < 1e6 ? Math.round(n * 1000) / 1000 : null; }
+function cTxt(c) { return c.u ? fmt(c.cant) + ' paq + ' + fmt(c.u) + ' und' : fmt(c.cant); }
 function fmt(n) { return (+n).toLocaleString('es-VE', { maximumFractionDigits: 3 }); }
 function sinAcento(s) { return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase(); }
 
@@ -150,8 +153,11 @@ function pintar() {
 }
 function fila(x) {
   const id = idDe(x[0]), c = contado(x);
-  if (tab === 'ok') return `<div class="it ok"><div class="n">${esc(x[1])}<small>${c.por ? 'Contó: ' + esc(c.por) : ''}</small></div><button class="ed" data-ed="${esc(id)}">${fmt(c.cant)} ✏️</button></div>`;
-  return `<div class="it ${c ? 'ok' : ''}" id="r_${esc(id)}"><div class="n">${esc(x[1])}</div><input type="text" inputmode="decimal" enterkeyhint="next" data-id="${esc(id)}" value="${c ? esc(fmt(c.cant)) : ''}" placeholder="—" autocomplete="off"></div>`;
+  if (tab === 'ok') return `<div class="it ok"><div class="n">${esc(x[1])}<small>${c.por ? 'Contó: ' + esc(c.por) : ''}</small></div><button class="ed" data-ed="${esc(id)}">${esc(cTxt(c))} ✏️</button></div>`;
+  const conU = c && c.u || S.verU && S.verU[id];
+  return `<div class="it ${c ? 'ok' : ''}" id="r_${esc(id)}"><div class="n">${esc(x[1])}${conU ? '' : `<br><button class="ub" data-ub="${esc(id)}">➕ Unidades sueltas</button>`}</div>`
+    + `<div class="q">${conU ? '<small>Paquetes</small>' : ''}<input type="text" inputmode="decimal" enterkeyhint="next" data-id="${esc(id)}" value="${c ? esc(fmt(c.cant)) : ''}" placeholder="—" autocomplete="off">`
+    + (conU ? `<small>Unidades</small><input type="text" inputmode="decimal" enterkeyhint="next" data-id="${esc(id)}" data-u="1" value="${c && c.u ? esc(fmt(c.u)) : ''}" placeholder="—" autocomplete="off">` : '') + `</div></div>`;
 }
 function pintarBarra() {
   const b = $('bar'); b.hidden = false; const n = S.pend.length;
@@ -185,12 +191,17 @@ async function entrar() {
 /* ---------- contar ---------- */
 async function guardar(inp, irSiguiente) {
   const id = inp.dataset.id, x = MIOS.find(z => idDe(z[0]) === id); if (!x) return;
-  const v = num(inp.value);
-  if (inp.value.trim() === '') { if (irSiguiente) siguiente(inp); return; }
-  if (v === null) { toast('Cantidad no válida'); inp.select(); return; }
+  const row = inp.closest('.it'), iP = row.querySelector('input:not([data-u])'), iU = row.querySelector('input[data-u]');
+  // Enter en "Paquetes" con unidades visibles: pasa a "Unidades" antes de guardar
+  if (irSiguiente && iU && inp === iP) { iU.focus(); return; }
+  const tP = iP.value.trim(), tU = iU ? iU.value.trim() : '';
+  if (tP === '' && tU === '') { if (irSiguiente) siguiente(inp); return; }
+  const v = tP === '' ? 0 : num(tP), u = tU === '' ? 0 : num(tU);
+  if (v === null || u === null) { toast('Cantidad no válida'); inp.select(); return; }
   const antes = L[id];
-  if (antes && antes.cant === v) { if (irSiguiente) siguiente(inp); return; }
+  if (antes && antes.cant === v && (+antes.u || 0) === u) { if (irSiguiente) siguiente(inp); return; }
   L[id] = { c: String(x[0]), n: x[1].slice(0, 120), dep: x[2].slice(0, 40), cant: v, por: S.nombre };
+  if (u) L[id].u = u;
   S.L[id] = L[id]; S.recien = S.recien || {}; S.recien[id] = 1;
   if (!S.pend.includes(id)) S.pend.push(id); save();
   const r = $('r_' + id); if (r) r.classList.add('ok');
@@ -201,15 +212,15 @@ async function guardar(inp, irSiguiente) {
   if (S.pend.length >= LOTE) enviar();
 }
 function siguiente(inp) {
-  const all = Array.from(document.querySelectorAll('#lista input[data-id]')), i = all.indexOf(inp);
+  const all = Array.from(document.querySelectorAll('#lista input[data-id]:not([data-u])')), i = all.indexOf(inp.dataset.u ? inp.closest('.it').querySelector('input:not([data-u])') : inp);
   const nx = all.slice(i + 1).find(e => !e.closest('.it').classList.contains('ok')) || all[i + 1];
   if (nx) { nx.focus(); nx.scrollIntoView({ block: 'center', behavior: 'smooth' }); } else inp.blur();
 }
 function abrirWa(txt) { const u = 'https://wa.me/' + OWNER.wa + '?text=' + encodeURIComponent(txt); const w = window.open(u, '_blank'); if (!w) location.href = u; }
 function enviarTodo() {   // todo lo contado en este teléfono, por si un mensaje no se mandó
   const ids = Object.keys(S.L); if (!ids.length) { toast('Todavía no has contado nada'); return; }
-  const lin = ids.map(id => S.L[id]).filter(Boolean).sort((a, b) => (a.dep || '').localeCompare(b.dep || '', 'es') || a.n.localeCompare(b.n, 'es')).map(c => '• ' + c.n + ' (' + c.c + '): *' + fmt(c.cant) + '*');
-  ids.forEach(id => { if (S.L[id]) S.env[id] = S.L[id].cant; }); S.pend = []; S.recien = {}; save(); pintarBarra();
+  const lin = ids.map(id => S.L[id]).filter(Boolean).sort((a, b) => (a.dep || '').localeCompare(b.dep || '', 'es') || a.n.localeCompare(b.n, 'es')).map(c => '• ' + c.n + ' (' + c.c + '): *' + cTxt(c) + '*');
+  ids.forEach(id => { if (S.L[id]) S.env[id] = cTxt(S.L[id]); }); S.pend = []; S.recien = {}; save(); pintarBarra();
   abrirWa(`📦 *CONTEO DE INVENTARIO* — ${S.nombre}\n${segTexto()}\n*TODO LO CONTADO (${lin.length})* · ${new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}\n\n${lin.join('\n')}`);
 }
 function enviar() {
@@ -217,9 +228,9 @@ function enviar() {
   const ids = S.pend.slice(), lin = [];
   ids.forEach(id => {
     const c = L[id]; if (!c) return;
-    const corr = S.env[id] != null && S.env[id] !== c.cant;
-    lin.push((corr ? '✏️ CORRECCIÓN ' : '• ') + c.n + ' (' + c.c + '): *' + fmt(c.cant) + '*' + (corr ? ' (antes ' + fmt(S.env[id]) + ')' : ''));
-    S.env[id] = c.cant;
+    const ant = S.env[id] == null ? null : (typeof S.env[id] === 'number' ? fmt(S.env[id]) : S.env[id]), corr = ant !== null && ant !== cTxt(c);
+    lin.push((corr ? '✏️ CORRECCIÓN ' : '• ') + c.n + ' (' + c.c + '): *' + cTxt(c) + '*' + (corr ? ' (antes ' + ant + ')' : ''));
+    S.env[id] = cTxt(c);
   });
   const ok = MIOS.filter(contado).length;
   const txt = `📦 *CONTEO DE INVENTARIO* — ${S.nombre}\n${segTexto()}\n${new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} · avance ${ok}/${MIOS.length}\n\n${lin.join('\n')}`;
@@ -228,10 +239,11 @@ function enviar() {
 }
 async function editar(id) {
   const c = L[id]; if (!c) return;
-  const v = prompt('Corregir: ' + c.n + '\nCantidad contada:', fmt(c.cant)); if (v === null) return;
-  const n = num(v); if (n === null) { toast('Cantidad no válida'); return; }
-  if (n === c.cant) return;
-  L[id] = Object.assign({}, c, { cant: n, por: S.nombre }); S.L[id] = L[id];
+  const v = prompt('Corregir: ' + c.n + '\nCantidad contada.\nSi hay paquetes y sueltas escribe así: 2+5 (2 paquetes y 5 unidades)', c.u ? fmt(c.cant) + '+' + fmt(c.u) : fmt(c.cant)); if (v === null) return;
+  const pz = String(v).split('+'), n = num(pz[0] || '0'), u = pz.length > 1 ? num(pz[1]) : 0;
+  if (n === null || u === null) { toast('Cantidad no válida'); return; }
+  if (n === c.cant && u === (+c.u || 0)) return;
+  L[id] = Object.assign({}, c, { cant: n, por: S.nombre }); if (u) L[id].u = u; else delete L[id].u; S.L[id] = L[id];
   if (!S.pend.includes(id)) S.pend.push(id); save();
   if (NUBE) fb().then(db => db.doc('conteos/' + TOKEN + '/lineas/' + id).set(Object.assign({}, L[id], { t: firebase.firestore.FieldValue.serverTimestamp() }))).catch(() => {});
   toast('✏️ Corregido. Se enviará como corrección.'); pintar();
@@ -268,7 +280,7 @@ async function guardarClave(v) {
   catch (e) { toast('No se pudo guardar: ' + msgErr(e)); }
 }
 function todoTexto() {
-  const por = {}; LISTA.forEach(x => { const c = contado(x); if (c) (por[x[2]] = por[x[2]] || []).push('• ' + x[1] + ' (' + x[0] + '): *' + fmt(c.cant) + '*' + (c.por ? ' — ' + c.por : '')); });
+  const por = {}; LISTA.forEach(x => { const c = contado(x); if (c) (por[x[2]] = por[x[2]] || []).push('• ' + x[1] + ' (' + x[0] + '): *' + cTxt(c) + '*' + (c.por ? ' — ' + c.por : '')); });
   return '📦 *CONTEO COMPLETO HASTA AHORA*\n' + new Date().toLocaleString('es-VE') + '\n' + Object.keys(por).map(d => '\n*' + d + '*\n' + por[d].join('\n')).join('\n');
 }
 
@@ -280,6 +292,7 @@ document.addEventListener('click', async e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.tab) { tab = b.dataset.tab; S.recien = {}; save(); pintar(); return; }
   if (b.dataset.ed) { editar(b.dataset.ed); return; }
+  if (b.dataset.ub) { S.verU = S.verU || {}; S.verU[b.dataset.ub] = 1; save(); const r = $('r_' + b.dataset.ub), x = MIOS.find(z => idDe(z[0]) === b.dataset.ub); if (r && x) { r.outerHTML = fila(x); const n = $('r_' + b.dataset.ub); const i = n && n.querySelector('input'); if (i) i.focus(); } return; }
   if (b.id === 'entrar') entrar();
   if (b.id === 'env') enviar();
   if (b.id === 'todo2' && confirm('¿Mandar a ' + OWNER.name + ' TODO lo que has contado (' + Object.keys(S.L).length + ' productos)?')) enviarTodo();
