@@ -36,7 +36,7 @@ input[type=text],input[type=password],select{width:100%;font:inherit;font-size:1
 .it .ed{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px;font-weight:800;font-size:16px;color:var(--navy)}
 .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center;z-index:6}
 .bar .t{flex:1;font-size:13px;color:var(--mut)}.bar .t b{color:var(--txt);font-size:15px}
-.bar button{border:0;border-radius:12px;padding:12px 16px;font-weight:800;background:#16a34a;color:#fff}
+.bar button{border:0;border-radius:12px;padding:12px 12px;font-size:14px;font-weight:800;background:#16a34a;color:#fff}
 .bar button:disabled{background:#cbd5e1}
 .dep{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line)}
 .dep:last-child{border-bottom:0}.dep label{flex:1;display:flex;gap:10px;align-items:center;font-weight:700}
@@ -155,7 +155,8 @@ function fila(x) {
 }
 function pintarBarra() {
   const b = $('bar'); b.hidden = false; const n = S.pend.length;
-  b.innerHTML = `<div class="t">Por enviar a ${OWNER.name}: <b>${n}</b></div><button id="env" ${n ? '' : 'disabled'}>📤 Enviar ahora</button>`;
+  const tot = Object.keys(S.L).length;
+  b.innerHTML = `<div class="t">Por enviar: <b>${n}</b><br>Contados aquí: <b>${tot}</b></div><button id="todo2" ${tot ? '' : 'disabled'} style="background:var(--navy)">↩️ Reenviar todo</button><button id="env" ${n ? '' : 'disabled'}>📤 Enviar</button>`;
 }
 function refrescar() {   // llegó algo de otro teléfono: no redibujo mientras escriben
   const a = document.activeElement;
@@ -204,6 +205,13 @@ function siguiente(inp) {
   const nx = all.slice(i + 1).find(e => !e.closest('.it').classList.contains('ok')) || all[i + 1];
   if (nx) { nx.focus(); nx.scrollIntoView({ block: 'center', behavior: 'smooth' }); } else inp.blur();
 }
+function abrirWa(txt) { const u = 'https://wa.me/' + OWNER.wa + '?text=' + encodeURIComponent(txt); const w = window.open(u, '_blank'); if (!w) location.href = u; }
+function enviarTodo() {   // todo lo contado en este teléfono, por si un mensaje no se mandó
+  const ids = Object.keys(S.L); if (!ids.length) { toast('Todavía no has contado nada'); return; }
+  const lin = ids.map(id => S.L[id]).filter(Boolean).sort((a, b) => (a.dep || '').localeCompare(b.dep || '', 'es') || a.n.localeCompare(b.n, 'es')).map(c => '• ' + c.n + ' (' + c.c + '): *' + fmt(c.cant) + '*');
+  ids.forEach(id => { if (S.L[id]) S.env[id] = S.L[id].cant; }); S.pend = []; S.recien = {}; save(); pintarBarra();
+  abrirWa(`📦 *CONTEO DE INVENTARIO* — ${S.nombre}\n${segTexto()}\n*TODO LO CONTADO (${lin.length})* · ${new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}\n\n${lin.join('\n')}`);
+}
 function enviar() {
   if (!S.pend.length) return;
   const ids = S.pend.slice(), lin = [];
@@ -216,8 +224,7 @@ function enviar() {
   const ok = MIOS.filter(contado).length;
   const txt = `📦 *CONTEO DE INVENTARIO* — ${S.nombre}\n${segTexto()}\n${new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} · avance ${ok}/${MIOS.length}\n\n${lin.join('\n')}`;
   S.pend = []; S.recien = {}; save(); pintarBarra();
-  const u = 'https://wa.me/' + OWNER.wa + '?text=' + encodeURIComponent(txt);
-  const w = window.open(u, '_blank'); if (!w) location.href = u;
+  abrirWa(txt);
 }
 async function editar(id) {
   const c = L[id]; if (!c) return;
@@ -275,6 +282,7 @@ document.addEventListener('click', async e => {
   if (b.dataset.ed) { editar(b.dataset.ed); return; }
   if (b.id === 'entrar') entrar();
   if (b.id === 'env') enviar();
+  if (b.id === 'todo2' && confirm('¿Mandar a ' + OWNER.name + ' TODO lo que has contado (' + Object.keys(S.L).length + ' productos)?')) enviarTodo();
   if (b.id === 'gclave') guardarClave($('nclave').value);
   if (b.id === 'cclave') { const v = prompt('Nueva clave del conteo (mínimo 4 números):'); if (v) guardarClave(v); }
   if (b.id === 'mandar' || b.id === 'copiar') {
