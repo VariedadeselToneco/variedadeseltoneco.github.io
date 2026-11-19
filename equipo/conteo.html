@@ -319,6 +319,17 @@ document.addEventListener('click', async e => {
   if (b.id === 'todo') { const u = 'https://wa.me/' + OWNER.wa + '?text=' + encodeURIComponent(todoTexto()); const w = window.open(u, '_blank'); if (!w) location.href = u; }
 });
 window.addEventListener('hashchange', () => location.reload());
+/* se actualiza sola: si hay una versión nueva publicada, recarga (lo contado queda guardado en el teléfono) */
+const VER = '20261119b';
+async function revisarVersion() {
+  try {
+    const r = await fetch(location.pathname + '?nc=' + Date.now(), { cache: 'no-store' }); const t = await r.text();
+    const m = /const VER = '([^']+)'/.exec(t);
+    if (m && m[1] !== VER) { const a = document.activeElement; if (a && a.tagName === 'INPUT' && a.value) return; save(); location.reload(); }
+  } catch (e) {}
+}
+setInterval(revisarVersion, 3 * 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) revisarVersion(); });
 (async () => { const d = H.get('d'); if (d) DUENO = (await sha('dueno|' + d)) === OWNER_H; if (DUENO) try { localStorage.setItem('conteo_dueno', location.href); } catch (e) {} pintar(); if (TOKEN.length >= 20) escuchar(); })();
 </script>
 </body>
