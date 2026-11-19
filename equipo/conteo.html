@@ -219,9 +219,9 @@ function siguiente(inp) {
 function abrirWa(txt) { const u = 'https://wa.me/' + OWNER.wa + '?text=' + encodeURIComponent(txt); const w = window.open(u, '_blank'); if (!w) location.href = u; }
 function enviarTodo() {   // todo lo contado en este teléfono, por si un mensaje no se mandó
   const ids = Object.keys(S.L); if (!ids.length) { toast('Todavía no has contado nada'); return; }
-  const lin = ids.map(id => S.L[id]).filter(Boolean).sort((a, b) => (a.dep || '').localeCompare(b.dep || '', 'es') || a.n.localeCompare(b.n, 'es')).map(c => '• ' + c.n + ' (' + c.c + '): *' + cTxt(c) + '*');
+  const lin = ids.map(id => S.L[id]).filter(Boolean).sort((a, b) => (a.dep || '').localeCompare(b.dep || '', 'es') || a.n.localeCompare(b.n, 'es')).map(c => c.n + ': ' + cTxt(c));
   ids.forEach(id => { if (S.L[id]) S.env[id] = cTxt(S.L[id]); }); S.pend = []; S.recien = {}; save(); pintarBarra();
-  abrirWa(`📦 *CONTEO DE INVENTARIO* — ${S.nombre}\n${segTexto()}\n*TODO LO CONTADO (${lin.length})* · ${new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}\n\n${lin.join('\n')}`);
+  abrirWa(lin.join('\n'));
 }
 function enviar() {
   if (!S.pend.length) return;
@@ -229,11 +229,10 @@ function enviar() {
   ids.forEach(id => {
     const c = L[id]; if (!c) return;
     const ant = S.env[id] == null ? null : (typeof S.env[id] === 'number' ? fmt(S.env[id]) : S.env[id]), corr = ant !== null && ant !== cTxt(c);
-    lin.push((corr ? '✏️ CORRECCIÓN ' : '• ') + c.n + ' (' + c.c + '): *' + cTxt(c) + '*' + (corr ? ' (antes ' + ant + ')' : ''));
+    lin.push((corr ? '✏️ ' : '') + c.n + ': ' + cTxt(c));
     S.env[id] = cTxt(c);
   });
-  const ok = MIOS.filter(contado).length;
-  const txt = `📦 *CONTEO DE INVENTARIO* — ${S.nombre}\n${segTexto()}\n${new Date().toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} · avance ${ok}/${MIOS.length}\n\n${lin.join('\n')}`;
+  const txt = lin.join('\n');
   S.pend = []; S.recien = {}; save(); pintarBarra();
   abrirWa(txt);
 }
