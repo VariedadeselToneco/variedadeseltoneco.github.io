@@ -495,7 +495,7 @@ function render() {
   if (view.mode === 'owner') {
     $('hTitle').innerHTML = 'Panel de ' + esc(OWNER.name) + '<small>' + esc(STORE) + '</small>';
     who.hidden = false; who.textContent = 'Salir';
-    tabs.innerHTML = [['reps', '📥 Reportes'], ['ped', '📋 Pedidos'], ['precios', '💲 Precios'], ['metas', '🎯 Metas'], ['eval', '📊 Evaluación'], ['obs', '✍️ Observación']]
+    tabs.innerHT = [ML['reps', '📥 Reportes'], ['ped', '📋 Pedidos'], ['precios', '💲 Precios'], ['metas', '🎯 Metas'], ['eval', '📊 Evaluación'], ['obs', '✍️ Observación']]
       .map(([k, l]) => `<button class="tab ${view.tab === k ? 'on' : ''}" data-t="${k}">${l}</button>`).join('');
     main.innerHTML = view.tab === 'metas' ? ownerMetas() : view.tab === 'eval' ? ownerEval() : view.tab === 'obs' ? ownerObs() : view.tab === 'ped' ? ownerPed() : view.tab === 'precios' ? wPrecios() : ownerReps();
     if (view.tab === 'precios') pintarLista();
