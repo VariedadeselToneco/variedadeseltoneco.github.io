@@ -470,7 +470,7 @@ function importarDesdeEnlace() {
         save();
         res = { kind: 'r', msg: 'Reporte de ' + TEAM[r.w].name + ' guardado ✅' };
       }
-    } else if (h.startsWith('#o=')) {
+    } else if (h.startsWith('#m=')) { res = importarMeta(h); } else if (h.startsWith('#m=')) { res = importarMeta(h); } else if (h.startsWith('#o=')) {
       const o = dec(h.slice(3));
       if (o && TEAM[o.w] && o.t) {
         S.obs[o.w] = S.obs[o.w] || [];
@@ -495,7 +495,7 @@ function render() {
   if (view.mode === 'owner') {
     $('hTitle').innerHTML = 'Panel de ' + esc(OWNER.name) + '<small>' + esc(STORE) + '</small>';
     who.hidden = false; who.textContent = 'Salir';
-    tabs.innerHTML = [['reps', '📥 Reportes'], ['ped', '📋 Pedidos'], ['precios', '💲 Precios'], ['eval', '📊 Evaluación'], ['obs', '✍️ Observación']]
+    tabs.innerHTML = [['reps', '📥 Reportes'], ['ped', '📋 Pedidos'], ['precios', '💲 Precios'], view.tab === 'metas' ? ownerMetas() : view.tab === 'eval' ? ownerEval(), ['obs', '✍️ Observación']]
       .map(([k, l]) => `<button class="tab ${view.tab === k ? 'on' : ''}" data-t="${k}">${l}</button>`).join('');
     main.innerHTML = view.tab === 'eval' ? ownerEval() : view.tab === 'obs' ? ownerObs() : view.tab === 'ped' ? ownerPed() : view.tab === 'precios' ? wPrecios() : ownerReps();
     if (view.tab === 'precios') pintarLista();
@@ -565,7 +565,7 @@ function wFact() {
     <div class="card"><h2>Códigos rápidos</h2><p class="mut">Escríbelos después de ENTER</p>
     <div class="cods">${F.codigos.map(c => `<div>${esc(c[0])}<b>${esc(c[1])}</b></div>`).join('')}</div></div>`;
 }
-function metasActivas(w) { const h = hoy(); return (METAS_VENTA[w] || []).filter(m => h >= m.desde && h <= m.hasta); }
+function metasActivas(w) { const h = hoy(); return ((S.metasX && S.metasX[w]) || METAS_VENTA[w] || []).filter(m => h >= m.desde && h <= m.hasta); }
 function ventaDia(w, m, d) { return (S.ventas && S.ventas[w + '|' + m.id + '|' + d]) || 0; }
 function ventaTotal(w, m) { let t = 0; Object.entries(S.ventas || {}).forEach(([k, v]) => { const [ww, id, d] = k.split('|'); if (ww === w && id === m.id && d >= m.desde && d <= m.hasta) t += v; }); return t; }
 function diasRestan(m) { const [y, mo, d] = m.hasta.split('-').map(Number); return Math.max(0, Math.round((new Date(y, mo - 1, d) - new Date(new Date().toDateString())) / 864e5) + 1); }
@@ -983,7 +983,7 @@ document.addEventListener('click', e => {
   if (b.id === 'cSave') { guardarCodigo(); return; }
   if (b.id === 'cCancel') { cerrarCodigo(); return; }
   if (b.dataset.vm) {
-    const m = (METAS_VENTA[S.me] || []).find(x => x.id === b.dataset.vm); if (!m) return;
+    const m = metasActivas(S.me).find(x => x.id === b.dataset.vm); if (!m) return;
     S.ventas = S.ventas || {}; const k = S.me + '|' + m.id + '|' + hoy();
     S.ventas[k] = Math.max(0, (S.ventas[k] || 0) + (+b.dataset.dv)); save();
     const y = window.scrollY; render(); window.scrollTo(0, y);
@@ -1056,11 +1056,70 @@ function entrarDueno() {
 /* =====================================================================
    Arranque
    ===================================================================== */
-function manejarEnlace(alArrancar) {
+/* ===== 🎯 Metas del dueño ===== */
+function metasLista(w) { return (S.metasX && S.metasX[w]) || METAS_VENTA[w] || []; }
+function lunesDe(d) { const x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
+function metaDe(w) { const L = metasLista(w); return metasActivas(w)[0] || L[L.length - 1] || null; }
+function importarMeta(h) {
+  const q = dec(h.slice(3)), ok = /^\d{4}-\d{2}-\d{2}$/;
+  if (!q || !TEAM[q.w] || !ok.test(q.desde) || !ok.test(q.hasta)) return null;
+  S.metasX = S.metasX || {};
+  S.metasX[q.w] = [{ id: String(q.id).replace(/[^\w-]/g, '').slice(0, 40), producto: String(q.producto).slice(0, 60), uno: String(q.uno || '').slice(0, 40), meta: Math.max(1, +q.meta || 1), premio: String(q.premio || '').slice(0, 60), desde: q.desde, hasta: q.hasta }];
+  S.me = q.w; save();
+  return { kind: 'm', msg: '¡Tienes una meta nueva! 🎯' };
+}
+function metaResultado(w) {
+  const m = metaDe(w); if (!m) return null;
+  const r = S.reps.find(x => x.w === w && x.d >= m.desde && x.d <= m.hasta && x.mv && x.mv.some(v => v.p === m.producto));
+  const v = r ? r.mv.find(v => v.p === m.producto) : null, tot = v ? v.tot : 0;
+  const p = Math.round(tot / m.meta * 100), falta = Math.max(0, m.meta - tot), dr = diasRestan(m), pd = dr ? Math.ceil(falta / dr) : falta, n = TEAM[w].name;
+  let txt;
+  if (!r) txt = 🎯 *${n}*, todavía no he recibido tu reporte con las ventas de ${m.producto}. Envíalo hoy para ver cómo vas con tu meta de ${m.meta}.;
+  else if (tot >= m.meta) txt = 🎉 *¡${n}, META CUMPLIDA!*\nVendiste ${tot} de ${m.meta} ${m.producto} (${p}%).\n🏆 Ganaste: ${m.premio}\n¡Felicitaciones, excelente trabajo! 💪;
+  else txt = 🎯 *${n}, así vas con tu meta* (reporte del ${fechaBonita(r.d)})\n${m.producto}: ${tot} de ${m.meta} (${p}%)\nTe faltan ${falta}. ${dr ? 'Quedan ' + dr + (dr === 1 ? ' día' : ' días') + ' (hasta el ' + fechaBonita(m.hasta) + '): unos ' + pd + ' por día.' : 'La meta ya terminó.'}\n🏆 Premio: ${m.premio}\n¡Tú puedes! 🔥;
+  return { m, r, tot, p, falta, txt };
+}
+function ownerMetas() {
+  const w = view.mw || Object.keys(TEAM)[0], R = metaResultado(w), m = R && R.m, lu = lunesDe(new Date()), dom = new Date(lu);
+  dom.setDate(lu.getDate() + 6);
+  const f = (view.mf && view.mf.w === w) ? view.mf : (view.mf = { w, prod: m ? m.producto : '', uno: m ? (m.uno || '') : '', cant: m ? m.meta : '', prem: m ? m.premio : '$5 de reconocimiento', desde: hoy(lu), hasta: hoy(dom) });
+  return <div class="chips">${Object.entries(TEAM).map(([k, t]) => `<button class="chip ${w === k ? 'on' : ''}" data-mw="${k}">${esc(t.name)}</button>).join('')}</div>
+  <div class="card"><h2>Meta de ${esc(TEAM[w].name)}</h2>` + (R ? `<p><b>${m.meta} ${esc(m.producto)}</b> · premio: ${esc(m.premio)}<br><span class="mut">${fechaBonita(m.desde)} al ${fechaBonita(m.hasta)}</span></p>
+    <div class="prog"><i style="width:${Math.min(100, R.p)}%"></i></div>
+    <p><b style="font-size:28px;color:${color(R.p)}">${R.p}%</b> <span class="mut">${R.tot} de ${m.meta}${R.r ? ' · reporte del ' + fechaBonita(R.r.d) : ' · sin reporte esta semana'}</span></p>
+    <button class="btn wa" id="mRes">📤 Enviarle su resultado</button>` : '<p class="mut">Todavía no tiene meta.</p>') + `</div>
+  <div class="card"><h2>Nueva meta</h2>
+    <p class="mut">Se envía por WhatsApp. Al tocar el enlace, la meta se activa en su app con el contador en cero.</p>
+    <label class="mut">Producto (ej: combos Lailas)</label><input type="text" id="mProd" value="${esc(f.prod)}">
+    <label class="mut">Cada uno se llama (ej: combo)</label><input type="text" id="mUno" value="${esc(f.uno)}">
+    <label class="mut">Cantidad a vender</label><input type="text" id="mCant" inputmode="numeric" value="${esc(f.cant)}">
+    <label class="mut">Premio</label><input type="text" id="mPrem" value="${esc(f.prem)}">
+    <label class="mut">Desde (AAAA-MM-DD)</label><input type="text" id="mDesde" value="${esc(f.desde)}">
+    <label class="mut">Hasta (AAAA-MM-DD)</label><input type="text" id="mHasta" value="${esc(f.hasta)}">
+    <button class="btn pri" id="mNew">📤 Enviar meta nueva por WhatsApp</button></div>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-mw],#mRes,#mNew'); if (!b) return;
+  if (b.dataset.mw) { view.mw = b.dataset.mw; render(); return; }
+  const w = view.mw || Object.keys(TEAM)[0];
+  if (b.id === 'mRes') { const R = metaResultado(w); if (R) openWa(R.txt); else toast('Primero crea una meta'); return; }
+  const f = view.mf, cant = parseInt(f && f.cant, 10), ok = /^\d{4}-\d{2}-\d{2}$/;
+  if (!f || !String(f.prod).trim() || !(cant > 0)) { toast('Escribe el producto y la cantidad'); return; }
+  if (!ok.test(f.desde) || !ok.test(f.hasta) || f.hasta < f.desde) { toast('Revisa las fechas (AAAA-MM-DD)'); return; }
+  const m = { w, id: 'm' + hid(String(f.prod).trim()) + f.desde.replace(/-/g, ''), producto: String(f.prod).trim().slice(0, 60), uno: String(f.uno || '').trim().slice(0, 40), meta: cant, premio: String(f.prem || '').trim().slice(0, 60), desde: f.desde, hasta: f.hasta };
+  S.metasX = S.metasX || {}; S.metasX[w] = [{ id: m.id, producto: m.producto, uno: m.uno, meta: m.meta, premio: m.premio, desde: m.desde, hasta: m.hasta }]; save();
+  openWa(🎯 *Nueva meta para ${TEAM[w].name}*\nVender ${cant} ${m.producto}\n📅 Del ${fechaBonita(m.desde)} al ${fechaBonita(m.hasta)}\n🏆 Premio: ${m.premio}\n\nToca para activarla en tu app:\n${pageUrl()}#m=${enc(m)});
+  render();
+});
+document.addEventListener('input', e => {
+  const k = { mProd: 'prod', mUno: 'uno', mCant: 'cant', mPrem: 'prem', mDesde: 'desde', mHasta: 'hasta' }[e.target.id];
+  if (k && view.mf) view.mf[k] = e.target.value;
+});
+  function manejarEnlace(alArrancar) {
   const r = importarDesdeEnlace();
   if (r && r.kind === 'r') { if (view.mode === 'owner') { view.tab = 'reps'; render(); toast(r.msg); } else { view = { mode: null, tab: 'check' }; render(); toast(r.msg + ' · entra a tu panel'); } return; }
   if (r && r.kind === 'o') { S.me = r.w; save(); view = { mode: 'worker', tab: 'obs' }; render(); toast(r.msg); return; }
-  if (r) toast(r.msg);
+  if (r && r.kind === 'm') { view = { mode: 'worker', tab: 'check' }; render(); toast(r.msg); return; } if (r && r.kind === 'm') { view = { mode: 'worker', tab: 'check' }; render(); toast(r.msg); return; } if (r && r.kind === 'm') { view = { mode: 'worker', tab: 'check' }; render(); toast(r.msg); return; } if (r) toast(r.msg);
   if (alArrancar) { view = S.me && TEAM[S.me] ? { mode: 'worker', tab: 'check' } : { mode: null, tab: 'check' }; render(); }
 }
 // Enlace directo por trabajador: .../equipo/?p=osmary
