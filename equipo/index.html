@@ -1142,7 +1142,7 @@ document.addEventListener('click', e => {
   if (!ok.test(f.desde) || !ok.test(f.hasta) || f.hasta < f.desde) { toast('Revisa las fechas (AAAA-MM-DD)'); return; }
   const m = { w, id: 'm' + hid(String(f.prod).trim()) + f.desde.replace(/-/g, ''), producto: String(f.prod).trim().slice(0, 60), uno: String(f.uno || '').trim().slice(0, 40), meta: cant, premio: String(f.prem || '').trim().slice(0, 60), desde: f.desde, hasta: f.hasta };
   S.metasX = S.metasX || {}; S.metasX[w] = [{ id: m.id, producto: m.producto, uno: m.uno, meta: m.meta, premio: m.premio, desde: m.desde, hasta: m.hasta }]; save();
-  openWa(🎯 *Nueva meta para ${TEAM[w].name}*\nVender ${cant} ${m.producto}\n📅 Del ${fechaBonita(m.desde)} al ${fechaBonita(m.hasta)}\n🏆 Premio: ${m.premio}\n\nToca para activarla en tu app:\n${pageUrl()}#m=${enc(m)});
+  openWa(`🎯 *Nueva meta para ${TEAM[w].name}*\nVender ${cant} ${m.producto}\n📅 Del ${fechaBonita(m.desde)} al ${fechaBonita(m.hasta)}\n🏆 Premio: ${m.premio}\n\nToca para activarla en tu app:\n${pageUrl()}#m=${enc(m)}`);
   render();
 });
 document.addEventListener('input', e => {
