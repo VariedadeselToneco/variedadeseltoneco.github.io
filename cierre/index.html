@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=c61da8a2-2d51-441e-9f5b-68142afbc7b1
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cierre de Caja - Variedades El Toñeco</title>
+<style>
+:root{--primary:#154360;--accent:#f39c12;--success:#1e8449;--danger:#c0392b;--bg:#eaf2f8;--text:#1c2833}
+*{box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:12px}
+.container{max-width:560px;margin:0 auto 20px;background:#fff;padding:18px;border-radius:12px;box-shadow:0 4px 15px rgba(21,67,96,.15);border-top:6px solid var(--primary)}
+.container.wide{max-width:900px}
+.brand{text-align:center;margin-bottom:12px}
+.brand img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)}
+.brand h2{margin:6px 0 2px;color:var(--primary);font-size:19px}
+.brand p{margin:0;font-size:13px;color:#566573;font-weight:600}
+.userbar{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--bg);padding:8px 10px;border-radius:8px;margin-bottom:12px;font-size:14px;font-weight:600;color:var(--primary);flex-wrap:wrap}
+.userbar div{display:flex;gap:6px}
+.mini{width:auto!important;padding:8px 12px!important;font-size:13px!important;margin:0!important}
+.tabs{display:flex;gap:6px;background:var(--bg);padding:5px;border-radius:8px;margin-bottom:14px}
+.tab-btn{flex:1;padding:11px 6px;border:none;border-radius:6px;font-weight:bold;font-size:14px;cursor:pointer;background:transparent;color:var(--primary)}
+.tab-btn.active{background:var(--primary);color:#fff}
+.form-group{margin-bottom:11px}
+label{display:block;font-weight:600;margin-bottom:4px;font-size:13px;color:var(--primary)}
+input,select{width:100%;min-height:44px;padding:10px;border:1px solid #bdc3c7;border-radius:6px;font-size:16px;background:#fff}
+input[readonly],select:disabled{background:#f4f6f7;color:#333}
+.tasa-status{font-size:11px;color:#566573;font-weight:bold;margin-top:3px;display:block}
+.row{display:flex;gap:10px}
+.row .form-group{flex:1;min-width:0}
+@media(max-width:480px){.row.stack{flex-direction:column;gap:0}.card-grid{grid-template-columns:1fr!important}}
+.add-row{display:flex;gap:8px;margin-bottom:10px}
+.btn-add{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:0 18px;font-weight:bold;font-size:15px;cursor:pointer;white-space:nowrap;min-height:44px}
+.lista{max-height:180px;overflow-y:auto;border:1px solid #e5e8e8;border-radius:6px;padding:6px;margin-bottom:12px;background:#fbfcfc}
+.item{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid #eee;font-size:14px}
+.btn-del-item{background:none;border:none;color:var(--danger);font-weight:bold;cursor:pointer;font-size:18px;padding:4px 10px}
+.totales{background:#fef9e7;border:1px solid var(--accent);padding:12px;border-radius:8px;margin:12px 0;text-align:center}
+.totales p{margin:4px 0;font-size:16px;font-weight:bold;color:var(--primary)}
+.totales .sub{font-size:13px;color:#566573;font-weight:normal}
+.btn-group{display:flex;gap:10px;margin-top:10px}
+button.action-btn{width:100%;min-height:46px;padding:12px;border:none;border-radius:6px;font-size:15px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-print{background:var(--success);color:#fff}
+.btn-gray{background:#566573;color:#fff}
+.btn-admin{margin-top:16px}
+.hidden{display:none!important}
+.msg{color:var(--danger);font-size:13px;font-weight:600;text-align:center;min-height:18px;margin-top:8px}
+.resumen{display:flex;justify-content:space-around;background:var(--bg);padding:12px;border-radius:8px;margin:12px 0;border-left:5px solid var(--primary);flex-wrap:wrap;gap:10px;text-align:center;font-size:13px}
+.resumen strong{font-size:17px;color:var(--primary);display:block}
+.filtros{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px}
+.filtro-btn{flex:0 0 auto;padding:9px 14px;border:1px solid #bdc3c7;border-radius:20px;background:#f8f9f9;font-size:13px;font-weight:bold;color:var(--primary);cursor:pointer}
+.filtro-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
+.card{border:1px solid #d5dbdb;border-radius:10px;padding:14px;background:#fff;border-left:5px solid var(--primary)}
+.card.cas{border-left-color:var(--accent)}
+.card-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:8px;font-size:12px;flex-wrap:wrap;gap:4px}
+.badge{background:var(--bg);color:var(--primary);padding:3px 8px;border-radius:6px;font-weight:bold;font-size:13px}
+.card.cas .badge{background:#fef9e7;color:#b7791f}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:13px}
+.card-grid div{display:flex;justify-content:space-between;border-bottom:1px dashed #f2f3f4;padding:2px 0}
+.card-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid #eee}
+.card-tot{font-size:14px;font-weight:bold;color:var(--primary)}
+.btn-red{background:#fadbd8;color:var(--danger);border:1px solid #f5b7b1;border-radius:6px;padding:8px 12px;font-size:12px;font-weight:bold;cursor:pointer;min-height:36px}
+.btn-red:hover{background:var(--danger);color:#fff}
+.card select{min-height:36px;padding:4px 8px;font-size:14px;width:auto;max-width:55%}
+.vacio{text-align:center;padding:20px;color:#7f8c8d;font-size:13px;grid-column:1/-1}
+.falt-det{font-size:12px;color:var(--danger);background:#fdedec;border:1px solid #f5b7b1;border-radius:6px;padding:6px 8px;margin-top:8px}
+#falt-tipos .filtro-btn small{font-size:10px;opacity:.85;font-weight:normal}
+#falt-lista .item small{color:#566573;font-size:11px;font-weight:normal}
+#ticket-print{display:none}
+@media print{
+ body>*:not(#ticket-print){display:none!important}
+ html,body{background:#fff!important;margin:0!important;padding:0!important}
+ #ticket-print{display:block!important;width:72mm;margin:0 auto;font-family:'Courier New',monospace;font-size:12px;color:#000;padding-bottom:12mm}
+ @page{margin:0;size:80mm auto}
+ .t-center{text-align:center}.t-logo{width:55px;height:55px;filter:grayscale(100%) contrast(150%)}
+ .t-line{border-top:1px dashed #000;margin:5px 0}
+ .t-row{display:flex;justify-content:space-between;margin:3px 0}
+ .t-bold{font-weight:bold;font-size:13px}
+}
+</style>
+</head>
+<body>
+
+<div id="login" class="container hidden">
+  <div class="brand"><img src="logo.png" alt="Logo"><h2>VARIEDADES EL TOÑECO</h2><p>Duaca, Estado Lara</p></div>
+  <div class="form-group"><label>Usuario</label><input type="text" id="l-user" autocapitalize="none" autocomplete="username"></div>
+  <div class="form-group"><label>Clave</label><input type="password" id="l-pass" autocomplete="current-password"></div>
+  <button type="button" class="action-btn btn-primary" id="btn-login">Entrar</button>
+  <div class="msg" id="login-msg"></div>
+</div>
+
+<div id="app" class="hidden">
+<div id="main-panel" class="container">
+  <div class="brand"><img src="logo.png" alt="Logo"><h2>VARIEDADES EL TOÑECO</h2><p>Duaca, Estado Lara</p></div>
+  <div class="userbar"><span id="user-info"></span>
+    <div><button type="button" class="action-btn btn-primary mini hidden" id="btn-admin">⚙️ Administrar</button><button type="button" class="action-btn btn-gray mini" id="btn-salir">Salir</button></div>
+  </div>
+
+  <div class="row stack">
+    <div class="form-group"><label>Caja / PC</label><select id="caja"></select></div>
+    <div class="form-group"><label>Cajero</label><input type="text" id="cajero" readonly></div>
+  </div>
+  <div class="form-group"><label>Tasa del Día (Bs/$)</label><input type="text" id="tasa" inputmode="decimal" placeholder="Ej. 45.50"><span id="tasa-info" class="tasa-status"></span></div>
+
+  <div class="tabs">
+    <button type="button" class="tab-btn active" id="tab-general">Cierre General</button>
+    <button type="button" class="tab-btn" id="tab-cashea">Cashea (-4%)</button>
+  </div>
+
+  <div id="vista-general">
+    <div class="row stack">
+      <div class="form-group"><label>Punto de Venta (Bs)</label><input type="text" id="punto" class="calc" inputmode="decimal" value="0"></div>
+      <div class="form-group"><label>Efectivo (Bs)</label><input type="text" id="bs" class="calc" inputmode="decimal" value="0"></div>
+    </div>
+    <div class="row stack">
+      <div class="form-group"><label>Transferencia (Bs)</label><input type="text" id="transferencia" class="calc" inputmode="decimal" value="0"></div>
+      <div class="form-group"><label>Biopago (Bs)</label><input type="text" id="biopago" class="calc" inputmode="decimal" value="0"></div>
+    </div>
+    <div class="row stack">
+      <div class="form-group"><label>Cashea ($)</label><input type="text" id="cashea" class="calc" inputmode="decimal" value="0"></div>
+      <div class="form-group"><label>Zelle ($)</label><input type="text" id="zelle" class="calc" inputmode="decimal" value="0"></div>
+    </div>
+    <div class="totales">
+      <p>Total en Bs: <span id="lbl-total-bs">0.00</span> Bs</p>
+      <p>Total en $: $<span id="lbl-total-usd">0.00</span></p>
+      <p class="sub">Faltante: <span id="lbl-falt-bs">0.00</span> Bs | $<span id="lbl-falt-usd">0.00</span></p>
+    </div>
+    <div class="form-group" style="margin-top:2px"><label>Faltante — ¿de qué manera?</label></div>
+    <div class="filtros" id="falt-tipos"></div>
+    <div class="add-row">
+      <input type="text" id="falt-monto" inputmode="decimal" placeholder="Monto del faltante">
+      <button type="button" class="btn-add" id="btn-add-falt">+ Agregar</button>
+    </div>
+    <div class="lista" id="falt-lista"></div>
+    <div class="btn-group">
+      <button type="button" class="action-btn btn-print" id="btn-imprimir">🖨️ Imprimir Ticket</button>
+      <button type="button" class="action-btn btn-primary" id="btn-guardar">☁️ Guardar Cierre</button>
+    </div>
+  </div>
+
+  <div id="vista-cashea" class="hidden">
+    <label>Agregar venta Cashea ($)</label>
+    <div class="add-row">
+      <input type="text" id="cashea-monto" inputmode="decimal" placeholder="Monto en $ (Ej. 25.00)">
+      <button type="button" class="btn-add" id="btn-add-cashea">+ Agregar</button>
+    </div>
+    <div class="lista" id="cashea-lista"></div>
+    <div class="totales">
+      <p class="sub">Bruto: $<span id="c-bruto">0.00</span> | Comisión (-4%): -$<span id="c-comision">0.00</span></p>
+      <p>Neto ($): $<span id="c-neto-usd">0.00</span></p>
+      <p>Neto (Bs): <span id="c-neto-bs">0.00</span> Bs</p>
+    </div>
+    <div class="btn-group">
+      <button type="button" class="action-btn btn-print" id="btn-imprimir-cashea">🖨️ Imprimir Cashea</button>
+      <button type="button" class="action-btn btn-primary" id="btn-guardar-cashea">☁️ Guardar Cierre</button>
+    </div>
+  </div>
+</div>
+
+<div id="admin-panel" class="container wide hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <h2 style="margin:0;color:var(--primary);font-size:18px">Administración - El Toñeco</h2>
+    <button type="button" class="action-btn btn-primary mini" id="btn-volver">← Volver</button>
+  </div>
+  <div class="tabs" style="margin-top:12px">
+    <button type="button" class="tab-btn active" data-at="hist">Historial</button>
+    <button type="button" class="tab-btn" data-at="users">Usuarios</button>
+    <button type="button" class="tab-btn" data-at="cajas">Cajas</button>
+  </div>
+
+  <div id="a-hist">
+    <div class="resumen">
+      <div>Cierres Bs<strong id="s-bs">0.00 Bs</strong></div>
+      <div>Cierres $<strong id="s-usd">$0.00</strong></div>
+      <div>Neto Cashea $<strong id="s-cas">$0.00</strong></div>
+      <div>Faltantes<strong id="s-falt">0.00 Bs | $0.00</strong></div>
+    </div>
+    <div class="filtros" id="filtros"></div>
+    <div class="cards" id="tarjetas"></div>
+  </div>
+
+  <div id="a-users" class="hidden">
+    <div class="row stack">
+      <div class="form-group"><label>Nombre</label><input type="text" id="u-nombre" placeholder="Ej. María Pérez"></div>
+      <div class="form-group"><label>Usuario (para entrar)</label><input type="text" id="u-user" autocapitalize="none" placeholder="Ej. maria"></div>
+    </div>
+    <div class="row stack">
+      <div class="form-group"><label>Clave (mín. 6)</label><input type="text" id="u-pass" autocomplete="off"></div>
+      <div class="form-group"><label>Rol</label><select id="u-rol"><option value="cajero">Cajero</option><option value="admin">Administrador</option></select></div>
+    </div>
+    <div class="form-group"><label>Caja asignada</label><select id="u-caja"></select></div>
+    <button type="button" class="action-btn btn-primary" id="btn-crear-user">+ Crear usuario</button>
+    <div class="msg" id="u-msg"></div>
+    <div class="cards" id="lista-usuarios" style="margin-top:12px"></div>
+  </div>
+
+  <div id="a-cajas" class="hidden">
+    <label>Nueva caja</label>
+    <div class="add-row"><input type="text" id="n-caja" placeholder="Ej. Caja 3"><button type="button" class="btn-add" id="btn-add-caja">+ Agregar</button></div>
+    <div class="cards" id="lista-cajas"></div>
+  </div>
+</div>
+</div>
+
+<div id="ticket-print">
+  <div class="t-center"><img src="logo.png" class="t-logo"><br><span class="t-bold">VARIEDADES EL TOÑECO</span><br><span>Duaca, Estado Lara</span><br><span id="p-titulo"></span></div>
+  <div class="t-center" id="p-fecha"></div>
+  <div class="t-line"></div>
+  <div id="p-cuerpo"></div>
+  <div class="t-line"></div>
+  <div class="t-center" style="margin-top:18px">_______________________<br>Firma Cajero</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc, updateDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ====== PEGA AQUÍ LA CONFIGURACIÓN DE TU PROYECTO FIREBASE ====== */
+const firebaseConfig = {
+  apiKey: "AIzaSyA4nCIRD4QlPkBHx6BdZDw8l43gQrRSEAg",
+  authDomain: "variedades-eltoneco.firebaseapp.com",
+  databaseURL: "https://variedades-eltoneco-default-rtdb.firebaseio.com",
+  projectId: "variedades-eltoneco",
+  storageBucket: "variedades-eltoneco.firebasestorage.app",
+  messagingSenderId: "255036484917",
+  appId: "1:255036484917:web:991217c02b6aa7051ef07c"
+};
+/* ================================================================ */
+
+const DOMINIO = "@toneco.app";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app), db = getFirestore(app);
+const auth2 = getAuth(initializeApp(firebaseConfig, "sec")); // para crear usuarios sin cerrar tu sesión
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const numVal = id => parseFloat($(id).value.replace(",", ".")) || 0;
+const f2 = n => (Number(n) || 0).toFixed(2);
+const show = (id, v) => $(id).classList.toggle("hidden", !v);
+const filaT = (l, v, b) => `<div class="t-row${b ? " t-bold" : ""}"><span>${l}</span><span>${v}</span></div>`;
+const hoy = () => new Date().toLocaleDateString("es-VE");
+const toEmail = u => u.trim().toLowerCase().replace(/\s+/g, "") + DOMINIO;
+
+let perfil = null, cajas = [], hist = { cierres: [], cashea: [] }, filtro = "todos";
+
+if (firebaseConfig.apiKey.startsWith("PEGAR")) { show("login", true); $("login-msg").textContent = "Falta pegar la configuración de Firebase en index.html"; }
+
+/* ---------- LOGIN ---------- */
+async function entrar() {
+  const u = $("l-user").value, p = $("l-pass").value;
+  if (!u || !p) return ($("login-msg").textContent = "Escribe usuario y clave.");
+  $("btn-login").disabled = true; $("login-msg").textContent = "";
+  try { await signInWithEmailAndPassword(auth, toEmail(u), p); }
+  catch (e) { $("login-msg").textContent = "Usuario o clave incorrectos."; }
+  $("btn-login").disabled = false;
+}
+$("btn-login").onclick = entrar;
+$("l-pass").onkeydown = e => { if (e.key === "Enter") entrar(); };
+$("btn-salir").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async u => {
+  if (!u) { perfil = null; show("app", false); show("login", true); return; }
+  try {
+    const s = await getDoc(doc(db, "usuarios", u.uid));
+    if (!s.exists() || !s.data().activo) {
+      $("login-msg").textContent = "Este usuario no tiene acceso o está desactivado.";
+      await signOut(auth); return;
+    }
+    perfil = { uid: u.uid, ...s.data() };
+    await cargarCajas();
+    iniciarUI();
+  } catch (e) { $("login-msg").textContent = "Error al cargar tu perfil: " + e.message; await signOut(auth); }
+});
+
+function iniciarUI() {
+  show("login", false); show("app", true); show("main-panel", true); show("admin-panel", false);
+  $("user-info").textContent = perfil.nombre + " (" + (perfil.rol === "admin" ? "administrador" : "cajero") + ")";
+  show("btn-admin", perfil.rol === "admin");
+  $("cajero").value = perfil.nombre;
+  $("l-pass").value = "";
+  pintarCajas(); renderCashea(); renderFalt(); calcular();
+}
+
+/* ---------- CAJAS ---------- */
+async function cargarCajas() {
+  const s = await getDocs(collection(db, "cajas"));
+  cajas = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.nombre.localeCompare(b.nombre, "es", { numeric: true }));
+}
+function pintarCajas() {
+  const sel = $("caja");
+  sel.innerHTML = cajas.map(c => `<option>${esc(c.nombre)}</option>`).join("") || '<option value="">Sin cajas (créalas en Administrar)</option>';
+  if (perfil.rol !== "admin" && perfil.caja) { sel.value = perfil.caja; sel.disabled = true; }
+  else sel.disabled = false;
+}
+$("caja").onchange = () => { renderCashea(); renderFalt(); };
+
+/* ---------- TASA ---------- */
+(async function () {
+  const g = localStorage.getItem("tasa_et"); if (g) $("tasa").value = g;
+  try {
+    const r = await fetch("https://ve.dolarapi.com/v1/dolares/oficial"); const d = await r.json();
+    if (d && d.promedio) { $("tasa").value = parseFloat(d.promedio).toFixed(2); localStorage.setItem("tasa_et", $("tasa").value); $("tasa-info").textContent = "✓ Tasa BCV actualizada"; }
+  } catch (e) { $("tasa-info").textContent = "Ingrese la tasa del día"; }
+  calcular(); renderCashea();
+})();
+$("tasa").addEventListener("input", () => { localStorage.setItem("tasa_et", $("tasa").value); calcular(); renderCashea(); });
+
+/* ---------- PESTAÑAS ---------- */
+$("tab-general").onclick = () => { $("tab-general").classList.add("active"); $("tab-cashea").classList.remove("active"); show("vista-general", true); show("vista-cashea", false); };
+$("tab-cashea").onclick = () => { $("tab-cashea").classList.add("active"); $("tab-general").classList.remove("active"); show("vista-cashea", true); show("vista-general", false); renderCashea(); };
+
+/* ---------- CIERRE GENERAL ---------- */
+function calcular() {
+  const tasa = numVal("tasa"), punto = numVal("punto"), bs = numVal("bs"), transf = numVal("transferencia"), biopago = numVal("biopago"), cashea = numVal("cashea"), zelle = numVal("zelle");
+  const sBs = punto + bs + transf + biopago, sUsd = cashea + zelle;
+  const totalBs = sBs + sUsd * tasa, totalUsd = tasa > 0 ? sBs / tasa + sUsd : sUsd;
+  $("lbl-total-bs").innerText = f2(totalBs); $("lbl-total-usd").innerText = f2(totalUsd);
+  return { tasa, punto, bs, transf, biopago, cashea, zelle, totalBs, totalUsd };
+}
+document.querySelectorAll(".calc").forEach(el => { el.addEventListener("input", calcular); el.addEventListener("focus", () => el.select()); });
+
+$("btn-imprimir").onclick = () => {
+  const d = calcular(), f = renderFalt();
+  const falt = f.lista.length
+    ? '<div class="t-line"></div>' + filaT("FALTANTE Bs:", f2(f.bs) + " Bs") + filaT("FALTANTE $:", "$" + f2(f.usd)) +
+      f.lista.map(it => filaT("  · " + esc(it.tipo), (it.moneda === "US$" ? "$" : "") + f2(it.monto) + (it.moneda === "US$" ? "" : " Bs"))).join("")
+    : "";
+  $("p-titulo").innerText = "CIERRE DE CAJA DIARIO";
+  $("p-fecha").innerText = new Date().toLocaleString("es-VE");
+  $("p-cuerpo").innerHTML = filaT("Caja:", esc($("caja").value)) + filaT("Cajero:", esc($("cajero").value)) + filaT("Tasa:", f2(d.tasa) + " Bs/$") + '<div class="t-line"></div>' +
+    filaT("Punto:", f2(d.punto) + " Bs") + filaT("Efectivo:", f2(d.bs) + " Bs") + filaT("Transf.:", f2(d.transf) + " Bs") + filaT("Biopago:", f2(d.biopago) + " Bs") +
+    filaT("Cashea:", "$" + f2(d.cashea)) + filaT("Zelle:", "$" + f2(d.zelle)) + falt + '<div class="t-line"></div>' +
+    filaT("TOTAL Bs:", f2(d.totalBs) + " Bs", true) + filaT("TOTAL $:", "$" + f2(d.totalUsd), true);
+  window.print();
+};
+
+$("btn-guardar").onclick = async function () {
+  const d = calcular(), caja = $("caja").value, f = renderFalt();
+  if (!caja) return alert("No hay una caja seleccionada.");
+  if (d.tasa <= 0) return alert("Ingrese una tasa válida.");
+  this.disabled = true; this.innerText = "Guardando...";
+  try {
+    await addDoc(collection(db, "cierres"), { fecha: hoy(), caja, cajero: perfil.nombre, uid: perfil.uid, tasa: d.tasa, punto: d.punto, bs: d.bs, transf: d.transf, biopago: d.biopago, cashea: d.cashea, zelle: d.zelle, totalBs: d.totalBs, totalUsd: d.totalUsd, faltantes: f.lista, faltBs: f.bs, faltUsd: f.usd, creado: serverTimestamp() });
+    alert("✅ Cierre general guardado.");
+    document.querySelectorAll(".calc").forEach(el => (el.value = "0")); setF([]); renderFalt(); calcular();
+  } catch (e) { alert("❌ Error: " + e.message); }
+  this.disabled = false; this.innerText = "☁️ Guardar Cierre";
+};
+
+/* ---------- FALTANTES ---------- */
+const TIPOS_FALT = [
+  { t: "Efectivo", m: "Bs" }, { t: "Punto", m: "Bs" }, { t: "Transferencia", m: "Bs" },
+  { t: "Biopago", m: "Bs" }, { t: "Cashea", m: "US$" }, { t: "Zelle", m: "US$" }
+];
+let faltTipo = "Efectivo";
+const monedaFalt = t => (TIPOS_FALT.find(x => x.t === t) || TIPOS_FALT[0]).m;
+const keyF = () => "falt_items_" + $("caja").value.replace(/\s/g, "");
+const getF = () => JSON.parse(localStorage.getItem(keyF()) || "[]");
+const setF = a => localStorage.setItem(keyF(), JSON.stringify(a));
+
+function totalesFalt(lista) {
+  let bs = 0, usd = 0;
+  for (const it of lista) { if (it.moneda === "US$") usd += +it.monto || 0; else bs += +it.monto || 0; }
+  return { bs, usd };
+}
+
+function renderFalt() {
+  if (!perfil) return { lista: [], bs: 0, usd: 0 };
+  const lista = getF();
+  $("falt-tipos").innerHTML = TIPOS_FALT.map(x => `<button type="button" class="filtro-btn${x.t === faltTipo ? " active" : ""}" data-ft="${esc(x.t)}">${esc(x.t)} <small>${x.m}</small></button>`).join("");
+  $("falt-lista").innerHTML = lista.length
+    ? lista.map((it, i) => `<div class="item"><span>${i + 1}. ${esc(it.tipo)} <small>(${esc(it.hora)})</small></span><span><b>${it.moneda === "US$" ? "$" : ""}${f2(it.monto)}${it.moneda === "US$" ? "" : " Bs"}</b> <button type="button" class="btn-del-item" data-fi="${i}">✕</button></span></div>`).join("")
+    : '<div class="vacio">Sin faltantes registrados</div>';
+  const t = totalesFalt(lista);
+  $("lbl-falt-bs").innerText = f2(t.bs); $("lbl-falt-usd").innerText = f2(t.usd);
+  return { lista, bs: t.bs, usd: t.usd };
+}
+
+function addFalt() {
+  const m = Math.abs(parseFloat(($("falt-monto").value || "").replace(",", "."))) || 0;
+  if (m <= 0) return alert("Ingrese un monto válido para el faltante.");
+  const l = getF();
+  l.push({ tipo: faltTipo, moneda: monedaFalt(faltTipo), monto: m, hora: new Date().toLocaleTimeString("es-VE", { hour: "2-digit", minute: "2-digit" }) });
+  setF(l); $("falt-monto").value = ""; $("falt-monto").focus(); renderFalt();
+}
+$("falt-tipos").onclick = e => { const b = e.target.closest("[data-ft]"); if (!b) return; faltTipo = b.dataset.ft; renderFalt(); };
+$("falt-lista").onclick = e => { const b = e.target.closest("[data-fi]"); if (!b) return; const l = getF(); l.splice(+b.dataset.fi, 1); setF(l); renderFalt(); };
+$("btn-add-falt").onclick = addFalt;
+$("falt-monto").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); addFalt(); } };
+
+/* ---------- CASHEA ---------- */
+const keyC = () => "cashea_items_" + $("caja").value.replace(/\s/g, "");
+const getL = () => JSON.parse(localStorage.getItem(keyC()) || "[]");
+const setL = a => localStorage.setItem(keyC(), JSON.stringify(a));
+
+function renderCashea() {
+  if (!perfil) return;
+  const lista = getL(), tasa = numVal("tasa"); let bruto = 0;
+  $("cashea-lista").innerHTML = lista.length ? lista.map((it, i) => { bruto += it.monto; return `<div class="item"><span>${i + 1}. ${it.hora} — <b>$${f2(it.monto)}</b></span><button type="button" class="btn-del-item" data-i="${i}">✕</button></div>`; }).join("")
+    : '<div class="vacio">No hay ventas agregadas en esta caja hoy</div>';
+  const comision = bruto * 0.04, netoUsd = bruto - comision, netoBs = netoUsd * tasa;
+  $("c-bruto").innerText = f2(bruto); $("c-comision").innerText = f2(comision); $("c-neto-usd").innerText = f2(netoUsd); $("c-neto-bs").innerText = f2(netoBs);
+  return { lista, bruto, comision, netoUsd, tasa, netoBs };
+}
+$("cashea-lista").onclick = e => { const b = e.target.closest("[data-i]"); if (!b) return; const l = getL(); l.splice(+b.dataset.i, 1); setL(l); renderCashea(); };
+function addCashea() {
+  const m = parseFloat($("cashea-monto").value.replace(",", ".")) || 0;
+  if (m <= 0) return alert("Ingrese un monto válido en $.");
+  const l = getL(); l.push({ hora: new Date().toLocaleTimeString("es-VE", { hour: "2-digit", minute: "2-digit" }), monto: m });
+  setL(l); $("cashea-monto").value = ""; $("cashea-monto").focus(); renderCashea();
+}
+$("btn-add-cashea").onclick = addCashea;
+$("cashea-monto").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); addCashea(); } };
+
+$("btn-imprimir-cashea").onclick = () => {
+  const c = renderCashea(); if (!c.lista.length) return alert("No hay montos de Cashea para imprimir.");
+  $("p-titulo").innerText = "CIERRE DE CASHEA"; $("p-fecha").innerText = hoy();
+  let h = filaT("Caja:", esc($("caja").value)) + filaT("Tasa:", f2(c.tasa) + " Bs/$") + '<div class="t-line"></div>';
+  c.lista.forEach((it, i) => (h += filaT(i + 1 + ". " + it.hora, "$" + f2(it.monto))));
+  h += '<div class="t-line"></div>' + filaT("Bruto ($):", "$" + f2(c.bruto)) + filaT("Comision (-4%):", "-$" + f2(c.comision)) + filaT("NETO ($):", "$" + f2(c.netoUsd), true) + filaT("NETO (Bs):", f2(c.netoBs) + " Bs", true);
+  $("p-cuerpo").innerHTML = h; window.print();
+};
+$("btn-guardar-cashea").onclick = async function () {
+  const c = renderCashea(), caja = $("caja").value;
+  if (!caja) return alert("No hay una caja seleccionada.");
+  if (!c.lista.length) return alert("Agregue al menos una venta de Cashea.");
+  if (c.tasa <= 0) return alert("Ingrese la tasa del día.");
+  this.disabled = true; this.innerText = "Guardando...";
+  try {
+    await addDoc(collection(db, "cashea"), { fecha: hoy(), caja, cajero: perfil.nombre, uid: perfil.uid, ventas: c.lista.length, bruto: c.bruto, comision: c.comision, neto: c.netoUsd, tasa: c.tasa, netoBs: c.netoBs, items: c.lista, creado: serverTimestamp() });
+    alert("✅ Cierre de Cashea guardado."); setL([]); renderCashea();
+  } catch (e) { alert("❌ Error: " + e.message); }
+  this.disabled = false; this.innerText = "☁️ Guardar Cierre";
+};
+
+/* ---------- ADMINISTRACIÓN ---------- */
+$("btn-admin").onclick = () => { show("main-panel", false); show("admin-panel", true); adminTab("hist"); };
+$("btn-volver").onclick = async () => { await cargarCajas(); pintarCajas(); renderCashea(); show("admin-panel", false); show("main-panel", true); };
+document.querySelectorAll("[data-at]").forEach(b => (b.onclick = () => adminTab(b.dataset.at)));
+function adminTab(t) {
+  document.querySelectorAll("[data-at]").forEach(b => b.classList.toggle("active", b.dataset.at === t));
+  ["hist", "users", "cajas"].forEach(x => show("a-" + x, x === t));
+  if (t === "hist") cargarHist(); if (t === "users") cargarUsuarios(); if (t === "cajas") pintarCajasAdmin();
+}
+
+/* Historial */
+async function cargarHist() {
+  $("tarjetas").innerHTML = '<div class="vacio">Cargando historial...</div>';
+  try {
+    const [a, b] = await Promise.all([getDocs(query(collection(db, "cierres"), orderBy("creado", "desc"))), getDocs(query(collection(db, "cashea"), orderBy("creado", "desc")))]);
+    hist.cierres = a.docs.map(d => ({ id: d.id, ...d.data() })); hist.cashea = b.docs.map(d => ({ id: d.id, ...d.data() }));
+    dibujar();
+  } catch (e) { $("tarjetas").innerHTML = '<div class="vacio" style="color:red">Error al cargar: ' + esc(e.message) + "</div>"; }
+}
+const fFecha = r => (r.creado && r.creado.toDate ? r.creado.toDate().toLocaleString("es-VE") : r.fecha || "");
+function dibujar() {
+  $("filtros").innerHTML = ["todos", ...cajas.map(c => c.nombre), "cashea"].map(f => `<button type="button" class="filtro-btn${f === filtro ? " active" : ""}" data-f="${esc(f)}">${f === "todos" ? "Todos" : f === "cashea" ? "Solo Cashea" : esc(f)}</button>`).join("");
+  const porCaja = filtro !== "todos" && filtro !== "cashea";
+  const ci = filtro === "cashea" ? [] : hist.cierres.filter(r => !porCaja || r.caja === filtro);
+  const ca = hist.cashea.filter(r => !porCaja || r.caja === filtro);
+  $("s-bs").innerText = f2(ci.reduce((s, r) => s + (+r.totalBs || 0), 0)) + " Bs";
+  $("s-usd").innerText = "$" + f2(ci.reduce((s, r) => s + (+r.totalUsd || 0), 0));
+  $("s-cas").innerText = "$" + f2(ca.reduce((s, r) => s + (+r.neto || 0), 0));
+  $("s-falt").innerText = f2(ci.reduce((s, r) => s + (+r.faltBs || 0), 0)) + " Bs | $" + f2(ci.reduce((s, r) => s + (+r.faltUsd || 0), 0));
+  const detalleFalt = r => {
+    const l = r.faltantes || [];
+    if (!l.length) return "";
+    return '<div class="falt-det"><b>Faltante:</b> ' + l.map(it => esc(it.tipo) + " " + (it.moneda === "US$" ? "$" : "") + f2(it.monto) + (it.moneda === "US$" ? "" : " Bs")).join(" · ") + "</div>";
+  };
+  const h1 = ci.map(r => `<div class="card"><div class="card-top"><span class="badge">${esc(r.caja)} • ${esc(r.cajero)}</span><span>📅 ${fFecha(r)} | Tasa: <b>${f2(r.tasa)}</b></span></div>
+    <div class="card-grid"><div><span>Punto:</span><b>${f2(r.punto)} Bs</b></div><div><span>Efectivo:</span><b>${f2(r.bs)} Bs</b></div><div><span>Transf.:</span><b>${f2(r.transf)} Bs</b></div><div><span>Biopago:</span><b>${f2(r.biopago)} Bs</b></div><div><span>Cashea:</span><b>$${f2(r.cashea)}</b></div><div><span>Zelle:</span><b>$${f2(r.zelle)}</b></div><div><span>Faltante:</span><b style="color:#c0392b">${f2(r.faltBs || 0)} Bs | $${f2(r.faltUsd || 0)}</b></div></div>
+    ${detalleFalt(r)}
+    <div class="card-bottom"><div class="card-tot">${f2(r.totalBs)} Bs | $${f2(r.totalUsd)}</div><button type="button" class="btn-red" data-del="cierres" data-id="${r.id}">🗑️ Eliminar</button></div></div>`).join("");
+  const h2 = ca.map(r => `<div class="card cas"><div class="card-top"><span class="badge">CASHEA • ${esc(r.caja)} • ${esc(r.cajero)}</span><span>📅 ${fFecha(r)} | Ventas: <b>${r.ventas}</b></span></div>
+    <div class="card-grid"><div><span>Bruto:</span><b>$${f2(r.bruto)}</b></div><div><span>Comisión 4%:</span><b style="color:#c0392b">-$${f2(r.comision)}</b></div><div><span>Tasa:</span><b>${f2(r.tasa)} Bs</b></div><div><span>Neto Bs:</span><b>${f2(r.netoBs)} Bs</b></div></div>
+    <div class="card-bottom"><div class="card-tot">Neto: $${f2(r.neto)}</div><button type="button" class="btn-red" data-del="cashea" data-id="${r.id}">🗑️ Eliminar</button></div></div>`).join("");
+  $("tarjetas").innerHTML = h1 + h2 || '<div class="vacio">No hay registros en esta categoría.</div>';
+}
+$("filtros").onclick = e => { const b = e.target.closest("[data-f]"); if (b) { filtro = b.dataset.f; dibujar(); } };
+$("tarjetas").onclick = async e => {
+  const b = e.target.closest("[data-del]"); if (!b || !confirm("¿Seguro que deseas eliminar este registro permanentemente?")) return;
+  try { await deleteDoc(doc(db, b.dataset.del, b.dataset.id)); } catch (er) { alert("Error: " + er.message); }
+  cargarHist();
+};
+
+/* Usuarios */
+const opcionesCaja = sel => '<option value="">Todas / sin asignar</option>' + cajas.map(c => `<option${c.nombre === sel ? " selected" : ""}>${esc(c.nombre)}</option>`).join("");
+async function cargarUsuarios() {
+  $("u-caja").innerHTML = opcionesCaja("");
+  const s = await getDocs(collection(db, "usuarios"));
+  $("lista-usuarios").innerHTML = s.docs.map(d => { const u = d.data(), yo = d.id === perfil.uid;
+    return `<div class="card"><div class="card-top"><span class="badge">${esc(u.nombre)}</span><span>usuario: <b>${esc(u.usuario)}</b> • ${u.rol === "admin" ? "admin" : "cajero"}${u.activo ? "" : " • <b style='color:#c0392b'>DESACTIVADO</b>"}</span></div>
+    <div class="card-bottom"><select data-caja-de="${d.id}">${opcionesCaja(u.caja)}</select>${yo ? "<span>(tú)</span>" : `<button type="button" class="btn-red" data-act="${d.id}" data-v="${u.activo ? 0 : 1}">${u.activo ? "Desactivar" : "Activar"}</button>`}</div></div>`; }).join("");
+}
+$("lista-usuarios").onclick = async e => { const b = e.target.closest("[data-act]"); if (!b) return; await updateDoc(doc(db, "usuarios", b.dataset.act), { activo: b.dataset.v === "1" }); cargarUsuarios(); };
+$("lista-usuarios").onchange = async e => { const id = e.target.dataset.cajaDe; if (id) await updateDoc(doc(db, "usuarios", id), { caja: e.target.value }); };
+
+$("btn-crear-user").onclick = async function () {
+  const nombre = $("u-nombre").value.trim(), usuario = $("u-user").value.trim().toLowerCase().replace(/\s+/g, ""), clave = $("u-pass").value, rol = $("u-rol").value, caja = $("u-caja").value;
+  const m = $("u-msg"); m.style.color = "var(--danger)";
+  if (!nombre || !usuario) return (m.textContent = "Escribe el nombre y el usuario.");
+  if (clave.length < 6) return (m.textContent = "La clave debe tener al menos 6 caracteres.");
+  if (rol === "cajero" && !caja) return (m.textContent = "Asigna una caja al cajero.");
+  this.disabled = true; m.textContent = "Creando...";
+  try {
+    const cred = await createUserWithEmailAndPassword(auth2, toEmail(usuario), clave);
+    await setDoc(doc(db, "usuarios", cred.user.uid), { nombre, usuario, rol, caja, activo: true });
+    await signOut(auth2);
+    m.style.color = "var(--success)"; m.textContent = "✅ Usuario creado: " + usuario;
+    ["u-nombre", "u-user", "u-pass"].forEach(i => ($(i).value = "")); cargarUsuarios();
+  } catch (e) { m.textContent = e.code === "auth/email-already-in-use" ? "Ese usuario ya existe." : "Error: " + e.message; }
+  this.disabled = false;
+};
+
+/* Cajas */
+function pintarCajasAdmin() {
+  $("lista-cajas").innerHTML = cajas.map(c => `<div class="card"><div class="card-bottom" style="border:0;margin:0;padding:0"><b>${esc(c.nombre)}</b><button type="button" class="btn-red" data-delcaja="${c.id}">Eliminar</button></div></div>`).join("") || '<div class="vacio">Aún no hay cajas. Agrega la primera.</div>';
+}
+$("btn-add-caja").onclick = async () => {
+  const n = $("n-caja").value.trim(); if (!n) return;
+  if (cajas.some(c => c.nombre.toLowerCase() === n.toLowerCase())) return alert("Esa caja ya existe.");
+  await addDoc(collection(db, "cajas"), { nombre: n }); $("n-caja").value = ""; await cargarCajas(); pintarCajasAdmin();
+};
+$("lista-cajas").onclick = async e => {
+  const b = e.target.closest("[data-delcaja]"); if (!b || !confirm("¿Eliminar esta caja? El historial ya guardado no se borra.")) return;
+  await deleteDoc(doc(db, "cajas", b.dataset.delcaja)); await cargarCajas(); pintarCajasAdmin();
+};
+</script>
+</body>
+</html>
