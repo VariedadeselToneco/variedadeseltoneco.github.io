@@ -744,7 +744,7 @@ function pedResumenTexto() {
 const FB_CFG = { apiKey: 'AIzaSyDeWewWGToWWBaFbIhHq9zQCPjVAD37E5s', authDomain: 'goa-business-a308f.firebaseapp.com', projectId: 'goa-business-a308f', appId: '1:732285068345:web:ae1f23baed5d8cf7f819e8' };
 const LISTA_ID = 'toneco', KP = 'toneco_precios_v1';
 let LP = (() => { try { return JSON.parse(localStorage.getItem(KP)) || null; } catch (e) { return null; } })();
-let FB = null, LP_ERR = '';
+let FB = null, LP_ERR = '', FB_EST = '';
 function cargarJs(src) { return new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const x = document.createElement('script'); x.src = src; x.onload = ok; x.onerror = no; document.head.appendChild(x); }); }
 async function fbIniciar() {
   if (FB) return FB;
@@ -753,7 +753,7 @@ async function fbIniciar() {
     await cargarJs(V + 'firebase-app-compat.js'); await cargarJs(V + 'firebase-auth-compat.js'); await cargarJs(V + 'firebase-firestore-compat.js');
     const app = firebase.initializeApp(FB_CFG, 'equipo'), db = app.firestore();
     try { db.settings({ experimentalForceLongPolling: true }); } catch (e) {}
-    await app.auth().signInAnonymously();
+    await app.auth().signInAnonymously(); FB_EST = 'conectada';
     db.doc('listas/' + LISTA_ID).onSnapshot(sn => {
       if (!sn.exists) { LP_ERR = 'La lista todavía no ha llegado. ' + OWNER.name + ' debe abrir GOA en la PC para publicarla.'; if (view.tab === 'precios') pintarLista(); return; }
       LP_ERR = ''; const d = sn.data();
@@ -774,6 +774,7 @@ function infoLista() {
   if (!LP) return 'Cargando la lista desde GOA…';
   const sin = LP.p.filter(x => !x[3].length && !(S.codPend || {})[x[0]]).length;
   return `${LP.p.length} productos · tasa <b>${LP.tasa.toLocaleString('es-VE')}</b> Bs/$ · actualizada ${new Date(LP.t).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}` +
+    `<div class="mut" style="font-size:11px;margin-top:4px">Nube: ${FB_EST || 'conectando…'} · negocio: ${NEG || 'sin identificar'}</div>` +
     `<div class="chips" style="margin:10px 0 0"><button class="chip ${view.pf !== 'sin' ? 'on' : ''}" data-pf="todos">Todos</button><button class="chip ${view.pf === 'sin' ? 'on' : ''}" data-pf="sin">⚠️ Sin código (${sin})</button></div>`;
 }
 function wPrecios() {
@@ -813,7 +814,7 @@ async function pedirHabladorPrecio(id){
     await db.collection('negocios/' + NEG + '/habladores_pendientes').doc(docId).set(item);
     S.habPend = S.habPend || {}; S.habPend[id] = docId; save(); pintarLista();
     toast('🏷️ Pedido enviado a la PC: ' + item.nombre);
-  } catch (e) { toast('⚠️ No se pudo enviar. Revisa tu internet.'); }
+  } catch (e) { const c = (e && (e.code || e.message)) || 'sin detalle'; toast('⚠️ No se pudo enviar (' + c + ')'); }
 }
 function pintarLista() {
   const el = $('plist'); if (!el) return;
