@@ -17,6 +17,7 @@
 .prow .pp{text-align:right;flex:none}.prow .pp b{display:block;font-size:18px;color:var(--navy)}.prow .pp span{font-size:13px;color:var(--mut)}
 .prow.sin{background:#fffbeb;border-radius:10px;padding-left:8px;padding-right:8px}.sinc{display:inline-block;margin-top:5px;background:var(--gold);color:#1f2937;border:0;border-radius:8px;padding:5px 10px;font-weight:800;font-size:13px}
 .pend{color:#b45309!important;font-weight:700}
+.hbtn{flex:none;background:#eef2f7;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:16px;line-height:1}.hbtn.on{background:var(--gold);border-color:var(--gold)}
 #scanBox{position:relative;width:100%;min-height:240px;border-radius:12px;overflow:hidden;margin:10px 0;background:#000}#scanBox:empty{display:none}#scanBox video{width:100%;display:block;max-height:52vh;object-fit:cover}#scanBox .mira{position:absolute;left:8%;right:8%;top:50%;height:34%;transform:translateY(-50%);border:3px solid #f5b301;border-radius:10px;box-shadow:0 0 0 999px rgba(0,0,0,.35);pointer-events:none}#scanBox .rayo{position:absolute;left:10%;right:10%;top:50%;height:2px;background:#ef4444}
 :root{--navy:#0b1f3a;--navy2:#13305a;--gold:#f5b301;--gold2:#ffd36b;--bg:#f2f4f8;--card:#fff;--txt:#0f172a;--mut:#64748b;--ok:#16a34a;--no:#dc2626;--line:#e2e8f0}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -757,7 +758,8 @@ async function fbIniciar() {
       if (!sn.exists) { LP_ERR = 'La lista todavía no ha llegado. ' + OWNER.name + ' debe abrir GOA en la PC para publicarla.'; if (view.tab === 'precios') pintarLista(); return; }
       LP_ERR = ''; const d = sn.data();
       let p = []; try { p = JSON.parse(d.p || '[]'); } catch (e) {}
-      LP = { p, tasa: +d.tasa || 0, red: d.red !== false, t: d.t && d.t.toMillis ? d.t.toMillis() : Date.now() };
+      NEG = d.neg || NEG || ''; escucharHabladores(db);
+      LP = { p, tasa: +d.tasa || 0, red: d.red !== false, neg: d.neg || '', t: d.t && d.t.toMillis ? d.t.toMillis() : Date.now() };
       try { localStorage.setItem(KP, JSON.stringify(LP)); } catch (e) {}
       // códigos ya aplicados en GOA: se quitan de "pendientes"
       if (S.codPend) { let ch = false; Object.entries(S.codPend).forEach(([id, c]) => { const x = p.find(q => q[0] === id); if (x && x[3].includes(c)) { delete S.codPend[id]; ch = true; } }); if (ch) save(); }
@@ -783,6 +785,36 @@ function wPrecios() {
     <div class="card" id="plist"></div>`;
 }
 function norm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+/* --- Pedir precio para imprimir: entra en la cola que GOA imprime en la PC --- */
+let NEG = (LP && LP.neg) || '', _habUn = false;
+function habDev(){ let id = localStorage.getItem('goa_dispositivo'); if (!id) { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r = new Uint8Array(8); (window.crypto || { getRandomValues: a => a.map(() => Math.random() * 256 | 0) }).getRandomValues(r); id = Array.from(r, b => A[b % A.length]).join(''); localStorage.setItem('goa_dispositivo', id); } return id; }
+function habLimpio(o){ return JSON.parse(JSON.stringify(o, (k, v) => (typeof v === 'number' && !isFinite(v)) ? null : v)); }
+function habEstable(o){ if (Array.isArray(o)) return '[' + o.map(habEstable).join(',') + ']'; if (o && typeof o === 'object') return '{' + Object.keys(o).sort().map(k => JSON.stringify(k) + ':' + habEstable(o[k])).join(',') + '}'; return JSON.stringify(o === undefined ? null : o); }
+function habFnv(t){ let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
+function habMarcar(o){ o.updatedAt = Date.now(); o.updatedBy = habDev(); const c = Object.assign({}, o); delete c.updatedAt; delete c.updatedBy; delete c.syncH; o.syncH = habFnv(habEstable(habLimpio(c))); return o; }
+function escucharHabladores(db){
+  if (_habUn || !NEG) return; _habUn = true;
+  db.collection('negocios/' + NEG + '/habladores_pendientes').onSnapshot(qs => {
+    const mine = {}, yo = habDev();
+    qs.forEach(doc => { const d = doc.data() || {}; if (d.equipo === yo && d.productoId) mine[d.productoId] = doc.id; });
+    S.habPend = mine; save();
+    if (view.tab === 'precios') pintarLista();
+  }, () => {});
+}
+async function pedirHabladorPrecio(id){
+  const x = LP && LP.p.find(q => q[0] === id); if (!x) return;
+  if ((S.habPend || {})[id]) { toast('Ese precio ya está pedido'); return; }
+  if (!NEG) { toast('⏳ La lista aún no trae el negocio. Abre GOA en la PC.'); return; }
+  const quien = view.mode === 'owner' ? OWNER.name : (S.me && TEAM[S.me] ? TEAM[S.me].name : 'Equipo');
+  const docId = 'h' + Date.now().toString(36) + '-' + habDev().slice(0, 4) + Math.floor(Math.random() * 46656).toString(36);
+  const item = habMarcar({ id: docId, productoId: id, nombre: String(x[1] || ''), v: 'base', vNombre: 'Precio normal', pedidoPor: quien, equipo: habDev(), fecha: new Date().toISOString() });
+  try {
+    const db = await fbIniciar();
+    await db.collection('negocios/' + NEG + '/habladores_pendientes').doc(docId).set(item);
+    S.habPend = S.habPend || {}; S.habPend[id] = docId; save(); pintarLista();
+    toast('🏷️ Pedido enviado a la PC: ' + item.nombre);
+  } catch (e) { toast('⚠️ No se pudo enviar. Revisa tu internet.'); }
+}
 function pintarLista() {
   const el = $('plist'); if (!el) return;
   if (!LP) { el.innerHTML = `<div class="empty">${LP_ERR ? '⚠️ ' + esc(LP_ERR) : 'Cargando la lista de precios…'}</div>`; return; }
@@ -794,10 +826,11 @@ function pintarLista() {
   if (exacto) L = [exacto];
   const tot = L.length; L = L.slice(0, 80);
   el.innerHTML = (tot ? L.map(x => {
-    const sin = !x[3].length, pc = pend[x[0]];
+    const sin = !x[3].length, pc = pend[x[0]], hab = (S.habPend || {})[x[0]];
     return `<div class="prow ${sin && !pc ? 'sin' : ''}" ${sin && !pc ? `data-pc="${x[0]}"` : ''}><div class="pn"><b>${esc(x[1])}</b>` +
       (pc ? `<small class="pend">⏳ Código ${esc(pc)} enviado a GOA</small>` : sin ? `<button class="sinc" data-pc="${x[0]}">📷 Sin código · agregar ya</button>` : `<small>${x[3].map(esc).join(' · ')}</small>`) +
-      `</div><div class="pp"><b>$${(+x[2]).toFixed(2)}</b><span>Bs ${bs(x[2])}</span></div></div>`;
+      (hab ? `<small class="pend">🏷️ Precio pedido · la PC lo imprime</small>` : '') +
+      `</div><div class="pp"><b>$${(+x[2]).toFixed(2)}</b><span>Bs ${bs(x[2])}</span></div><button class="hbtn ${hab ? 'on' : ''}" data-hb="${x[0]}" title="Pedir precio para imprimir">🏷️</button></div>`;
   }).join('') : `<div class="empty">No encontré "${esc(view.pq || '')}".<br>Si el cliente lo pidió, anótalo en ✅ Checklist → 📋 Faltantes y pedidos.</div>`) +
     (tot > 80 ? `<p class="mut" style="text-align:center;margin-top:10px">Mostrando 80 de ${tot}. Escribe más para encontrarlo.</p>` : '');
 }
@@ -968,7 +1001,7 @@ function ownerObs() {
    Eventos
    ===================================================================== */
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-pd],[data-pt],[data-pdel],[data-pc],[data-pf],#pedAdd,#pScan,#cScan,#cSave,#cInv,#cCancel,#pedWa,[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend');
+  const b = e.target.closest('[data-pd],[data-pt],[data-pdel],[data-pc],[data-pf],[data-hb],#pedAdd,#pScan,#cScan,#cSave,#cInv,#cCancel,#pedWa,[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend');
   if (!b) return;
   if (b.dataset.pd) { view.pd = b.dataset.pd; render(); return; }
   if (b.dataset.pt) { view.pt = b.dataset.pt; const y = window.scrollY; render(); window.scrollTo(0, y); setTimeout(() => $('pedTxt') && $('pedTxt').focus(), 50); return; }
@@ -977,6 +1010,7 @@ document.addEventListener('click', e => {
   if (b.id === 'pedWa') { openWa(pedResumenTexto()); return; }
   if (b.dataset.pf) { view.pf = b.dataset.pf; pintarLista(); document.querySelectorAll('[data-pf]').forEach(x => x.classList.toggle('on', x.dataset.pf === view.pf)); return; }
   if (b.dataset.pc) { abrirCodigo(b.dataset.pc); return; }
+  if (b.dataset.hb) { pedirHabladorPrecio(b.dataset.hb); return; }
   if (b.id === 'pScan') { escanear(c => { $('pq').value = c; view.pq = c; pintarLista(); }); return; }
   if (b.id === 'cScan') { escanear(c => { $('cIn').value = c; guardarCodigo(); }); return; }
   if (b.id === 'cInv') { $('cIn').value = codigoInventado(); return; }
