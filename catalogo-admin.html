@@ -8,12 +8,12 @@
   :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--mut:#94a3b8;--amber:#fbbf24;--ok:#34d399;--bad:#f87171}
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt);padding:16px 14px 60px}
-  .wrap{max-width:820px;margin:0 auto}
+  .wrap{max-width:900px;margin:0 auto}
   h1{font-size:19px;margin:0 0 4px}
   .sub{color:var(--mut);font-size:13px;margin:0 0 18px;line-height:1.5}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
   input,select,button{font-family:inherit}
-  input[type=password],input[type=text]{width:100%;background:#0b1220;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:12px;font-size:15px}
+  input[type=password]{width:100%;background:#0b1220;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:12px;font-size:15px}
   button{border:0;border-radius:10px;padding:12px 16px;font-size:14px;font-weight:800;cursor:pointer}
   .pri{background:var(--amber);color:#14213a;width:100%}
   .gh{background:transparent;color:var(--txt);border:1px solid var(--line)}
@@ -22,25 +22,25 @@
   .kpi b{display:block;font-size:20px;color:var(--amber)}
   .kpi span{font-size:11px;color:var(--mut)}
   table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
-  th{color:var(--mut);font-size:11px;text-transform:uppercase}
-  .tbl-wrap{max-height:320px;overflow:auto;margin-top:10px}
-  .q{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
-  .q .n{flex:1;min-width:160px;font-size:13px}
-  .q select{padding:8px;border-radius:8px;background:#0b1220;color:var(--txt);border:1px solid var(--line);font-size:13px}
+  th,td{padding:6px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--mut);font-size:11px;text-transform:uppercase;position:sticky;top:0;background:var(--card)}
+  .tbl-wrap{max-height:420px;overflow:auto;margin-top:10px}
+  td select{width:100%;padding:6px;border-radius:7px;background:#0b1220;color:var(--txt);border:1px solid var(--line);font-size:12px}
+  td select.pend{border-color:var(--bad);color:var(--bad)}
   .mut{color:var(--mut)}
   .err{color:var(--bad);font-size:13px;margin-top:10px}
   .ok{color:var(--ok);font-size:13px;margin-top:10px}
   .hide{display:none}
   .foot{font-size:11px;color:var(--mut);margin-top:16px;line-height:1.5}
+  .filtros{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .filtros button{font-size:12px;padding:8px 12px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>📦 Importar inventario</h1>
-  <p class="sub">Sube el Excel del inventario. Los productos entran solos a su categoría; si alguna no se reconoce, te pregunto. <b>Lo que no venga en el archivo sale del catálogo.</b></p>
+  <p class="sub">Sube el Excel del inventario. Cada producto entra solo a su categoría; los que no reconozca quedan marcados en rojo para que los ubiques. <b>Lo que no venga en el archivo sale del catálogo.</b></p>
 
-  <!-- clave -->
   <div class="card" id="gate">
     <label style="font-size:12px;font-weight:700;display:block;margin-bottom:6px">Clave de administrador</label>
     <input type="password" id="clave" placeholder="Clave" autocomplete="off">
@@ -49,7 +49,6 @@
     <div class="err hide" id="gateErr">Clave incorrecta.</div>
   </div>
 
-  <!-- app -->
   <div id="app" class="hide">
     <div class="card">
       <label style="font-size:12px;font-weight:700;display:block;margin-bottom:8px">Archivo del inventario (.xlsx, .xls, .csv)</label>
@@ -66,15 +65,12 @@
           <div class="kpi"><b id="kOut">0</b><span>salen</span></div>
           <div class="kpi"><b id="kAsk">0</b><span>sin categoría</span></div>
         </div>
-        <div class="tbl-wrap"><table><thead><tr><th>Producto</th><th>Precio</th><th>Categoría</th></tr></thead><tbody id="tbody"></tbody></table></div>
-      </div>
-
-      <div class="card hide" id="boxAsk">
-        <h2 style="font-size:15px;margin:0 0 4px">❓ ¿A qué categoría va?</h2>
-        <p class="sub" style="margin-bottom:6px">Solo para los productos que no traen categoría y no conozco.</p>
-        <div id="preguntas"></div>
-        <div style="height:10px"></div>
-        <button class="gh" id="btnTodos">Poner a todos en VARIEDADES Y FERRETERÍA</button>
+        <p class="sub" style="margin:0">Puedes corregir cualquier categoría en la lista.</p>
+        <div class="filtros">
+          <button class="gh" id="btnSoloPend">Ver solo los que faltan</button>
+          <button class="gh" id="btnTodos">Poner VARIEDADES Y FERRETERÍA a los que faltan</button>
+        </div>
+        <div class="tbl-wrap"><table><thead><tr><th>Producto</th><th style="width:70px">Precio</th><th style="width:190px">Categoría</th></tr></thead><tbody id="tbody"></tbody></table></div>
       </div>
 
       <div class="card">
@@ -96,7 +92,8 @@
 <script>
 /* ============================================================
    Catálogo · importación de inventario
-   Reutiliza el lector de .xlsx de GOA Business (sin librerías).
+   Lector de .xlsx igual que GOA Business (sin librerías).
+   Clasificador automático por nombre de producto.
    Guarda el resultado en Firestore: catalogo/toneco
    ============================================================ */
 
@@ -108,16 +105,109 @@ var CFG = {
   messagingSenderId: "732285068345",
   appId: "1:732285068345:web:ae1f23baed5d8cf7f819e8"
 };
-var CATS = ['PRECIO AL MAYOR','VÍVERES','GOLOSINAS Y TOÑECURAS','BEBIDAS','HIGIENE PERSONAL Y HOGAR','CHARCUTERÍA','COMIDA PARA ANIMALES','VARIEDADES Y FERRETERÍA'];
+var CATS = ['VÍVERES','GOLOSINAS Y TOÑECURAS','BEBIDAS','HIGIENE PERSONAL Y HOGAR','CHARCUTERÍA','COMIDA PARA ANIMALES','VARIEDADES Y FERRETERÍA','PRECIO AL MAYOR'];
 var CLAVE = '1985';
 var DOC = 'catalogo/toneco';
 var db = null;
 
-var filas = [], producto = [], memorias = {}, preguntas = [], actuales = [];
+/* ---------- diccionario de categorías por palabra ---------- */
+var CLAVES = [
+  /* charcutería y refrigerados */
+  ['queso','CHARCUTERÍA'],['jamon','CHARCUTERÍA'],['mortadela','CHARCUTERÍA'],['salchicha','CHARCUTERÍA'],
+  ['chorizo','CHARCUTERÍA'],['tocineta','CHARCUTERÍA'],['salami','CHARCUTERÍA'],['yogurt','CHARCUTERÍA'],
+  ['yogur','CHARCUTERÍA'],['nata','CHARCUTERÍA'],['crema de leche','CHARCUTERÍA'],['mantequilla','CHARCUTERÍA'],
+  ['margarina','CHARCUTERÍA'],['carne','CHARCUTERÍA'],['pollo','CHARCUTERÍA'],['pescado','CHARCUTERÍA'],
+  ['lacteo','CHARCUTERÍA'],['pastel de carne','CHARCUTERÍA'],['salami','CHARCUTERÍA'],
+  /* bebidas */
+  ['refresco','BEBIDAS'],['malta','BEBIDAS'],['agua','BEBIDAS'],['jugo','BEBIDAS'],['nectar','BEBIDAS'],
+  ['soda','BEBIDAS'],['cola','BEBIDAS'],['pepsi','BEBIDAS'],['coca','BEBIDAS'],['fanta','BEBIDAS'],
+  ['sprite','BEBIDAS'],['hit','BEBIDAS'],['maltin','BEBIDAS'],['cerveza','BEBIDAS'],['vino','BEBIDAS'],
+  ['ron','BEBIDAS'],['whisky','BEBIDAS'],['te','BEBIDAS'],['energetica','BEBIDAS'],['gatorade','BEBIDAS'],
+  ['powerade','BEBIDAS'],['zumo','BEBIDAS'],['frescolita','BEBIDAS'],['7up','BEBIDAS'],['chinotto','BEBIDAS'],
+  /* golosinas */
+  ['golosina','GOLOSINAS Y TOÑECURAS'],['caramelo','GOLOSINAS Y TOÑECURAS'],['dulce','GOLOSINAS Y TOÑECURAS'],
+  ['chocolate','GOLOSINAS Y TOÑECURAS'],['chicle','GOLOSINAS Y TOÑECURAS'],['galleta','GOLOSINAS Y TOÑECURAS'],
+  ['wafer','GOLOSINAS Y TOÑECURAS'],['chupeta','GOLOSINAS Y TOÑECURAS'],['paleta','GOLOSINAS Y TOÑECURAS'],
+  ['bombon','GOLOSINAS Y TOÑECURAS'],['confite','GOLOSINAS Y TOÑECURAS'],['malvavisco','GOLOSINAS Y TOÑECURAS'],
+  ['marshmallow','GOLOSINAS Y TOÑECURAS'],['torta','GOLOSINAS Y TOÑECURAS'],['ponque','GOLOSINAS Y TOÑECURAS'],
+  ['pastel','GOLOSINAS Y TOÑECURAS'],['gelatina','GOLOSINAS Y TOÑECURAS'],['flan','GOLOSINAS Y TOÑECURAS'],
+  ['pudin','GOLOSINAS Y TOÑECURAS'],['helado','GOLOSINAS Y TOÑECURAS'],['dona','GOLOSINAS Y TOÑECURAS'],
+  ['brownie','GOLOSINAS Y TOÑECURAS'],['snack','GOLOSINAS Y TOÑECURAS'],['papas fritas','GOLOSINAS Y TOÑECURAS'],
+  ['dorito','GOLOSINAS Y TOÑECURAS'],['cheeto','GOLOSINAS Y TOÑECURAS'],['mani','GOLOSINAS Y TOÑECURAS'],
+  ['pipa','GOLOSINAS Y TOÑECURAS'],['oblea','GOLOSINAS Y TOÑECURAS'],['barquilla','GOLOSINAS Y TOÑECURAS'],
+  ['cocosette','GOLOSINAS Y TOÑECURAS'],['susy','GOLOSINAS Y TOÑECURAS'],['savoy','GOLOSINAS Y TOÑECURAS'],
+  ['kinder','GOLOSINAS Y TOÑECURAS'],['trululu','GOLOSINAS Y TOÑECURAS'],['gomita','GOLOSINAS Y TOÑECURAS'],
+  ['frusty','GOLOSINAS Y TOÑECURAS'],['fruty','GOLOSINAS Y TOÑECURAS'],
+  /* higiene y hogar */
+  ['jabon','HIGIENE PERSONAL Y HOGAR'],['detergente','HIGIENE PERSONAL Y HOGAR'],['cloro','HIGIENE PERSONAL Y HOGAR'],
+  ['desinfectante','HIGIENE PERSONAL Y HOGAR'],['suavizante','HIGIENE PERSONAL Y HOGAR'],
+  ['papel higienico','HIGIENE PERSONAL Y HOGAR'],['papel toalla','HIGIENE PERSONAL Y HOGAR'],
+  ['servilleta','HIGIENE PERSONAL Y HOGAR'],['pasta dental','HIGIENE PERSONAL Y HOGAR'],
+  ['crema dental','HIGIENE PERSONAL Y HOGAR'],['cepillo','HIGIENE PERSONAL Y HOGAR'],
+  ['shampoo','HIGIENE PERSONAL Y HOGAR'],['champu','HIGIENE PERSONAL Y HOGAR'],
+  ['acondicionador','HIGIENE PERSONAL Y HOGAR'],['desodorante','HIGIENE PERSONAL Y HOGAR'],
+  ['panal','HIGIENE PERSONAL Y HOGAR'],['pano','HIGIENE PERSONAL Y HOGAR'],
+  ['afeitadora','HIGIENE PERSONAL Y HOGAR'],['rastrillo','HIGIENE PERSONAL Y HOGAR'],
+  ['limpiador','HIGIENE PERSONAL Y HOGAR'],['esponja','HIGIENE PERSONAL Y HOGAR'],
+  ['escoba','HIGIENE PERSONAL Y HOGAR'],['trapeador','HIGIENE PERSONAL Y HOGAR'],
+  ['bolsa de basura','HIGIENE PERSONAL Y HOGAR'],['insecticida','HIGIENE PERSONAL Y HOGAR'],
+  ['toallita','HIGIENE PERSONAL Y HOGAR'],['algodon','HIGIENE PERSONAL Y HOGAR'],
+  ['alcohol','HIGIENE PERSONAL Y HOGAR'],['curita','HIGIENE PERSONAL Y HOGAR'],
+  ['gasa','HIGIENE PERSONAL Y HOGAR'],['venda','HIGIENE PERSONAL Y HOGAR'],
+  ['protector solar','HIGIENE PERSONAL Y HOGAR'],['colonia','HIGIENE PERSONAL Y HOGAR'],
+  ['perfume','HIGIENE PERSONAL Y HOGAR'],['talco','HIGIENE PERSONAL Y HOGAR'],
+  ['ambientador','HIGIENE PERSONAL Y HOGAR'],['cera','HIGIENE PERSONAL Y HOGAR'],
+  ['guante','HIGIENE PERSONAL Y HOGAR'],['franela','HIGIENE PERSONAL Y HOGAR'],
+  ['gillet','HIGIENE PERSONAL Y HOGAR'],['colgate','HIGIENE PERSONAL Y HOGAR'],
+  ['pantene','HIGIENE PERSONAL Y HOGAR'],['sedal','HIGIENE PERSONAL Y HOGAR'],
+  ['dove','HIGIENE PERSONAL Y HOGAR'],['rexona','HIGIENE PERSONAL Y HOGAR'],
+  ['ariel','HIGIENE PERSONAL Y HOGAR'],['mistolin','HIGIENE PERSONAL Y HOGAR'],
+  /* animales */
+  ['perro','COMIDA PARA ANIMALES'],['gato','COMIDA PARA ANIMALES'],['mascota','COMIDA PARA ANIMALES'],
+  ['dogourmet','COMIDA PARA ANIMALES'],['whiska','COMIDA PARA ANIMALES'],['pedigree','COMIDA PARA ANIMALES'],
+  ['proplan','COMIDA PARA ANIMALES'],['purina','COMIDA PARA ANIMALES'],['concentrado','COMIDA PARA ANIMALES'],
+  ['perrarina','COMIDA PARA ANIMALES'],['gatarina','COMIDA PARA ANIMALES'],['ave','COMIDA PARA ANIMALES'],
+  ['pajaro','COMIDA PARA ANIMALES'],['conejo','COMIDA PARA ANIMALES'],
+  /* variedades y ferretería */
+  ['bombillo','VARIEDADES Y FERRETERÍA'],['tornillo','VARIEDADES Y FERRETERÍA'],['clavo','VARIEDADES Y FERRETERÍA'],
+  ['cable','VARIEDADES Y FERRETERÍA'],['pila','VARIEDADES Y FERRETERÍA'],['bateria','VARIEDADES Y FERRETERÍA'],
+  ['linterna','VARIEDADES Y FERRETERÍA'],['candado','VARIEDADES Y FERRETERÍA'],['llave','VARIEDADES Y FERRETERÍA'],
+  ['martillo','VARIEDADES Y FERRETERÍA'],['destornillador','VARIEDADES Y FERRETERÍA'],['cinta','VARIEDADES Y FERRETERÍA'],
+  ['pegamento','VARIEDADES Y FERRETERÍA'],['silicon','VARIEDADES Y FERRETERÍA'],['brocha','VARIEDADES Y FERRETERÍA'],
+  ['pintura','VARIEDADES Y FERRETERÍA'],['tubo','VARIEDADES Y FERRETERÍA'],['manguera','VARIEDADES Y FERRETERÍA'],
+  ['adaptador','VARIEDADES Y FERRETERÍA'],['enchufe','VARIEDADES Y FERRETERÍA'],['extension','VARIEDADES Y FERRETERÍA'],
+  ['ventilador','VARIEDADES Y FERRETERÍA'],['cubeta','VARIEDADES Y FERRETERÍA'],['pala','VARIEDADES Y FERRETERÍA'],
+  ['jardin','VARIEDADES Y FERRETERÍA'],['maceta','VARIEDADES Y FERRETERÍA'],['abono','VARIEDADES Y FERRETERÍA'],
+  ['juguete','VARIEDADES Y FERRETERÍA'],['cuaderno','VARIEDADES Y FERRETERÍA'],['lapiz','VARIEDADES Y FERRETERÍA'],
+  ['boligrafo','VARIEDADES Y FERRETERÍA'],['sobre','VARIEDADES Y FERRETERÍA'],['tarjeta','VARIEDADES Y FERRETERÍA'],
+  ['globo','VARIEDADES Y FERRETERÍA'],['vela','VARIEDADES Y FERRETERÍA'],['fosforo','VARIEDADES Y FERRETERÍA'],
+  ['encendedor','VARIEDADES Y FERRETERÍA'],['cigarrillo','VARIEDADES Y FERRETERÍA'],['tabaco','VARIEDADES Y FERRETERÍA'],
+  ['hielo','VARIEDADES Y FERRETERÍA'],['carbon','VARIEDADES Y FERRETERÍA'],['paraguas','VARIEDADES Y FERRETERÍA'],
+  ['cobija','VARIEDADES Y FERRETERÍA'],['toalla','VARIEDADES Y FERRETERÍA'],['cuerda','VARIEDADES Y FERRETERÍA'],
+  ['alambre','VARIEDADES Y FERRETERÍA'],['serrucho','VARIEDADES Y FERRETERÍA'],['metro','VARIEDADES Y FERRETERÍA'],
+  ['tachuela','VARIEDADES Y FERRETERÍA'],['teipe','VARIEDADES Y FERRETERÍA'],
+  /* víveres (al final: es el grupo más grande) */
+  ['harina','VÍVERES'],['arroz','VÍVERES'],['pasta','VÍVERES'],['espagueti','VÍVERES'],['fideo','VÍVERES'],
+  ['aceite','VÍVERES'],['azucar','VÍVERES'],['sal','VÍVERES'],['cafe','VÍVERES'],['leche','VÍVERES'],
+  ['atun','VÍVERES'],['sardina','VÍVERES'],['caraota','VÍVERES'],['frijol','VÍVERES'],['lenteja','VÍVERES'],
+  ['arveja','VÍVERES'],['garbanzo','VÍVERES'],['maiz','VÍVERES'],['avena','VÍVERES'],['fororo','VÍVERES'],
+  ['mayonesa','VÍVERES'],['salsa','VÍVERES'],['ketchup','VÍVERES'],['vinagre','VÍVERES'],
+  ['condimento','VÍVERES'],['caldo','VÍVERES'],['pure','VÍVERES'],['yuca','VÍVERES'],['platano','VÍVERES'],
+  ['papa','VÍVERES'],['cebolla','VÍVERES'],['ajo','VÍVERES'],['tomate','VÍVERES'],['huevo','VÍVERES'],
+  ['pan','VÍVERES'],['cereal','VÍVERES'],['granola','VÍVERES'],['miel','VÍVERES'],['mermelada','VÍVERES'],
+  ['aceituna','VÍVERES'],['alcaparra','VÍVERES'],['trigo','VÍVERES'],['maicena','VÍVERES'],
+  ['levadura','VÍVERES'],['sopa','VÍVERES'],['comino','VÍVERES'],['oregano','VÍVERES'],
+  ['pimienta','VÍVERES'],['canela','VÍVERES'],['vainilla','VÍVERES'],['endulzante','VÍVERES'],
+  ['panela','VÍVERES'],['semola','VÍVERES'],['quinoa','VÍVERES'],['ajonjoli','VÍVERES'],
+  ['pasa','VÍVERES'],['laila','VÍVERES']
+];
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-function norm(s){ return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim(); }
+function norm(s){ return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9ñ]+/g,' ').replace(/\s+/g,' ').trim(); }
+function sing(s){
+  return String(s||'').split(' ').map(function(w){ return w.length>3 ? w.replace(/es$/,'').replace(/s$/,'') : w; }).join(' ');
+}
 function num(s){
   s=String(s==null?'':s).replace(/[^\d.,-]/g,''); if(!s) return NaN;
   var lc=s.lastIndexOf(','), ld=s.lastIndexOf('.');
@@ -126,6 +216,18 @@ function num(s){
   return parseFloat(s);
 }
 function hid(t){ var h=0; for(var i=0;i<t.length;i++) h=(h*31+t.charCodeAt(i))|0; return 100000+(Math.abs(h)%900000); }
+
+/* ---------- clasificador por nombre ---------- */
+var CLAVES_S = CLAVES.map(function(x){ return [sing(norm(x[0])), x[1]]; });
+function catPorNombre(nombre){
+  var t = ' ' + sing(norm(nombre)) + ' ';
+  var mejor = '', largo = 0;
+  for (var i=0;i<CLAVES_S.length;i++){
+    var kw = CLAVES_S[i][0];
+    if (kw.length > largo && t.indexOf(' ' + kw + ' ') >= 0){ mejor = CLAVES_S[i][1]; largo = kw.length; }
+  }
+  return mejor;
+}
 
 /* ---------- lector de Excel (igual que GOA Business) ---------- */
 async function unzip(buf){
@@ -207,42 +309,44 @@ function detectar(filas){
   return null;
 }
 
-/* ---------- categorías ---------- */
+/* ---------- categorías escritas en el archivo ---------- */
 var SINON = {
-  'viveres':'VÍVERES','viveres y granos':'VÍVERES','alimentos':'VÍVERES','comida':'VÍVERES',
-  'golosinas':'GOLOSINAS Y TOÑECURAS','golosinas y tonecuras':'GOLOSINAS Y TOÑECURAS','tonecuras':'GOLOSINAS Y TOÑECURAS','dulces':'GOLOSINAS Y TOÑECURAS','confiteria':'GOLOSINAS Y TOÑECURAS',
-  'bebidas':'BEBIDAS','refrescos':'BEBIDAS','licores':'BEBIDAS','jugos':'BEBIDAS',
-  'higiene':'HIGIENE PERSONAL Y HOGAR','higiene personal':'HIGIENE PERSONAL Y HOGAR','aseo':'HIGIENE PERSONAL Y HOGAR','limpieza':'HIGIENE PERSONAL Y HOGAR','hogar':'HIGIENE PERSONAL Y HOGAR','higiene personal y hogar':'HIGIENE PERSONAL Y HOGAR',
-  'charcuteria':'CHARCUTERÍA','charcuteria y lacteos':'CHARCUTERÍA','lacteos':'CHARCUTERÍA','embutidos':'CHARCUTERÍA','quesos':'CHARCUTERÍA',
-  'animales':'COMIDA PARA ANIMALES','comida para animales':'COMIDA PARA ANIMALES','mascotas':'COMIDA PARA ANIMALES','perros':'COMIDA PARA ANIMALES',
-  'variedades':'VARIEDADES Y FERRETERÍA','ferreteria':'VARIEDADES Y FERRETERÍA','variedades y ferreteria':'VARIEDADES Y FERRETERÍA','ferreteria y variedades':'VARIEDADES Y FERRETERÍA',
+  'viveres':'VÍVERES','viveres y grano':'VÍVERES','alimento':'VÍVERES','comida':'VÍVERES',
+  'golosina':'GOLOSINAS Y TOÑECURAS','golosina y tonecura':'GOLOSINAS Y TOÑECURAS','tonecura':'GOLOSINAS Y TOÑECURAS','dulce':'GOLOSINAS Y TOÑECURAS','confiteria':'GOLOSINAS Y TOÑECURAS',
+  'bebida':'BEBIDAS','refresco':'BEBIDAS','licore':'BEBIDAS','jugo':'BEBIDAS',
+  'higiene':'HIGIENE PERSONAL Y HOGAR','higiene personal':'HIGIENE PERSONAL Y HOGAR','aseo':'HIGIENE PERSONAL Y HOGAR','limpieza':'HIGIENE PERSONAL Y HOGAR','hogar':'HIGIENE PERSONAL Y HOGAR',
+  'charcuteria':'CHARCUTERÍA','charcuteria y lacteo':'CHARCUTERÍA','lacteo':'CHARCUTERÍA','embutido':'CHARCUTERÍA','queso':'CHARCUTERÍA',
+  'animale':'COMIDA PARA ANIMALES','comida para animale':'COMIDA PARA ANIMALES','mascota':'COMIDA PARA ANIMALES',
+  'variedade':'VARIEDADES Y FERRETERÍA','ferreteria':'VARIEDADES Y FERRETERÍA','variedade y ferreteria':'VARIEDADES Y FERRETERÍA',
   'precio al mayor':'PRECIO AL MAYOR','mayor':'PRECIO AL MAYOR'
 };
 function aCategoria(txt){
-  var k=norm(txt); if(!k) return '';
-  for(var i=0;i<CATS.length;i++){ if(norm(CATS[i])===k) return CATS[i]; }
+  var k = sing(norm(txt)); if(!k) return '';
+  for(var i=0;i<CATS.length;i++){ if(sing(norm(CATS[i]))===k) return CATS[i]; }
   if(SINON[k]) return SINON[k];
-  for(var j=0;j<CATS.length;j++){ if(k.indexOf(norm(CATS[j]))>=0) return CATS[j]; }
+  for(var j=0;j<CATS.length;j++){ if(k.indexOf(sing(norm(CATS[j])))>=0) return CATS[j]; }
   return '';
 }
 
 /* ---------- proceso ---------- */
+var producto = [], memorias = {}, actuales = [], soloPend = false;
+
 function procesar(f){
   var c=detectar(f); if(!c) throw new Error('columnas');
-  var map={}, out=[], vistos={};
-  memorias = memorias || {};
+  var out=[], vistos={};
   for(var i=c.h+1;i<f.length;i++){
     var r=f[i]||[];
     var nombre=String(r[c.nom]==null?'':r[c.nom]).trim();
     var precio=num(r[c.pre]);
     if(!nombre || !(precio>0)) continue;
     if(c.exi>=0){ var ex=num(r[c.exi]); if(!isNaN(ex) && !(ex>0)) continue; }
-    var k=norm(nombre);
+    var k=sing(norm(nombre));
     if(vistos[k]) continue;
     vistos[k]=1;
     var cat='';
     if(c.cat>=0) cat=aCategoria(r[c.cat]);
     if(!cat && memorias[k]) cat=memorias[k];
+    if(!cat) cat=catPorNombre(nombre);
     out.push({ id: hid(k), cat: cat, name: nombre, price: Math.round(precio*100)/100, _k:k });
   }
   if(!out.length) throw new Error('vacio');
@@ -250,42 +354,43 @@ function procesar(f){
 }
 
 function pintar(){
-  var sinCat = producto.filter(function(p){ return !p.cat; });
+  var pend = producto.filter(function(p){ return !p.cat; });
   $('kTot').textContent = producto.length;
   $('kNew').textContent = producto.filter(function(p){ return !actuales.some(function(a){ return a.id===p.id; }); }).length;
   var ids={}; producto.forEach(function(p){ ids[p.id]=1; });
   $('kOut').textContent = actuales.filter(function(a){ return !ids[a.id]; }).length;
-  $('kAsk').textContent = sinCat.length;
+  $('kAsk').textContent = pend.length;
 
-  $('tbody').innerHTML = producto.slice(0,200).map(function(p){
-    return '<tr><td>'+esc(p.name)+'</td><td>$'+(+p.price).toFixed(2)+'</td><td>'+(p.cat?esc(p.cat):'<span class="mut">— ¿?</span>')+'</td></tr>';
-  }).join('') + (producto.length>200 ? '<tr><td colspan="3" class="mut">y '+(producto.length-200)+' más…</td></tr>' : '');
+  var lista = soloPend ? pend : producto;
+  $('tbody').innerHTML = lista.slice(0,500).map(function(p){
+    var i = producto.indexOf(p);
+    return '<tr><td>'+esc(p.name)+'</td><td>$'+(+p.price).toFixed(2)+'</td><td>'
+      + '<select data-i="'+i+'" class="'+(p.cat?'':'pend')+'">'
+      + '<option value="">— elegir —</option>'
+      + CATS.map(function(c){ return '<option value="'+esc(c)+'"'+(c===p.cat?' selected':'')+'>'+esc(c)+'</option>'; }).join('')
+      + '</select></td></tr>';
+  }).join('') + (lista.length>500 ? '<tr><td colspan="3" class="mut">y '+(lista.length-500)+' más…</td></tr>' : '');
 
-  preguntas = sinCat;
-  if(sinCat.length){
-    $('boxAsk').classList.remove('hide');
-    $('preguntas').innerHTML = sinCat.map(function(p,i){
-      return '<div class="q"><span class="n">'+esc(p.name)+'</span><select data-i="'+i+'"><option value="">— elegir —</option>'+
-        CATS.map(function(c){ return '<option value="'+esc(c)+'">'+esc(c)+'</option>'; }).join('')+'</select></div>';
-    }).join('');
-    Array.prototype.forEach.call($('preguntas').querySelectorAll('select'), function(sel){
-      sel.onchange = function(){
-        var p = preguntas[+sel.getAttribute('data-i')];
-        if(p && sel.value){ p.cat = sel.value; memorias[p._k] = sel.value; pintar(); }
-      };
-    });
-  } else {
-    $('boxAsk').classList.add('hide');
-    $('preguntas').innerHTML='';
-  }
-  $('btnGuardar').disabled = sinCat.length>0;
-  $('btnGuardar').style.opacity = sinCat.length>0 ? .5 : 1;
+  Array.prototype.forEach.call($('tbody').querySelectorAll('select'), function(sel){
+    sel.onchange = function(){
+      var p = producto[+sel.getAttribute('data-i')];
+      if(!p) return;
+      p.cat = sel.value;
+      if(sel.value) memorias[p._k] = sel.value;
+      var y = sel.closest('tr');
+      pintar();
+    };
+  });
+
+  $('btnGuardar').disabled = pend.length>0;
+  $('btnGuardar').style.opacity = pend.length>0 ? .5 : 1;
+  $('btnGuardar').textContent = pend.length>0 ? ('💾 Faltan '+pend.length+' por categoría') : '💾 Guardar en el catálogo';
 }
 
 /* ---------- nube ---------- */
 async function nube(){
   if(db) return db;
-  firebase.initializeApp(CFG);
+  if(!firebase.apps.length) firebase.initializeApp(CFG);
   db = firebase.firestore();
   try{ db.settings({experimentalForceLongPolling:true}); }catch(e){}
   await firebase.auth().signInAnonymously();
@@ -298,7 +403,7 @@ async function cargarActual(){
     if(sn.exists){
       var x = sn.data()||{};
       var arr=[]; try{ arr=JSON.parse(x.p||'[]'); }catch(e){}
-      actuales = arr;
+      actuales = Array.isArray(arr) ? arr : [];
       memorias = x.mem || {};
     }
   }catch(e){ actuales = []; }
@@ -341,7 +446,8 @@ $('file').onchange = async function(ev){
       tabla = /<t[dr][\s>]/i.test(txt) ? tablaHtml(txt) : tablaCsv(txt);
     }
     producto = procesar(tabla);
-    $('estado').textContent = f.name+' · '+producto.length+' productos leídos.';
+    var pend = producto.filter(function(p){ return !p.cat; }).length;
+    $('estado').textContent = f.name+' · '+producto.length+' productos · '+(producto.length-pend)+' con categoría, '+pend+' por ubicar.';
     $('preview').classList.remove('hide');
     pintar();
   }catch(e){
@@ -355,8 +461,13 @@ $('file').onchange = async function(ev){
   }
 };
 
+$('btnSoloPend').onclick = function(){
+  soloPend = !soloPend;
+  $('btnSoloPend').textContent = soloPend ? 'Ver todos' : 'Ver solo los que faltan';
+  pintar();
+};
 $('btnTodos').onclick = function(){
-  preguntas.forEach(function(p){ p.cat='VARIEDADES Y FERRETERÍA'; memorias[p._k]=p.cat; });
+  producto.forEach(function(p){ if(!p.cat){ p.cat='VARIEDADES Y FERRETERÍA'; memorias[p._k]=p.cat; } });
   pintar();
 };
 $('btnGuardar').onclick = guardar;
