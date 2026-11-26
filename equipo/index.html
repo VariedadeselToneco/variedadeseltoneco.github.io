@@ -806,6 +806,7 @@ async function colaHabladoresPush(){
   if (view.tab === 'precios') pintarLista();
 }
 window.addEventListener('online', () => { if (FB) colaHabladoresPush().catch(() => {}); });
+setInterval(() => { try { if (colaHabladores().length && FB) colaHabladoresPush().catch(() => {}); } catch (e) {} }, 20000);
 function escucharHabladores(db){
   if (_habUn || !NEG) return; _habUn = true;
   db.collection('negocios/' + NEG + '/habladores_pendientes').onSnapshot(qs => {
