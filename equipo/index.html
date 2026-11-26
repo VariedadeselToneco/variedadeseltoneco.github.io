@@ -520,7 +520,7 @@ function picker() {
   return `<div class="card"><h2>¿Quién eres?</h2><p class="mut">Escoge tu nombre. Este teléfono lo recordará.</p>
     <div class="pick">${Object.entries(TEAM).map(([k, t]) =>
       `<button data-me="${k}"><div class="av" style="background:${t.color}">${t.name[0]}</div><div><b>${esc(t.name)}</b><span>${esc(t.puesto)} · ${esc(t.horario)}</span></div></button>`).join('')}
-    <button data-owner="1"><div class="av" style="background:var(--navy)">🔒</div><div><b>${esc(OWNER.name)} (dueño)</b><span>Reportes, evaluaciones y observaciones</span></div></button>
+    <button data-owner="1"><div class="av" style="background:var(--navy)">⚙️</div><div><b>${esc(OWNER.name)} · Administrador</b><span>Editar equipo, roles, checklist y reportes</span></div></button>
     </div></div>`;
 }
 
