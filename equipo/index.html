@@ -1108,16 +1108,16 @@ function metaResultado(w) {
   const v = r ? r.mv.find(v => v.p === m.producto) : null, tot = v ? v.tot : 0;
   const p = Math.round(tot / m.meta * 100), falta = Math.max(0, m.meta - tot), dr = diasRestan(m), pd = dr ? Math.ceil(falta / dr) : falta, n = TEAM[w].name;
   let txt;
-  if (!r) txt = 🎯 *${n}*, todavía no he recibido tu reporte con las ventas de ${m.producto}. Envíalo hoy para ver cómo vas con tu meta de ${m.meta}.;
-  else if (tot >= m.meta) txt = 🎉 *¡${n}, META CUMPLIDA!*\nVendiste ${tot} de ${m.meta} ${m.producto} (${p}%).\n🏆 Ganaste: ${m.premio}\n¡Felicitaciones, excelente trabajo! 💪;
-  else txt = 🎯 *${n}, así vas con tu meta* (reporte del ${fechaBonita(r.d)})\n${m.producto}: ${tot} de ${m.meta} (${p}%)\nTe faltan ${falta}. ${dr ? 'Quedan ' + dr + (dr === 1 ? ' día' : ' días') + ' (hasta el ' + fechaBonita(m.hasta) + '): unos ' + pd + ' por día.' : 'La meta ya terminó.'}\n🏆 Premio: ${m.premio}\n¡Tú puedes! 🔥;
+  if (!r) txt = `🎯 *${n}*, todavía no he recibido tu reporte con las ventas de ${m.producto}. Envíalo hoy para ver cómo vas con tu meta de ${m.meta}.`;
+  else if (tot >= m.meta) txt = `🎉 *¡${n}, META CUMPLIDA!*\nVendiste ${tot} de ${m.meta} ${m.producto} (${p}%).\n🏆 Ganaste: ${m.premio}\n¡Felicitaciones, excelente trabajo! 💪`;
+  else txt = `🎯 *${n}, así vas con tu meta* (reporte del ${fechaBonita(r.d)})\n${m.producto}: ${tot} de ${m.meta} (${p}%)\nTe faltan ${falta}. ${dr ? 'Quedan ' + dr + (dr === 1 ? ' día' : ' días') + ' (hasta el ' + fechaBonita(m.hasta) + '): unos ' + pd + ' por día.' : 'La meta ya terminó.'}\n🏆 Premio: ${m.premio}\n¡Tú puedes! 🔥`;
   return { m, r, tot, p, falta, txt };
 }
 function ownerMetas() {
   const w = view.mw || Object.keys(TEAM)[0], R = metaResultado(w), m = R && R.m, lu = lunesDe(new Date()), dom = new Date(lu);
   dom.setDate(lu.getDate() + 6);
   const f = (view.mf && view.mf.w === w) ? view.mf : (view.mf = { w, prod: m ? m.producto : '', uno: m ? (m.uno || '') : '', cant: m ? m.meta : '', prem: m ? m.premio : '$5 de reconocimiento', desde: hoy(lu), hasta: hoy(dom) });
-  return <div class="chips">${Object.entries(TEAM).map(([k, t]) => `<button class="chip ${w === k ? 'on' : ''}" data-mw="${k}">${esc(t.name)}</button>).join('')}</div>
+  return `<div class="chips">${Object.entries(TEAM).map(([k, t]) => `<button class="chip ${w === k ? 'on' : ''}" data-mw="${k}">${esc(t.name)}</button>`).join('')}</div>
   <div class="card"><h2>Meta de ${esc(TEAM[w].name)}</h2>` + (R ? `<p><b>${m.meta} ${esc(m.producto)}</b> · premio: ${esc(m.premio)}<br><span class="mut">${fechaBonita(m.desde)} al ${fechaBonita(m.hasta)}</span></p>
     <div class="prog"><i style="width:${Math.min(100, R.p)}%"></i></div>
     <p><b style="font-size:28px;color:${color(R.p)}">${R.p}%</b> <span class="mut">${R.tot} de ${m.meta}${R.r ? ' · reporte del ' + fechaBonita(R.r.d) : ' · sin reporte esta semana'}</span></p>
