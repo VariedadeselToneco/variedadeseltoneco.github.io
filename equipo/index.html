@@ -751,9 +751,10 @@ async function fbIniciar() {
   const V = 'https://www.gstatic.com/firebasejs/10.14.1/';
   FB = (async () => {
     await cargarJs(V + 'firebase-app-compat.js'); await cargarJs(V + 'firebase-auth-compat.js'); await cargarJs(V + 'firebase-firestore-compat.js');
-    const app = firebase.initializeApp(FB_CFG, 'equipo'), db = app.firestore();
+    const app = (firebase.apps || []).find(a => a.name === 'equipo') || firebase.initializeApp(FB_CFG, 'equipo'), db = app.firestore();
     try { db.settings({ experimentalForceLongPolling: true }); } catch (e) {}
-    await app.auth().signInAnonymously(); FB_EST = 'conectada';
+    await Promise.race([app.auth().signInAnonymously(), new Promise((_, no) => setTimeout(() => no(new Error('tiempo agotado')), 15000))]);
+    FB_EST = 'conectada'; setTimeout(() => { colaHabladoresPush().catch(() => {}); }, 0);
     db.doc('listas/' + LISTA_ID).onSnapshot(sn => {
       if (!sn.exists) { LP_ERR = 'La lista todavía no ha llegado. ' + OWNER.name + ' debe abrir GOA en la PC para publicarla.'; if (view.tab === 'precios') pintarLista(); return; }
       LP_ERR = ''; const d = sn.data();
@@ -793,11 +794,24 @@ function habLimpio(o){ return JSON.parse(JSON.stringify(o, (k, v) => (typeof v =
 function habEstable(o){ if (Array.isArray(o)) return '[' + o.map(habEstable).join(',') + ']'; if (o && typeof o === 'object') return '{' + Object.keys(o).sort().map(k => JSON.stringify(k) + ':' + habEstable(o[k])).join(',') + '}'; return JSON.stringify(o === undefined ? null : o); }
 function habFnv(t){ let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
 function habMarcar(o){ o.updatedAt = Date.now(); o.updatedBy = habDev(); const c = Object.assign({}, o); delete c.updatedAt; delete c.updatedBy; delete c.syncH; o.syncH = habFnv(habEstable(habLimpio(c))); return o; }
+/* --- cola local: lo que no sale se guarda y se reintenta solo --- */
+function colaHabladores(){ try { return JSON.parse(localStorage.getItem('goa_hab_cola') || '[]') || []; } catch (e) { return []; } }
+function colaGuardar(L){ try { localStorage.setItem('goa_hab_cola', JSON.stringify(L)); } catch (e) {} }
+function colaAgregar(it){ const L = colaHabladores(); if (!L.some(x => x.id === it.id)) { L.push(it); colaGuardar(L); } }
+function colaQuitar(id){ colaGuardar(colaHabladores().filter(x => x.id !== id)); }
+async function colaHabladoresPush(){
+  const L = colaHabladores(); if (!L.length || !NEG) return;
+  const db = await fbIniciar();
+  for (const it of L) { await db.collection('negocios/' + NEG + '/habladores_pendientes').doc(it.id).set(it); colaQuitar(it.id); }
+  if (view.tab === 'precios') pintarLista();
+}
+window.addEventListener('online', () => { if (FB) colaHabladoresPush().catch(() => {}); });
 function escucharHabladores(db){
   if (_habUn || !NEG) return; _habUn = true;
   db.collection('negocios/' + NEG + '/habladores_pendientes').onSnapshot(qs => {
     const mine = {}, yo = habDev();
     qs.forEach(doc => { const d = doc.data() || {}; if (d.equipo === yo && d.productoId) mine[d.productoId] = doc.id; });
+    colaHabladores().forEach(it => { if (it.productoId) mine[it.productoId] = it.id; });
     S.habPend = mine; save();
     if (view.tab === 'precios') pintarLista();
   }, () => {});
@@ -814,7 +828,12 @@ async function pedirHabladorPrecio(id){
     await db.collection('negocios/' + NEG + '/habladores_pendientes').doc(docId).set(item);
     S.habPend = S.habPend || {}; S.habPend[id] = docId; save(); pintarLista();
     toast('🏷️ Pedido enviado a la PC: ' + item.nombre);
-  } catch (e) { const c = (e && (e.code || e.message)) || 'sin detalle'; toast('⚠️ No se pudo enviar (' + c + ')'); }
+  } catch (e) {
+    colaAgregar(item); S.habPend = S.habPend || {}; S.habPend[id] = docId; save(); pintarLista();
+    const c = (e && (e.code || e.message)) || 'sin detalle';
+    if (String(c).indexOf('permission-denied') >= 0) toast('⚠️ La nube no permite escribir (permission-denied). Queda guardado aquí.');
+    else toast('⚠️ No salió (' + c + '). Queda guardado y se reintenta solo.');
+  }
 }
 function pintarLista() {
   const el = $('plist'); if (!el) return;
