@@ -496,9 +496,9 @@ function render() {
   if (view.mode === 'owner') {
     $('hTitle').innerHTML = 'Panel de ' + esc(OWNER.name) + '<small>' + esc(STORE) + '</small>';
     who.hidden = false; who.textContent = 'Salir';
-    tabs.innerHT = [ML['reps', '📥 Reportes'], ['ped', '📋 Pedidos'], ['precios', '💲 Precios'], ['metas', '🎯 Metas'], ['eval', '📊 Evaluación'], ['obs', '✍️ Observación']]
+    tabs.innerHTML = [['reps', '📥 Reportes'], ['ped', '📋 Pedidos'], ['precios', '💲 Precios'], ['metas', '🎯 Metas'], ['eval', '📊 Evaluación'], ['obs', '✍️ Observación'], ['equipo', '⚙️ Equipo']]
       .map(([k, l]) => `<button class="tab ${view.tab === k ? 'on' : ''}" data-t="${k}">${l}</button>`).join('');
-    main.innerHTML = view.tab === 'metas' ? ownerMetas() : view.tab === 'eval' ? ownerEval() : view.tab === 'obs' ? ownerObs() : view.tab === 'ped' ? ownerPed() : view.tab === 'precios' ? wPrecios() : ownerReps();
+    main.innerHTML = view.tab === 'metas' ? ownerMetas() : view.tab === 'eval' ? ownerEval() : view.tab === 'obs' ? ownerObs() : view.tab === 'ped' ? ownerPed() : view.tab === 'precios' ? wPrecios() : view.tab === 'equipo' ? ownerEquipo() : ownerReps();
     if (view.tab === 'precios') pintarLista();
   } else if (view.mode === 'worker' && S.me && TEAM[S.me]) {
     const t = TEAM[S.me];
@@ -1022,7 +1022,7 @@ function ownerObs() {
    Eventos
    ===================================================================== */
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-pd],[data-pt],[data-pdel],[data-pc],[data-pf],[data-hb],#pedAdd,#pScan,#cScan,#cSave,#cInv,#cCancel,#pedWa,[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend');
+  const b = e.target.closest('[data-pd],[data-pt],[data-pdel],[data-pc],[data-pf],[data-hb],[data-eqw],#pedAdd,#pScan,#cScan,#cSave,#cInv,#cCancel,#pedWa,[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend');
   if (!b) return;
   if (b.dataset.pd) { view.pd = b.dataset.pd; render(); return; }
   if (b.dataset.pt) { view.pt = b.dataset.pt; const y = window.scrollY; render(); window.scrollTo(0, y); setTimeout(() => $('pedTxt') && $('pedTxt').focus(), 50); return; }
@@ -1032,6 +1032,7 @@ document.addEventListener('click', e => {
   if (b.dataset.pf) { view.pf = b.dataset.pf; pintarLista(); document.querySelectorAll('[data-pf]').forEach(x => x.classList.toggle('on', x.dataset.pf === view.pf)); return; }
   if (b.dataset.pc) { abrirCodigo(b.dataset.pc); return; }
   if (b.dataset.hb) { pedirHabladorPrecio(b.dataset.hb); return; }
+  if (b.dataset.eqw) { view.eqw = b.dataset.eqw; render(); return; }
   if (b.id === 'pScan') { escanear(c => { $('pq').value = c; view.pq = c; pintarLista(); }); return; }
   if (b.id === 'cScan') { escanear(c => { $('cIn').value = c; guardarCodigo(); }); return; }
   if (b.id === 'cInv') { $('cIn').value = codigoInventado(); return; }
@@ -1094,6 +1095,74 @@ document.addEventListener('keydown', e => {
 document.addEventListener('input', e => {
   if (e.target.id === 'pq') { view.pq = e.target.value; pintarLista(); } if (e.target.id === 'nov') { dayState().nov = e.target.value; save(); } if (e.target.id === 'perd') { dayState().perd = e.target.value; save(); } });
 
+/* ===== ⚙️ Equipo editable: roles, checklist, misión ===== */
+var EQ_DOC = 'equipo/toneco';
+var EQ_CFG = null;
+function parseCheck(txt){
+  var secs = [], cur = null;
+  String(txt || '').split('\n').forEach(function(l){
+    var line = l.trim(); if (!line) return;
+    if (line.charAt(0) === '#') { cur = { s: line.slice(1).trim(), items: [] }; secs.push(cur); return; }
+    if (!cur) { cur = { s: 'General', items: [] }; secs.push(cur); }
+    var p = line.split('|');
+    cur.items.push(p.length > 1 ? [p[0].trim(), p.slice(1).join('|').trim()] : line);
+  });
+  return secs;
+}
+function checkTexto(t){
+  return (t.checklist || []).map(function(sec){
+    return '# ' + sec.s + '\n' + sec.items.map(function(x){ return Array.isArray(x) ? (x[0] + (x[1] ? (' | ' + x[1]) : '')) : x; }).join('\n');
+  }).join('\n\n');
+}
+function aplicarEquipo(cfg){
+  if (!cfg) return;
+  Object.keys(cfg).forEach(function(w){ if (TEAM[w]) Object.assign(TEAM[w], cfg[w]); });
+}
+function ownerEquipo(){
+  var w = view.eqw || Object.keys(TEAM)[0], t = TEAM[w];
+  return '<div class="card"><h2>⚙️ Editar equipo</h2>'
+    + '<p class="mut">Lo que cambies aquí les llega a todos los teléfonos.</p>'
+    + '<div class="chips">' + Object.keys(TEAM).map(function(k){ return '<button class="chip ' + (w === k ? 'on' : '') + '" data-eqw="' + k + '">' + esc(TEAM[k].name) + '</button>'; }).join('') + '</div>'
+    + '<label class="mut">Puesto</label><input id="eqPuesto" value="' + esc(t.puesto || '') + '">'
+    + '<label class="mut">Horario</label><input id="eqHorario" value="' + esc(t.horario || '') + '">'
+    + '<label class="mut">Misión</label><textarea id="eqMision" rows="3">' + esc(t.mision || '') + '</textarea>'
+    + '<label class="mut">Responsabilidades (una por línea)</label><textarea id="eqRol" rows="8">' + esc((t.rol || []).join('\n')) + '</textarea>'
+    + '<label class="mut">Límites (una por línea)</label><textarea id="eqLimites" rows="5">' + esc((t.limites || []).join('\n')) + '</textarea>'
+    + '<label class="mut">Checklist — una sección empieza con # ; tareas una por línea; detalle opcional después de |</label>'
+    + '<textarea id="eqCheck" rows="14" style="font-family:ui-monospace,monospace;font-size:13px">' + esc(checkTexto(t)) + '</textarea>'
+    + '<button class="btn pri" onclick="guardarEquipo()">💾 Guardar para todos</button>'
+    + '<p class="mut" id="eqMsg"></p></div>';
+}
+async function guardarEquipo(){
+  var w = view.eqw || Object.keys(TEAM)[0], t = TEAM[w];
+  t.puesto = $('eqPuesto').value.trim();
+  t.horario = $('eqHorario').value.trim();
+  t.mision = $('eqMision').value.trim();
+  t.rol = $('eqRol').value.split('\n').map(function(x){ return x.trim(); }).filter(Boolean);
+  t.limites = $('eqLimites').value.split('\n').map(function(x){ return x.trim(); }).filter(Boolean);
+  t.checklist = parseCheck($('eqCheck').value);
+  EQ_CFG = EQ_CFG || {};
+  EQ_CFG[w] = { puesto: t.puesto, horario: t.horario, mision: t.mision, rol: t.rol, limites: t.limites, checklist: t.checklist };
+  S.eq = EQ_CFG; save();
+  try {
+    var db = await fbIniciar();
+    await db.doc(EQ_DOC).set({ team: EQ_CFG, t: firebase.firestore.FieldValue.serverTimestamp() });
+    $('eqMsg').textContent = '✅ Guardado. Les llega a todos los teléfonos.';
+    toast('✅ Equipo actualizado');
+  } catch (e) {
+    $('eqMsg').textContent = '⚠️ Quedó en este teléfono, pero no subió (' + ((e && (e.code || e.message)) || 'error') + ').';
+  }
+}
+async function cargarEquipoNube(){
+  try {
+    var db = await fbIniciar();
+    var sn = await db.doc(EQ_DOC).get();
+    if (sn.exists) {
+      var d = sn.data() || {};
+      if (d.team) { EQ_CFG = d.team; S.eq = EQ_CFG; save(); aplicarEquipo(EQ_CFG); render(); }
+    }
+  } catch (e) { }
+}
 function entrarDueno() {
   if (!S.pin) {
     const p = prompt('Crea un PIN de 4 números para el panel de ' + OWNER.name + ':');
@@ -1180,7 +1249,9 @@ document.addEventListener('input', e => {
 // Enlace directo por trabajador: .../equipo/?p=osmary
 (function () { try { const q = new URLSearchParams(location.search).get('p'); if (q && TEAM[q.toLowerCase()]) { S.me = q.toLowerCase(); save(); } } catch (e) {} })();
 window.addEventListener('hashchange', () => manejarEnlace(false));
+if (S.eq) { EQ_CFG = S.eq; aplicarEquipo(S.eq); }
 manejarEnlace(true);
+cargarEquipoNube();
 </script>
 </body>
 </html>
