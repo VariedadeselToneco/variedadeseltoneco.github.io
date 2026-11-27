@@ -1148,7 +1148,7 @@ function ownerObs() {
    Eventos
    ===================================================================== */
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-pd],[data-pt],[data-pdel],[data-pc],[data-pf],[data-hb],[data-eqw],[data-del],[data-add],[data-secdel],[data-addsec],#pedAdd,#pScan,#cScan,#cSave,#cInv,#cCancel,#pedWa,[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend,#oSave,#mSave,#autoWa');
+  const b = e.target.closest('[data-pd],[data-pt],[data-pdel],[data-pc],[data-pf],[data-hb],[data-eqw],[data-del],[data-add],[data-secdel],[data-addsec],#pedAdd,#pScan,#cScan,#cSave,#cInv,#cCancel,#pedWa,[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend,#oSave,#mSave,#eqTest,#autoWa');
   if (!b) return;
   if (b.id === 'autoWa') { const ee = autoDatos(S.me, lunesIso(hoy())), rr = autoRacha(S.me); openWa(autoTexto(S.me, ee, rr.n)); return; }
   if (b.dataset.pd) { view.pd = b.dataset.pd; render(); return; }
@@ -1193,6 +1193,11 @@ document.addEventListener('click', e => {
   if (b.id === 'alarmas' || b.id === 'alGo') { descargarRecordatorios(); return; }
   if (b.id === 'alOk') { S.alarma = S.alarma || {}; S.alarma[S.me] = alarmaVer(S.me); save(); revisarAlarmas(); toast('¡Listo! Tus alarmas quedaron activas ⏰'); return; }
   if (b.id === 'bvOk') { S.animo = S.animo || {}; S.animo[S.me] = hoy(); save(); revisarAlarmas(); return; }
+  if (b.id === 'eqTest') {
+    const el = $('eqMsg'); if (el) el.textContent = 'Probando la conexión…';
+    probarNube().then(t => { const m2 = $('eqMsg'); if (m2) m2.textContent = t; });
+    return;
+  }
   const w = view.ew || Object.keys(TEAM)[0], fin = view.efin || hoy();
   if (b.id === 'eSave') {
     const e2 = evalData(w, fin); e2.com = $('ecom').value; e2.f = hoy();
@@ -1255,17 +1260,59 @@ document.addEventListener('input', e => {
 var EQ_DOC = 'equipo/toneco';
 var EQ_CFG = null;
 function miDev() { var id = localStorage.getItem('toneco_dev'); if (!id) { id = Math.random().toString(36).slice(2, 10); localStorage.setItem('toneco_dev', id); } return id; }
-/* Publica un cambio en la nube para que les llegue a todos los teléfonos */
+/* Publica un cambio en la nube para que les llegue a todos los teléfonos.
+   Si no sube, el cambio queda en cola y se reintenta solo. */
+var PUB_COLA = 'toneco_pub_cola';
+var ULTIMO_ERR = '';
+function colaPub() { try { return JSON.parse(localStorage.getItem(PUB_COLA) || '[]'); } catch (e) { return []; } }
+function guardarColaPub(L) { try { localStorage.setItem(PUB_COLA, JSON.stringify(L)); } catch (e) {} }
 async function publicar(parcial) {
   try {
     var db = await fbIniciar();
     await db.doc(EQ_DOC).set(Object.assign({}, parcial, { t: firebase.firestore.FieldValue.serverTimestamp(), dev: miDev() }), { merge: true });
+    ULTIMO_ERR = '';
     toast('✅ Guardado para todos');
     return true;
   } catch (e) {
-    toast('⚠️ Quedó en este teléfono, pero no subió');
+    ULTIMO_ERR = String((e && (e.code || e.message)) || 'error');
+    var L = colaPub(); L.push(parcial); guardarColaPub(L);
+    toast('⚠️ No subió (' + ULTIMO_ERR + '). Quedó pendiente y se reintenta solo');
     return false;
   }
+}
+async function reintentarPub() {
+  var L = colaPub();
+  if (!L.length) return;
+  try {
+    var db = await fbIniciar();
+    for (var i = 0; i < L.length; i++) {
+      await db.doc(EQ_DOC).set(Object.assign({}, L[i], { t: firebase.firestore.FieldValue.serverTimestamp(), dev: miDev() }), { merge: true });
+    }
+    guardarColaPub([]); ULTIMO_ERR = '';
+    toast('✅ Se subieron ' + L.length + ' cambio(s) pendiente(s)');
+    render();
+  } catch (e) { ULTIMO_ERR = String((e && (e.code || e.message)) || 'error'); }
+}
+/* Diagnóstico: dice exactamente dónde se rompe */
+async function probarNube() {
+  var out = [];
+  try {
+    var db = await fbIniciar();
+    out.push('✅ Conectó con Firebase (sesión anónima OK)');
+    try {
+      await db.doc(EQ_DOC).set({ prueba: Date.now(), dev: miDev() }, { merge: true });
+      out.push('✅ Puede ESCRIBIR en ' + EQ_DOC);
+      try {
+        var sn = await db.doc(EQ_DOC).get();
+        out.push('✅ Puede LEER (' + (sn.exists ? 'el documento existe' : 'documento vacío') + ')');
+        var d = sn.exists ? (sn.data() || {}) : {};
+        out.push('Campos guardados: ' + (Object.keys(d).join(', ') || 'ninguno'));
+      } catch (e2) { out.push('❌ Al leer: ' + ((e2 && (e2.code || e2.message)) || 'error')); }
+      try { await db.doc(EQ_DOC).set({ prueba: firebase.firestore.FieldValue.delete() }, { merge: true }); } catch (e3) {}
+    } catch (e1) { out.push('❌ Al ESCRIBIR: ' + ((e1 && (e1.code || e1.message)) || 'error')); }
+  } catch (e0) { out.push('❌ Al conectar: ' + ((e0 && (e0.code || e0.message)) || 'error')); }
+  out.push('Pendientes en cola: ' + colaPub().length);
+  return out.join('\n');
 }
 /* Aplica lo que llega de la nube sin borrar lo que el dueño esté escribiendo */
 function aplicarRemoto(d) {
@@ -1335,7 +1382,8 @@ function ownerEquipo(){
   });
   h += '<button type="button" data-addsec="1" style="width:100%;border:1px dashed var(--line);background:transparent;color:var(--mut);border-radius:10px;padding:10px;font-weight:800;margin-top:6px">＋ sección</button>'
     + '<button class="btn pri" style="margin-top:12px" onclick="guardarEquipo()">💾 Guardar para todos</button>'
-    + '<p class="mut" id="eqMsg"></p></div>';
+    + '<button class="btn ghost" id="eqTest" style="margin-top:8px">🔎 Probar conexión con la nube</button>'
+    + '<p class="mut" id="eqMsg" style="white-space:pre-wrap"></p></div>';
   return h;
 }
 async function guardarEquipo(){
@@ -1458,6 +1506,8 @@ window.addEventListener('hashchange', () => manejarEnlace(false));
 if (S.eq) { EQ_CFG = S.eq; aplicarEquipo(S.eq); }
 manejarEnlace(true);
 cargarEquipoNube();
+setTimeout(function(){ reintentarPub().catch(function(){}); }, 4000);
+window.addEventListener('online', function(){ reintentarPub().catch(function(){}); });
 if (/[?&]admin=1/.test(location.search) && !S.owner) setTimeout(entrarDueno, 300);
 </script>
 </body>
