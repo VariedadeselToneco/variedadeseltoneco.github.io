@@ -422,6 +422,7 @@ function load() {
   d.evals = d.evals || [];        // evaluaciones guardadas
   d.autoRol = d.autoRol || {};    // { 'fernando|2026-11-23': [ids del rol cumplidos] }
   d.autoDesde = d.autoDesde || null;  // primer lunes que se autoevalúa (se fija solo)
+  d.evPub = d.evPub || {};        // última evaluación publicada por trabajador
   d.pin = d.pin || null;
   d.owner = !!d.owner;
   return d;
@@ -609,8 +610,12 @@ function wRol() {
     <div class="card"><h2>⭐ Atención al cliente (para todos)</h2><div class="aten">${ATENCION.map(a => `<div><i>${a[0]}</i><div><b>${esc(a[1])}</b><span>${esc(a[2])}</span></div></div>`).join('')}</div></div>`;
 }
 function wMetas() {
-  const t = TEAM[S.me], w = semana(S.me, hoy());
-  return metaVentaHtml(S.me) + `<div class="card"><h2>Mis metas</h2><ul class="lst">${t.metas.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+  const t = TEAM[S.me], w = semana(S.me, hoy()), ev = (S.evPub || {})[S.me];
+  const evCard = ev ? `<div class="card"><h2>📊 Mi evaluación de ${esc(OWNER.name)}</h2>
+    <p class="mut">Semana del ${fechaBonita(ev.desde)} al ${fechaBonita(ev.hasta)}</p>
+    <p><b style="font-size:30px;color:${colorA(ev.prom)}">${ev.prom}%</b></p>
+    ${ev.com ? `<div class="obs"><small>Comentario</small>${esc(ev.com).replace(/\n/g, '<br>')}</div>` : ''}</div>` : '';
+  return metaVentaHtml(S.me) + evCard + `<div class="card"><h2>Mis metas</h2><ul class="lst">${t.metas.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
     <p class="mut">Meta de la semana: cumplir el <b>90%</b> del checklist. El bono lo define ${esc(OWNER.name)}.</p></div>
     <div class="card"><h2>Mi semana</h2>${diasHtml(w)}<p class="mut">Promedio: <b>${w.prom}%</b> · días enviados: ${w.env} de 7</p></div>`;
 }
@@ -1108,7 +1113,7 @@ function ownerEval() {
     <ul class="lst">${e.top.length ? e.top.map(x => `<li>${esc(x.t)} <span class="mut">(${x.n} ${x.n === 1 ? 'vez' : 'veces'})</span></li>`).join('') : '<li class="mut">Ninguna 👏</li>'}</ul>
     <h3>Tu comentario para ${esc(TEAM[w].name)}</h3>
     <textarea id="ecom" placeholder="Qué hizo bien, qué debe mejorar, compromiso para la próxima semana…"></textarea>
-    <button class="btn pri" id="eSave">💾 Guardar en el historial</button>
+    <button class="btn pri" id="eSave">💾 Guardar para todos</button>
     <div class="btns2"><button class="btn gold" id="ePrint">🖨️ Imprimir 80mm</button><button class="btn ghost" id="eMail">✉️ Enviar por correo</button></div>
     <button class="btn wa" id="eWa">📤 Enviar a ${esc(TEAM[w].name)} por WhatsApp</button>
   </div>
@@ -1133,16 +1138,17 @@ function ownerObs() {
   const w = view.ow || Object.keys(TEAM)[0];
   return `<div class="chips">${Object.entries(TEAM).map(([k, t]) => `<button class="chip ${w === k ? 'on' : ''}" data-ow="${k}">${esc(t.name)}</button>`).join('')}</div>
   <div class="card"><h2>Observación para ${esc(TEAM[w].name)}</h2>
-    <p class="mut">Se envía por WhatsApp. Cuando ${esc(TEAM[w].name)} toque el enlace, le queda guardada en su pestaña de Observaciones.</p>
+    <p class="mut">Al guardar, le aparece sola en su pestaña de Observaciones. El WhatsApp es solo el aviso.</p>
     <textarea id="otext" placeholder="Ej: hoy la caja quedó muy ordenada, ¡bien! / Recuerda cortar los cartones de huevos al llegar."></textarea>
-    <button class="btn wa" id="oSend">📤 Enviar observación</button></div>`;
+    <button class="btn pri" id="oSave">💾 Guardar para todos</button>
+    <button class="btn ghost" id="oSend">📤 Avisarle por WhatsApp</button></div>`;
 }
 
 /* =====================================================================
    Eventos
    ===================================================================== */
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-pd],[data-pt],[data-pdel],[data-pc],[data-pf],[data-hb],[data-eqw],[data-del],[data-add],[data-secdel],[data-addsec],#pedAdd,#pScan,#cScan,#cSave,#cInv,#cCancel,#pedWa,[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend,#autoWa');
+  const b = e.target.closest('[data-pd],[data-pt],[data-pdel],[data-pc],[data-pf],[data-hb],[data-eqw],[data-del],[data-add],[data-secdel],[data-addsec],#pedAdd,#pScan,#cScan,#cSave,#cInv,#cCancel,#pedWa,[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend,#oSave,#mSave,#autoWa');
   if (!b) return;
   if (b.id === 'autoWa') { const ee = autoDatos(S.me, lunesIso(hoy())), rr = autoRacha(S.me); openWa(autoTexto(S.me, ee, rr.n)); return; }
   if (b.dataset.pd) { view.pd = b.dataset.pd; render(); return; }
@@ -1188,15 +1194,29 @@ document.addEventListener('click', e => {
   if (b.id === 'alOk') { S.alarma = S.alarma || {}; S.alarma[S.me] = alarmaVer(S.me); save(); revisarAlarmas(); toast('¡Listo! Tus alarmas quedaron activas ⏰'); return; }
   if (b.id === 'bvOk') { S.animo = S.animo || {}; S.animo[S.me] = hoy(); save(); revisarAlarmas(); return; }
   const w = view.ew || Object.keys(TEAM)[0], fin = view.efin || hoy();
-  if (b.id === 'eSave') { const e2 = evalData(w, fin); e2.com = $('ecom').value; e2.f = hoy(); S.evals.unshift(e2); save(); toast('Evaluación guardada ✅'); render(); return; }
+  if (b.id === 'eSave') {
+    const e2 = evalData(w, fin); e2.com = $('ecom').value; e2.f = hoy();
+    S.evals.unshift(e2); save();
+    const ev = {}; S.evals.forEach(x => { if (!ev[x.w]) ev[x.w] = { prom: x.prom, desde: x.desde, hasta: x.hasta, com: x.com, f: x.f }; });
+    publicar({ evPub: ev });
+    toast('Evaluación guardada ✅');
+    render(); return;
+  }
   if (b.id === 'ePrint') { imprimir(evalData(w, fin), $('ecom').value); return; }
   if (b.id === 'eMail') { const e2 = evalData(w, fin); location.href = 'mailto:?subject=' + encodeURIComponent('Evaluación ' + TEAM[w].name + ' ' + fechaBonita(e2.desde) + ' - ' + fechaBonita(e2.hasta)) + '&body=' + encodeURIComponent(evalTexto(e2, $('ecom').value)); return; }
   if (b.id === 'eWa') { openWa(evalTexto(evalData(w, fin), $('ecom').value)); return; }
-  if (b.id === 'oSend') {
+  if (b.id === 'oSend' || b.id === 'oSave') {
     const ow = view.ow || Object.keys(TEAM)[0], t = $('otext').value.trim();
     if (!t) { toast('Escribe la observación primero'); return; }
     const o = { w: ow, f: hoy(), t };
-    openWa(`📝 *Observación para ${TEAM[ow].name}* · ${fechaBonita(o.f)}\n${t}\n\nToca para guardarla en tu app:\n${pageUrl()}#o=${enc(o)}`);
+    if (b.id === 'oSave') {
+      S.obs[ow] = S.obs[ow] || [];
+      if (!S.obs[ow].some(x => x.f === o.f && x.t === o.t)) S.obs[ow].unshift(o);
+      save();
+      publicar({ obs: S.obs });
+      render(); return;
+    }
+    openWa(`📝 *Observación para ${TEAM[ow].name}* · ${fechaBonita(o.f)}\n${t}\n\nYa quedó guardada en tu app: ábrela y la verás en 📝 Observaciones.`);
     return;
   }
 });
@@ -1234,6 +1254,31 @@ document.addEventListener('input', e => {
 /* ===== ⚙️ Equipo editable: roles, checklist, misión ===== */
 var EQ_DOC = 'equipo/toneco';
 var EQ_CFG = null;
+function miDev() { var id = localStorage.getItem('toneco_dev'); if (!id) { id = Math.random().toString(36).slice(2, 10); localStorage.setItem('toneco_dev', id); } return id; }
+/* Publica un cambio en la nube para que les llegue a todos los teléfonos */
+async function publicar(parcial) {
+  try {
+    var db = await fbIniciar();
+    await db.doc(EQ_DOC).set(Object.assign({}, parcial, { t: firebase.firestore.FieldValue.serverTimestamp(), dev: miDev() }), { merge: true });
+    toast('✅ Guardado para todos');
+    return true;
+  } catch (e) {
+    toast('⚠️ Quedó en este teléfono, pero no subió');
+    return false;
+  }
+}
+/* Aplica lo que llega de la nube sin borrar lo que el dueño esté escribiendo */
+function aplicarRemoto(d) {
+  var cambio = false;
+  if (d.team) { EQ_CFG = d.team; S.eq = d.team; aplicarEquipo(d.team); cambio = true; }
+  if (d.metas) { S.metasX = d.metas; cambio = true; }
+  if (d.obs) { S.obs = d.obs; cambio = true; }
+  if (d.evPub) { S.evPub = d.evPub; cambio = true; }
+  if (!cambio) return;
+  save();
+  var ae = document.activeElement;
+  if (!(ae && /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(ae.tagName))) render();
+}
 function parseCheck(txt){
   var secs = [], cur = null;
   String(txt || '').split('\n').forEach(function(l){
@@ -1304,23 +1349,17 @@ async function guardarEquipo(){
   EQ_CFG = EQ_CFG || {};
   EQ_CFG[w] = { puesto: t.puesto, horario: t.horario, mision: t.mision, rol: t.rol, limites: t.limites, checklist: t.checklist };
   S.eq = EQ_CFG; save();
-  try {
-    var db = await fbIniciar();
-    await db.doc(EQ_DOC).set({ team: EQ_CFG, t: firebase.firestore.FieldValue.serverTimestamp() });
-    $('eqMsg').textContent = '✅ Guardado. Les llega a todos los teléfonos.';
-    toast('✅ Equipo actualizado');
-  } catch (e) {
-    $('eqMsg').textContent = '⚠️ Quedó en este teléfono, pero no subió (' + ((e && (e.code || e.message)) || 'error') + ').';
-  }
+  var ok = await publicar({ team: EQ_CFG });
+  var el = $('eqMsg');
+  if (el) el.textContent = ok ? '✅ Guardado. Les llega a todos los teléfonos.' : '⚠️ Quedó en este teléfono, pero no subió. Revisa el internet.';
 }
 async function cargarEquipoNube(){
   try {
     var db = await fbIniciar();
-    var sn = await db.doc(EQ_DOC).get();
-    if (sn.exists) {
-      var d = sn.data() || {};
-      if (d.team) { EQ_CFG = d.team; S.eq = EQ_CFG; save(); aplicarEquipo(EQ_CFG); render(); }
-    }
+    db.doc(EQ_DOC).onSnapshot(function(sn){
+      if (!sn.exists) return;
+      aplicarRemoto(sn.data() || {});
+    }, function(){});
   } catch (e) { }
 }
 function entrarDueno() {
@@ -1373,26 +1412,29 @@ function ownerMetas() {
     <p><b style="font-size:28px;color:${color(R.p)}">${R.p}%</b> <span class="mut">${R.tot} de ${m.meta}${R.r ? ' · reporte del ' + fechaBonita(R.r.d) : ' · sin reporte esta semana'}</span></p>
     <button class="btn wa" id="mRes">📤 Enviarle su resultado</button>` : '<p class="mut">Todavía no tiene meta.</p>') + `</div>
   <div class="card"><h2>Nueva meta</h2>
-    <p class="mut">Se envía por WhatsApp. Al tocar el enlace, la meta se activa en su app con el contador en cero.</p>
+    <p class="mut">Al guardar, la meta aparece sola en el teléfono de ${esc(TEAM[w].name)}. También puedes mandarle el aviso por WhatsApp.</p>
     <label class="mut">Producto (ej: combos Lailas)</label><input type="text" id="mProd" value="${esc(f.prod)}">
     <label class="mut">Cada uno se llama (ej: combo)</label><input type="text" id="mUno" value="${esc(f.uno)}">
     <label class="mut">Cantidad a vender</label><input type="text" id="mCant" inputmode="numeric" value="${esc(f.cant)}">
     <label class="mut">Premio</label><input type="text" id="mPrem" value="${esc(f.prem)}">
-    <label class="mut">Desde (AAAA-MM-DD)</label><input type="text" id="mDesde" value="${esc(f.desde)}">
-    <label class="mut">Hasta (AAAA-MM-DD)</label><input type="text" id="mHasta" value="${esc(f.hasta)}">
-    <button class="btn pri" id="mNew">📤 Enviar meta nueva por WhatsApp</button></div>`;
+    <label class="mut">Desde (hoy o AAAA-MM-DD)</label><input type="text" id="mDesde" value="${esc(f.desde)}">
+    <label class="mut">Hasta (jueves o AAAA-MM-DD)</label><input type="text" id="mHasta" value="${esc(f.hasta)}">
+    <button class="btn pri" id="mSave">💾 Guardar para todos</button>
+    <button class="btn ghost" id="mNew">📤 Avisarle por WhatsApp</button></div>`;
 }
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-mw],#mRes,#mNew'); if (!b) return;
+  const b = e.target.closest('[data-mw],#mRes,#mNew,#mSave'); if (!b) return;
   if (b.dataset.mw) { view.mw = b.dataset.mw; render(); return; }
   const w = view.mw || Object.keys(TEAM)[0];
   if (b.id === 'mRes') { const R = metaResultado(w); if (R) openWa(R.txt); else toast('Primero crea una meta'); return; }
   const f = view.mf, cant = parseInt(f && f.cant, 10), ok = /^\d{4}-\d{2}-\d{2}$/;
   if (!f || !String(f.prod).trim() || !(cant > 0)) { toast('Escribe el producto y la cantidad'); return; }
-  if (!ok.test(f.desde) || !ok.test(f.hasta) || f.hasta < f.desde) { toast('Revisa las fechas (AAAA-MM-DD)'); return; }
-  const m = { w, id: 'm' + hid(String(f.prod).trim()) + f.desde.replace(/-/g, ''), producto: String(f.prod).trim().slice(0, 60), uno: String(f.uno || '').trim().slice(0, 40), meta: cant, premio: String(f.prem || '').trim().slice(0, 60), desde: f.desde, hasta: f.hasta };
+  const desde = relIso(f.desde), hasta = relIso(f.hasta);
+  if (!ok.test(desde) || !ok.test(hasta) || hasta < desde) { toast('Revisa las fechas (hoy, jueves o AAAA-MM-DD)'); return; }
+  const m = { w, id: 'm' + hid(String(f.prod).trim()) + desde.replace(/-/g, ''), producto: String(f.prod).trim().slice(0, 60), uno: String(f.uno || '').trim().slice(0, 40), meta: cant, premio: String(f.prem || '').trim().slice(0, 60), desde, hasta };
   S.metasX = S.metasX || {}; S.metasX[w] = [{ id: m.id, producto: m.producto, uno: m.uno, meta: m.meta, premio: m.premio, desde: m.desde, hasta: m.hasta }]; save();
-  openWa(`🎯 *Nueva meta para ${TEAM[w].name}*\nVender ${cant} ${m.producto}\n📅 Del ${fechaBonita(m.desde)} al ${fechaBonita(m.hasta)}\n🏆 Premio: ${m.premio}\n\nToca para activarla en tu app:\n${pageUrl()}#m=${enc(m)}`);
+  if (b.id === 'mSave') { publicar({ metas: S.metasX }); render(); return; }
+  openWa(`🎯 *Nueva meta para ${TEAM[w].name}*\nVender ${cant} ${m.producto}\n📅 Del ${fechaBonita(m.desde)} al ${fechaBonita(m.hasta)}\n🏆 Premio: ${m.premio}\n\nLa meta ya quedó activa en tu app. Solo ábrela y verás el contador en cero.`);
   render();
 });
 document.addEventListener('input', e => {
