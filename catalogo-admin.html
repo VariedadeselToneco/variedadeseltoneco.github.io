@@ -36,6 +36,7 @@
   .filtros button{font-size:12px;padding:8px 12px}
   td button.x{background:transparent;border:1px solid var(--line);color:var(--bad);border-radius:8px;padding:5px 8px;font-size:13px;font-weight:800;line-height:1}
   #btnRestaurar{color:var(--amber);border-color:var(--amber)}
+  input[type=search]{width:100%;background:#0b1220;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:11px;font-size:14px;margin-top:12px}
 </style>
 </head>
 <body>
@@ -74,6 +75,8 @@
           <div class="kpi"><b id="kAsk">0</b><span>sin categoría</span></div>
         </div>
         <p class="sub" style="margin:0">Puedes corregir cualquier categoría en la lista.</p>
+        <input type="search" id="buscar" placeholder="Buscar producto…" autocomplete="off">
+        <div class="foot" id="cuenta" style="margin-top:6px"></div>
         <div class="filtros">
           <button class="gh" id="btnSoloPend">Ver solo los que faltan</button>
           <button class="gh" id="btnTodos">Poner VARIEDADES Y FERRETERÍA a los que faltan</button>
@@ -378,11 +381,29 @@ function contadores(){
   var r = $('btnRestaurar');
   r.style.display = quitados.length ? '' : 'none';
   r.textContent = '↩️ Restaurar quitados ('+quitados.length+')';
+
+  var q = norm($('buscar').value);
+  if(q){
+    var f = filtrar();
+    $('cuenta').textContent = f.length ? ('Encontrados: '+f.length+' de '+producto.length) : 'Ningún producto con ese nombre.';
+  }else{
+    $('cuenta').textContent = pend ? (pend+' sin categoría · '+producto.length+' en la lista') : (producto.length+' productos');
+  }
+}
+
+function filtrar(){
+  var q = norm($('buscar').value);
+  if(!q) return null;
+  var palabras = q.split(' ').filter(function(w){ return !!w; });
+  return producto.filter(function(p){
+    return palabras.every(function(w){ return p._k.indexOf(w)>=0; });
+  });
 }
 
 function pintar(){
   var pend = producto.filter(function(p){ return !p.cat; });
-  var lista = soloPend ? pend : producto;
+  var q = norm($('buscar').value);
+  var lista = q ? filtrar() : (soloPend ? pend : producto);
   $('tbody').innerHTML = lista.slice(0,500).map(function(p){
     var i = producto.indexOf(p);
     return '<tr><td>'+esc(p.name)+'</td><td>$'+(+p.price).toFixed(2)+'</td><td>'
@@ -484,6 +505,7 @@ $('file').onchange = async function(ev){
     }
     producto = procesar(tabla);
     quitados = [];
+    $('buscar').value = '';
     var pend = producto.filter(function(p){ return !p.cat; }).length;
     $('estado').textContent = f.name+' · '+producto.length+' productos · '+(producto.length-pend)+' con categoría, '+pend+' por ubicar.';
     $('preview').classList.remove('hide');
@@ -520,6 +542,7 @@ $('fileJson').onchange = async function(ev){
     if(!out.length) throw new Error('json');
     producto = out;
     quitados = [];
+    $('buscar').value = '';
     var pend = producto.filter(function(p){ return !p.cat; }).length;
     $('estado').textContent = f.name+' · '+producto.length+' productos · '+(producto.length-pend)+' con categoría, '+pend+' por ubicar.';
     $('preview').classList.remove('hide');
@@ -530,6 +553,11 @@ $('fileJson').onchange = async function(ev){
   }
 };
 
+var tBuscar = null;
+$('buscar').oninput = function(){
+  clearTimeout(tBuscar);
+  tBuscar = setTimeout(pintar, 120);
+};
 $('btnSoloPend').onclick = function(){
   soloPend = !soloPend;
   $('btnSoloPend').textContent = soloPend ? 'Ver todos' : 'Ver solo los que faltan';
