@@ -120,6 +120,17 @@ video.vid{width:100%;border-radius:14px;background:#000;display:block}
 .alerta .go{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px}
 .alerta .go button{border:0;border-radius:12px;padding:12px 4px;font-weight:900;font-size:14px;background:#422006;color:#fde047}
 .alerta .go button.ok{background:#16a34a;color:#fff}
+.mal{background:#dc2626;color:#fff;border-radius:16px;padding:16px;margin-bottom:12px;animation:lat 1.4s infinite}
+.mal b.big{display:block;font-size:27px;line-height:1.1;margin-bottom:6px}
+.mal p{margin:0 0 6px;font-size:15px;line-height:1.35;color:#fee2e2}
+.mal p b{color:#fff}
+.bien{background:#dcfce7;border:3px solid #16a34a;color:#14532d;border-radius:16px;padding:14px;margin-bottom:12px;font-weight:800;font-size:18px;line-height:1.3}
+.fila{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.fila:last-child{border-bottom:0}
+.fila .n{flex:1}
+.fila .n small{display:block;color:var(--mut);font-size:12px}
+.fila .v{font-weight:900;font-size:17px}
+.bigp{font-size:46px;font-weight:900;line-height:1;margin:6px 0}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:99;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
 .days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:6px 0 4px}
@@ -407,6 +418,8 @@ function load() {
   d.obs = d.obs || {};            // { fernando: [{f, t}] } observaciones recibidas
   d.reps = d.reps || [];          // reportes recibidos (teléfono del dueño)
   d.evals = d.evals || [];        // evaluaciones guardadas
+  d.autoRol = d.autoRol || {};    // { 'fernando|2026-11-23': [ids del rol cumplidos] }
+  d.autoDesde = d.autoDesde || null;  // primer lunes que se autoevalúa (se fija solo)
   d.pin = d.pin || null;
   d.owner = !!d.owner;
   return d;
@@ -488,9 +501,9 @@ function render() {
     $('hTitle').innerHTML = esc(t.name) + '<small>' + esc(t.puesto) + ' · ' + esc(t.horario) + '</small>';
     who.hidden = false; who.textContent = 'Cambiar';
     const nObs = (S.obs[S.me] || []).length;
-    tabs.innerHTML = [['check', '✅ Checklist'], ...(t.caja ? [['fact', '📘 Facturar']] : []), ['precios', '💲 Precios'], ['rol', '👤 Mi rol'], ['metas', '🎯 Metas'], ['obs', '📝 Observaciones' + (nObs ? ' (' + nObs + ')' : '')]]
+    tabs.innerHTML = [['check', '✅ Checklist'], ['auto', '📊 Autoevaluación'], ...(t.caja ? [['fact', '📘 Facturar']] : []), ['precios', '💲 Precios'], ['rol', '👤 Mi rol'], ['metas', '🎯 Metas'], ['obs', '📝 Observaciones' + (nObs ? ' (' + nObs + ')' : '')]]
       .map(([k, l]) => `<button class="tab ${view.tab === k ? 'on' : ''}" data-t="${k}">${l}</button>`).join('');
-    main.innerHTML = view.tab === 'precios' ? wPrecios() : view.tab === 'fact' ? wFact() : view.tab === 'rol' ? wRol() : view.tab === 'metas' ? wMetas() : view.tab === 'obs' ? wObs() : wCheck();
+    main.innerHTML = view.tab === 'precios' ? wPrecios() : view.tab === 'fact' ? wFact() : view.tab === 'rol' ? wRol() : view.tab === 'metas' ? wMetas() : view.tab === 'obs' ? wObs() : view.tab === 'auto' ? wAuto() : wCheck();
     if (view.tab === 'precios') pintarLista();
   } else {
     $('hTitle').innerHTML = 'Equipo Toñeco<small>Checklist diario</small>';
@@ -513,11 +526,11 @@ function dayState() { const k = dayKey(); S.day[k] = S.day[k] || { done: [], nov
 function wCheck() {
   const items = itemsOf(S.me), st = dayState();
   const done = items.filter(i => st.done.includes(i.id)).length, p = Math.round(done / items.length * 100);
-  const vistos = (S.vistos && S.vistos[S.me]) || [], tabsLeer = (TEAM[S.me].caja ? ['fact'] : []).concat(['precios', 'rol', 'metas', 'obs']), falta = tabsLeer.filter(x => !vistos.includes(x));
+  const vistos = (S.vistos && S.vistos[S.me]) || [], tabsLeer = (TEAM[S.me].caja ? ['fact'] : []).concat(['auto', 'precios', 'rol', 'metas', 'obs']), falta = tabsLeer.filter(x => !vistos.includes(x));
   let html = metaVentaHtml(S.me) + (falta.length ? `<div class="alerta"><b class="big">⚠️ ¡LEE TODO!</b>
 
     <p>Esta app tiene <b>${tabsLeer.length + 1} pestañas</b> arriba: ✅ Checklist${TEAM[S.me].caja ? ', 📘 Facturar' : ''}, 💲 Precios, 👤 Mi rol, 🎯 Metas y 📝 Observaciones. Ábrelas todas y léelas completas.</p>
-    <div class="go">${TEAM[S.me].caja ? `<button data-t="fact" class="${vistos.includes('fact') ? 'ok' : ''}">📘 Facturar</button>` : ''}<button data-t="precios" class="${vistos.includes('precios') ? 'ok' : ''}">💲 Precios</button><button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '');
+    <div class="go">${TEAM[S.me].caja ? `<button data-t="fact" class="${vistos.includes('fact') ? 'ok' : ''}">📘 Facturar</button>` : ''}<button data-t="precios" class="${vistos.includes('precios') ? 'ok' : ''}">💲 Precios</button><button data-t="auto" class="${vistos.includes('auto') ? 'ok' : ''}">📊 Autoeval.</button><button data-t="rol" class="${vistos.includes('rol') ? 'ok' : ''}">👤 Mi rol</button><button data-t="metas" class="${vistos.includes('metas') ? 'ok' : ''}">🎯 Metas</button><button data-t="obs" class="${vistos.includes('obs') ? 'ok' : ''}">📝 Observ.</button></div></div>` : '');
   const ult = (TEAM[S.me].recordatorios || []).slice(-1)[0], now = new Date();
   if (ult && !st.sent && (now.getHours() * 60 + now.getMinutes()) >= (+ult.split(':')[0] * 60 + +ult.split(':')[1] + 30)) {
     html = `<div class="atrasado">🚨 ¡Todavía no has enviado tu checklist de hoy! Márcalo y toca "📤 Enviar" abajo AHORA.</div>` + html;
@@ -579,6 +592,102 @@ function wMetas() {
   return metaVentaHtml(S.me) + `<div class="card"><h2>Mis metas</h2><ul class="lst">${t.metas.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
     <p class="mut">Meta de la semana: cumplir el <b>90%</b> del checklist. El bono lo define ${esc(OWNER.name)}.</p></div>
     <div class="card"><h2>Mi semana</h2>${diasHtml(w)}<p class="mut">Promedio: <b>${w.prom}%</b> · días enviados: ${w.env} de 7</p></div>`;
+}
+/* ===== 📊 Autoevaluación semanal =====
+   Calcula el % cumplido de la semana (lunes a domingo) con lo que ya
+   está en la app: checklist marcado, rol autoevaluado y meta de venta.
+   Si queda por debajo del mínimo, cuenta cuántas semanas seguidas van mal. */
+const AUTO = { minimo: 85, peso: { check: 60, rol: 25, meta: 15 } };
+const ORD = ['1ra', '2da', '3ra', '4ta', '5ta', '6ta', '7ma', '8va', '9na', '10ma'];
+function ordinal(n) { return ORD[n - 1] || (n + 'ma'); }
+function colorA(p) { return p >= AUTO.minimo ? '#16a34a' : '#dc2626'; }
+function lunesIso(iso) { const [y, m, d] = iso.split('-').map(Number); const x = new Date(y, m - 1, d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return hoy(x); }
+function semana7(lunes) { const [y, m, d] = lunes.split('-').map(Number); const x = new Date(y, m - 1, d), o = []; for (let i = 0; i < 7; i++) { o.push(hoy(x)); x.setDate(x.getDate() + 1); } return o; }
+function menos7(iso) { const [y, m, d] = iso.split('-').map(Number); const x = new Date(y, m - 1, d); x.setDate(x.getDate() - 7); return hoy(x); }
+
+function autoCheck(w, lunes) {
+  const items = itemsOf(w), ps = [];
+  semana7(lunes).forEach(k => {
+    const st = S.day[w + '|' + k];
+    if (st && (st.done.length || st.sent)) ps.push(Math.round(st.done.filter(id => items.some(x => x.id === id)).length / items.length * 100));
+    else { const r = S.reps.find(x => x.w === w && x.d === k); if (r && r.n) ps.push(Math.round(r.ok.length / r.n * 100)); }
+  });
+  return { pct: ps.length ? Math.round(ps.reduce((a, b) => a + b, 0) / ps.length) : null, dias: ps.length };
+}
+function autoRol(w, lunes) {
+  const L = (S.autoRol || {})[w + '|' + lunes];
+  if (!L) return null;
+  const ids = TEAM[w].rol.map(hid);
+  return { pct: Math.round(ids.filter(id => L.includes(id)).length / ids.length * 100), hechos: ids.filter(id => L.includes(id)).length, total: ids.length, ids: L };
+}
+function autoMeta(w, lunes) {
+  const dias = semana7(lunes), fin = dias[6];
+  const m = ((S.metasX && S.metasX[w]) || METAS_VENTA[w] || []).find(x => !(x.hasta < lunes || x.desde > fin));
+  if (!m) return null;
+  const tot = ventaTotal(w, m);
+  return { m, tot, pct: Math.min(100, Math.round(tot / m.meta * 100)) };
+}
+function autoDatos(w, lunes) {
+  const ch = autoCheck(w, lunes), rl = autoRol(w, lunes), mt = autoMeta(w, lunes), partes = [];
+  let num = 0, den = 0;
+  const P = AUTO.peso;
+  if (ch.pct !== null) { partes.push({ label: '✅ Checklist', pct: ch.pct, peso: P.check, det: ch.dias + (ch.dias === 1 ? ' día marcado' : ' días marcados') }); num += ch.pct * P.check; den += P.check; }
+  if (rl) { partes.push({ label: '👤 Mi rol', pct: rl.pct, peso: P.rol, det: rl.hechos + ' de ' + rl.total + ' responsabilidades' }); num += rl.pct * P.rol; den += P.rol; }
+  if (mt) { partes.push({ label: '🎯 Meta de venta', pct: mt.pct, peso: P.meta, det: mt.tot + ' de ' + mt.m.meta + ' ' + mt.m.producto }); num += mt.pct * P.meta; den += P.meta; }
+  return { lunes, pct: den ? Math.round(num / den) : 0, partes, ch, rl, mt, conDatos: ch.pct !== null };
+}
+function autoInicio() {
+  if (!S.autoDesde) { S.autoDesde = lunesIso(hoy()); save(); }   // arranca el lunes de la primera vez que se abre
+  return S.autoDesde;
+}
+function autoSemanas(w) {
+  const cur = lunesIso(hoy()), ini = autoInicio(), out = [];
+  let l = cur, guardia = 0;
+  while (l >= ini && guardia++ < 60) { out.unshift(l); l = menos7(l); }
+  return out.map(l => autoDatos(w, l));
+}
+function autoRacha(w) {
+  const L = autoSemanas(w); let n = 0;
+  for (let i = L.length - 1; i >= 0; i--) {
+    const x = L[i], esActual = i === L.length - 1;
+    if (!x.conDatos && esActual) break;          // la semana en curso apenas empieza
+    if (x.pct < AUTO.minimo) n++; else break;
+  }
+  return { n, semanas: L };
+}
+function autoTexto(w, e, n) {
+  const t = TEAM[w], fin = semana7(e.lunes)[6];
+  let s = `📊 *Autoevaluación de ${t.name}*\nSemana del ${fechaBonita(e.lunes)} al ${fechaBonita(fin)}\n\nCumplimiento: *${e.pct}%* (mínimo ${AUTO.minimo}%)\n`;
+  s += e.partes.map(p => `• ${p.label}: ${p.pct}% — ${p.det}`).join('\n');
+  s += n ? `\n\n🚨 *${ordinal(n)} semana mal*: lleva ${n} ${n === 1 ? 'semana' : 'semanas'} seguidas por debajo del ${AUTO.minimo}%.` : `\n\n✅ Cumplió el mínimo del ${AUTO.minimo}%.`;
+  return s;
+}
+function wAuto() {
+  const w = S.me, lunes = lunesIso(hoy()), fin = semana7(lunes)[6], e = autoDatos(w, lunes), R = autoRacha(w);
+  const hechoRol = (S.autoRol || {})[w + '|' + lunes] || [];
+  const malo = e.conDatos && e.pct < AUTO.minimo;
+  const n = Math.max(1, R.n);
+  let aviso;
+  if (!e.conDatos) aviso = `<div class="alerta"><b class="big">📊 Todavía no hay datos</b><p>Marca tu checklist de hoy y la autoevaluación empieza a contar.</p></div>`;
+  else if (malo) aviso = `<div class="mal"><b class="big">🚨 ¡${ordinal(n)} semana mal!</b><p>Vas en <b>${e.pct}%</b> y el mínimo es <b>${AUTO.minimo}%</b>.${R.n > 1 ? ` Llevas <b>${R.n} semanas seguidas</b> por debajo.` : ''} Tienes hasta el ${fechaBonita(fin)} para subir.</p><p>Marca lo que te falta en el checklist y en tu rol.</p></div>`;
+  else aviso = `<div class="bien">✅ Vas bien: ${e.pct}% de ${AUTO.minimo}% · semana del ${fechaBonita(lunes)}</div>`;
+
+  return aviso + `<div class="card"><h2>📊 Mi autoevaluación</h2>
+    <p class="mut">Semana del ${fechaBonita(lunes)} al ${fechaBonita(fin)} · mínimo para aprobar: <b>${AUTO.minimo}%</b></p>
+    <div class="bigp" style="color:${colorA(e.pct)}">${e.pct}%</div>
+    <div class="prog"><i style="width:${e.pct}%;background:${colorA(e.pct)}"></i></div>
+    ${e.partes.map(p => `<div class="fila"><div class="n">${esc(p.label)}<small>${esc(p.det)} · vale ${p.peso}%</small></div><div class="v" style="color:${colorA(p.pct)}">${p.pct}%</div></div>`).join('')}
+    ${e.partes.length ? '' : '<p class="mut">Sin datos esta semana.</p>'}</div>
+
+    <div class="card"><h2>👤 Mi rol: marca lo que sí cumpliste</h2>
+    <p class="mut">Sé sincero. Esto cuenta ${AUTO.peso.rol}% de tu nota.</p>
+    ${TEAM[w].rol.map(x => { const id = hid(x), on = hechoRol.includes(id); return `<label class="it ${on ? 'done' : ''}"><input type="checkbox" data-arol="${id}" ${on ? 'checked' : ''}><span>${esc(x)}</span></label>`; }).join('')}</div>
+
+    <div class="card"><h2>📅 Semanas anteriores</h2>
+    ${R.semanas.slice(-8).reverse().map(x => `<div class="fila"><div class="n">${fechaBonita(x.lunes)} al ${fechaBonita(semana7(x.lunes)[6])}<small>${x.conDatos ? (x.pct < AUTO.minimo ? '❌ no llegó al mínimo' : '✅ aprobada') : 'sin datos'}</small></div><div class="v" style="color:${x.conDatos ? colorA(x.pct) : '#94a3b8'}">${x.conDatos ? x.pct + '%' : '—'}</div></div>`).join('')}
+    <p class="mut">${R.n ? `Llevas <b>${R.n}</b> ${R.n === 1 ? 'semana' : 'semanas'} seguidas por debajo del ${AUTO.minimo}%.` : `No tienes semanas malas seguidas. 👏`}</p></div>
+
+    <div class="card"><button class="btn wa" id="autoWa">📤 Enviar mi autoevaluación a ${esc(OWNER.name)}</button></div>`;
 }
 function wObs() {
   const L = S.obs[S.me] || [];
@@ -1006,8 +1115,9 @@ function ownerObs() {
    Eventos
    ===================================================================== */
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-pd],[data-pt],[data-pdel],[data-pc],[data-pf],[data-hb],[data-eqw],[data-del],[data-add],[data-secdel],[data-addsec],#pedAdd,#pScan,#cScan,#cSave,#cInv,#cCancel,#pedWa,[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend');
+  const b = e.target.closest('[data-pd],[data-pt],[data-pdel],[data-pc],[data-pf],[data-hb],[data-eqw],[data-del],[data-add],[data-secdel],[data-addsec],#pedAdd,#pScan,#cScan,#cSave,#cInv,#cCancel,#pedWa,[data-vm],[data-nudge],[data-t],[data-me],[data-owner],[data-wf],[data-rep],[data-ew],[data-ow],[data-ev],#whoBtn,#sendRep,#alarmas,#alGo,#alOk,#bvOk,#eSave,#ePrint,#eMail,#eWa,#oSend,#autoWa');
   if (!b) return;
+  if (b.id === 'autoWa') { const ee = autoDatos(S.me, lunesIso(hoy())), rr = autoRacha(S.me); openWa(autoTexto(S.me, ee, rr.n)); return; }
   if (b.dataset.pd) { view.pd = b.dataset.pd; render(); return; }
   if (b.dataset.pt) { view.pt = b.dataset.pt; const y = window.scrollY; render(); window.scrollTo(0, y); setTimeout(() => $('pedTxt') && $('pedTxt').focus(), 50); return; }
   if (b.id === 'pedAdd') { pedAgregar(); return; }
@@ -1076,6 +1186,15 @@ document.addEventListener('change', e => {
     if (done === items.length) toast('¡Todo listo! Ahora envía tu checklist 💪');
   }
   if (c.id === 'efin' && /^\d{4}-\d{2}-\d{2}$/.test(c.value)) { view.efin = c.value; render(); }
+  if (c.dataset && c.dataset.arol) {
+    const k = S.me + '|' + lunesIso(hoy()), id = c.dataset.arol;
+    S.autoRol = S.autoRol || {};
+    const L = S.autoRol[k] || [];
+    S.autoRol[k] = c.checked ? [...new Set([...L, id])] : L.filter(x => x !== id);
+    save();
+    c.closest('.it').classList.toggle('done', c.checked);
+    const y = window.scrollY; render(); window.scrollTo(0, y);
+  }
 });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
