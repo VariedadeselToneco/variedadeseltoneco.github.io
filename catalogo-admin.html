@@ -34,12 +34,14 @@
   .foot{font-size:11px;color:var(--mut);margin-top:16px;line-height:1.5}
   .filtros{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
   .filtros button{font-size:12px;padding:8px 12px}
+  td button.x{background:transparent;border:1px solid var(--line);color:var(--bad);border-radius:8px;padding:5px 8px;font-size:13px;font-weight:800;line-height:1}
+  #btnRestaurar{color:var(--amber);border-color:var(--amber)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>📦 Importar inventario</h1>
-  <p class="sub">Sube el Excel del inventario. Cada producto entra solo a su categoría; los que no reconozca quedan marcados en rojo para que los ubiques. <b>Lo que no venga en el archivo sale del catálogo.</b></p>
+  <p class="sub">Sube el Excel del inventario. Cada producto entra solo a su categoría; los que no reconozca quedan marcados en rojo para que los ubiques. Toca la <b>✕</b> para dejar fuera un producto que no tengas. <b>Lo que no venga en el archivo sale del catálogo.</b></p>
 
   <div class="card" id="gate">
     <label style="font-size:12px;font-weight:700;display:block;margin-bottom:6px">Clave de administrador</label>
@@ -57,6 +59,12 @@
       <div class="foot" id="estado">Sin archivo cargado.</div>
     </div>
 
+    <div class="card">
+      <label style="font-size:12px;font-weight:700;display:block;margin-bottom:8px">¿Tienes un respaldo? (<span class="mut">catalogo-inventario.json</span>)</label>
+      <input type="file" id="fileJson" accept=".json,application/json" style="width:100%;font-size:13px;color:var(--txt)">
+      <div class="foot" style="margin-top:8px">Restaura una lista ya trabajada con sus categorías, sin volver a clasificar.</div>
+    </div>
+
     <div id="preview" class="hide">
       <div class="card">
         <div class="kpis">
@@ -69,8 +77,9 @@
         <div class="filtros">
           <button class="gh" id="btnSoloPend">Ver solo los que faltan</button>
           <button class="gh" id="btnTodos">Poner VARIEDADES Y FERRETERÍA a los que faltan</button>
+          <button class="gh" id="btnRestaurar" style="display:none">↩️ Restaurar quitados</button>
         </div>
-        <div class="tbl-wrap"><table><thead><tr><th>Producto</th><th style="width:70px">Precio</th><th style="width:190px">Categoría</th></tr></thead><tbody id="tbody"></tbody></table></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Producto</th><th style="width:60px">Precio</th><th style="width:150px">Categoría</th><th style="width:34px"></th></tr></thead><tbody id="tbody"></tbody></table></div>
       </div>
 
       <div class="card">
@@ -329,7 +338,7 @@ function aCategoria(txt){
 }
 
 /* ---------- proceso ---------- */
-var producto = [], memorias = {}, actuales = [], soloPend = false;
+var producto = [], memorias = {}, actuales = [], soloPend = false, quitados = [];
 
 function procesar(f){
   var c=detectar(f); if(!c) throw new Error('columnas');
@@ -353,14 +362,26 @@ function procesar(f){
   return out;
 }
 
-function pintar(){
-  var pend = producto.filter(function(p){ return !p.cat; });
+function contadores(){
+  var pend = producto.filter(function(p){ return !p.cat; }).length;
   $('kTot').textContent = producto.length;
   $('kNew').textContent = producto.filter(function(p){ return !actuales.some(function(a){ return a.id===p.id; }); }).length;
   var ids={}; producto.forEach(function(p){ ids[p.id]=1; });
   $('kOut').textContent = actuales.filter(function(a){ return !ids[a.id]; }).length;
-  $('kAsk').textContent = pend.length;
+  $('kAsk').textContent = pend;
 
+  var b = $('btnGuardar');
+  b.disabled = pend>0;
+  b.style.opacity = pend>0 ? .5 : 1;
+  b.textContent = pend>0 ? ('💾 Faltan '+pend+' por categoría') : '💾 Guardar en el catálogo';
+
+  var r = $('btnRestaurar');
+  r.style.display = quitados.length ? '' : 'none';
+  r.textContent = '↩️ Restaurar quitados ('+quitados.length+')';
+}
+
+function pintar(){
+  var pend = producto.filter(function(p){ return !p.cat; });
   var lista = soloPend ? pend : producto;
   $('tbody').innerHTML = lista.slice(0,500).map(function(p){
     var i = producto.indexOf(p);
@@ -368,8 +389,9 @@ function pintar(){
       + '<select data-i="'+i+'" class="'+(p.cat?'':'pend')+'">'
       + '<option value="">— elegir —</option>'
       + CATS.map(function(c){ return '<option value="'+esc(c)+'"'+(c===p.cat?' selected':'')+'>'+esc(c)+'</option>'; }).join('')
-      + '</select></td></tr>';
-  }).join('') + (lista.length>500 ? '<tr><td colspan="3" class="mut">y '+(lista.length-500)+' más…</td></tr>' : '');
+      + '</select></td>'
+      + '<td><button class="x" data-q="'+i+'" aria-label="Quitar">✕</button></td></tr>';
+  }).join('') + (lista.length>500 ? '<tr><td colspan="4" class="mut">y '+(lista.length-500)+' más…</td></tr>' : '');
 
   Array.prototype.forEach.call($('tbody').querySelectorAll('select'), function(sel){
     sel.onchange = function(){
@@ -377,14 +399,29 @@ function pintar(){
       if(!p) return;
       p.cat = sel.value;
       if(sel.value) memorias[p._k] = sel.value;
-      var y = sel.closest('tr');
-      pintar();
+      sel.className = p.cat ? '' : 'pend';
+      contadores();
     };
   });
+  Array.prototype.forEach.call($('tbody').querySelectorAll('button.x'), function(btn){
+    btn.onclick = function(){ quitar(+btn.getAttribute('data-q')); };
+  });
 
-  $('btnGuardar').disabled = pend.length>0;
-  $('btnGuardar').style.opacity = pend.length>0 ? .5 : 1;
-  $('btnGuardar').textContent = pend.length>0 ? ('💾 Faltan '+pend.length+' por categoría') : '💾 Guardar en el catálogo';
+  contadores();
+}
+
+function quitar(i){
+  if(!(i>=0 && i<producto.length)) return;
+  quitados.push({ i:i, p: producto.splice(i,1)[0] });
+  pintar();
+}
+
+function restaurar(){
+  quitados.sort(function(a,b){ return a.i-b.i; }).forEach(function(q){
+    producto.splice(Math.min(q.i, producto.length), 0, q.p);
+  });
+  quitados = [];
+  pintar();
 }
 
 /* ---------- nube ---------- */
@@ -446,6 +483,7 @@ $('file').onchange = async function(ev){
       tabla = /<t[dr][\s>]/i.test(txt) ? tablaHtml(txt) : tablaCsv(txt);
     }
     producto = procesar(tabla);
+    quitados = [];
     var pend = producto.filter(function(p){ return !p.cat; }).length;
     $('estado').textContent = f.name+' · '+producto.length+' productos · '+(producto.length-pend)+' con categoría, '+pend+' por ubicar.';
     $('preview').classList.remove('hide');
@@ -461,6 +499,37 @@ $('file').onchange = async function(ev){
   }
 };
 
+$('fileJson').onchange = async function(ev){
+  var f = ev.target.files && ev.target.files[0]; if(!f) return;
+  $('readErr').classList.add('hide'); $('preview').classList.add('hide');
+  $('estado').textContent = 'Leyendo '+f.name+'…';
+  try{
+    var arr = JSON.parse(await f.text());
+    if(!Array.isArray(arr) || !arr.length) throw new Error('json');
+    var out = [];
+    arr.forEach(function(x){
+      if(!x) return;
+      var name = String(x.name||'').trim();
+      var precio = num(x.price);
+      if(!name || !(precio>0)) return;
+      var k = sing(norm(name));
+      var cat = CATS.indexOf(x.cat)>=0 ? x.cat : aCategoria(x.cat);
+      if(cat) memorias[k] = cat;
+      out.push({ id: x.id||hid(k), cat: cat, name: name, price: Math.round(precio*100)/100, _k: k });
+    });
+    if(!out.length) throw new Error('json');
+    producto = out;
+    quitados = [];
+    var pend = producto.filter(function(p){ return !p.cat; }).length;
+    $('estado').textContent = f.name+' · '+producto.length+' productos · '+(producto.length-pend)+' con categoría, '+pend+' por ubicar.';
+    $('preview').classList.remove('hide');
+    pintar();
+  }catch(e){
+    $('readErr').classList.remove('hide'); $('readErr').textContent = 'Ese archivo no es un respaldo válido del catálogo.';
+    $('estado').textContent = 'Sin archivo cargado.';
+  }
+};
+
 $('btnSoloPend').onclick = function(){
   soloPend = !soloPend;
   $('btnSoloPend').textContent = soloPend ? 'Ver todos' : 'Ver solo los que faltan';
@@ -470,6 +539,7 @@ $('btnTodos').onclick = function(){
   producto.forEach(function(p){ if(!p.cat){ p.cat='VARIEDADES Y FERRETERÍA'; memorias[p._k]=p.cat; } });
   pintar();
 };
+$('btnRestaurar').onclick = restaurar;
 $('btnGuardar').onclick = guardar;
 $('btnJson').onclick = function(){
   var limpio = producto.map(function(p){ return {id:p.id, cat:p.cat, name:p.name, price:p.price}; });
