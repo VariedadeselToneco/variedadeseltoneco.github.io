@@ -220,9 +220,11 @@ const FACTURAR = {
 };
 
 /* Metas de venta de la semana (con reconocimiento) */
+/* Las fechas pueden ir como 'hoy' o con el nombre del día ('jueves'):
+   así la meta arranca sola el día que el trabajador abra la app. */
 const METAS_VENTA = {
-  fernando: [{ id: 'lailas-2311', producto: 'combos Lailas', uno: 'combo', meta: 60, premio: '$5 de reconocimiento', desde: '2026-11-23', hasta: '2026-11-29' }],
-  osmary: [{ id: 'cool-2311', producto: 'refrescos Cool 400 ml', uno: 'refresco Cool', meta: 80, premio: '$5 de reconocimiento', desde: '2026-11-23', hasta: '2026-11-29' }]
+  fernando: [{ id: 'cubitos-semana', producto: 'cubitos (todos los tipos: Laila y Maggy)', uno: 'cubito', meta: 72, premio: '$5 de reconocimiento', desde: 'hoy', hasta: 'jueves' }],
+  osmary: [{ id: 'cajas-lapiz-colores', producto: 'cajas de lápiz y de colores', uno: 'caja', meta: 3, premio: '$5 de reconocimiento', desde: 'hoy', hasta: 'jueves' }]
 };
 /* Un mensaje motivador distinto cada día de la semana (dom … sáb) */
 const MOTIVA = [
@@ -563,7 +565,26 @@ function wFact() {
     <div class="card"><h2>Códigos rápidos</h2><p class="mut">Escríbelos después de ENTER</p>
     <div class="cods">${F.codigos.map(c => `<div>${esc(c[0])}<b>${esc(c[1])}</b></div>`).join('')}</div></div>`;
 }
-function metasActivas(w) { const h = hoy(); return ((S.metasX && S.metasX[w]) || METAS_VENTA[w] || []).filter(m => h >= m.desde && h <= m.hasta); }
+/* Convierte 'hoy' o un día de la semana ('jueves' = el próximo) a una fecha.
+   Se resuelve cada vez, con la fecha del teléfono, no con una fecha fija. */
+const NOMDIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+function relIso(t) {
+  const s = String(t || '').toLowerCase();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date();
+  if (s === 'hoy') return hoy(d);
+  const n = [NOMDIAS.indexOf(s), ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'].indexOf(s)].find(x => x >= 0);
+  if (n === undefined || n < 0) return s;
+  let add = (n - d.getDay() + 7) % 7;
+  if (add === 0) add = 7;                 // "el próximo", no el de hoy
+  d.setDate(d.getDate() + add);
+  return hoy(d);
+}
+function metasDe(w) {
+  const L = (S.metasX && S.metasX[w]) || METAS_VENTA[w] || [];
+  return L.map(m => Object.assign({}, m, { desde: relIso(m.desde), hasta: relIso(m.hasta) }));
+}
+function metasActivas(w) { const h = hoy(); return metasDe(w).filter(m => h >= m.desde && h <= m.hasta); }
 function ventaDia(w, m, d) { return (S.ventas && S.ventas[w + '|' + m.id + '|' + d]) || 0; }
 function ventaTotal(w, m) { let t = 0; Object.entries(S.ventas || {}).forEach(([k, v]) => { const [ww, id, d] = k.split('|'); if (ww === w && id === m.id && d >= m.desde && d <= m.hasta) t += v; }); return t; }
 function diasRestan(m) { const [y, mo, d] = m.hasta.split('-').map(Number); return Math.max(0, Math.round((new Date(y, mo - 1, d) - new Date(new Date().toDateString())) / 864e5) + 1); }
@@ -621,11 +642,17 @@ function autoRol(w, lunes) {
   return { pct: Math.round(ids.filter(id => L.includes(id)).length / ids.length * 100), hechos: ids.filter(id => L.includes(id)).length, total: ids.length, ids: L };
 }
 function autoMeta(w, lunes) {
-  const dias = semana7(lunes), fin = dias[6];
-  const m = ((S.metasX && S.metasX[w]) || METAS_VENTA[w] || []).find(x => !(x.hasta < lunes || x.desde > fin));
-  if (!m) return null;
-  const tot = ventaTotal(w, m);
-  return { m, tot, pct: Math.min(100, Math.round(tot / m.meta * 100)) };
+  const fin = semana7(lunes)[6];
+  const L = metasDe(w).filter(x => !(x.hasta < lunes || x.desde > fin));
+  if (!L.length) return null;
+  const rows = L.map(m => { const tot = ventaTotal(w, m); return { m, tot, pct: Math.min(100, Math.round(tot / m.meta * 100)) }; });
+  return {
+    rows, m: rows[0].m,
+    pct: Math.round(rows.reduce((a, r) => a + r.pct, 0) / rows.length),
+    tot: rows.reduce((a, r) => a + r.tot, 0),
+    metaTotal: rows.reduce((a, r) => a + r.m.meta, 0),
+    producto: rows.map(r => r.m.producto).join(' + ')
+  };
 }
 function autoDatos(w, lunes) {
   const ch = autoCheck(w, lunes), rl = autoRol(w, lunes), mt = autoMeta(w, lunes), partes = [];
@@ -633,7 +660,7 @@ function autoDatos(w, lunes) {
   const P = AUTO.peso;
   if (ch.pct !== null) { partes.push({ label: '✅ Checklist', pct: ch.pct, peso: P.check, det: ch.dias + (ch.dias === 1 ? ' día marcado' : ' días marcados') }); num += ch.pct * P.check; den += P.check; }
   if (rl) { partes.push({ label: '👤 Mi rol', pct: rl.pct, peso: P.rol, det: rl.hechos + ' de ' + rl.total + ' responsabilidades' }); num += rl.pct * P.rol; den += P.rol; }
-  if (mt) { partes.push({ label: '🎯 Meta de venta', pct: mt.pct, peso: P.meta, det: mt.tot + ' de ' + mt.m.meta + ' ' + mt.m.producto }); num += mt.pct * P.meta; den += P.meta; }
+  if (mt) { partes.push({ label: '🎯 Meta de venta', pct: mt.pct, peso: P.meta, det: mt.tot + ' de ' + mt.metaTotal + ' ' + mt.producto }); num += mt.pct * P.meta; den += P.meta; }
   return { lunes, pct: den ? Math.round(num / den) : 0, partes, ch, rl, mt, conDatos: ch.pct !== null };
 }
 function autoInicio() {
@@ -1314,7 +1341,7 @@ function entrarDueno() {
    Arranque
    ===================================================================== */
 /* ===== 🎯 Metas del dueño ===== */
-function metasLista(w) { return (S.metasX && S.metasX[w]) || METAS_VENTA[w] || []; }
+function metasLista(w) { return metasDe(w); }
 function lunesDe(d) { const x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
 function metaDe(w) { const L = metasLista(w); return metasActivas(w)[0] || L[L.length - 1] || null; }
 function importarMeta(h) {
